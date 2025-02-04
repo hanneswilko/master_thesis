@@ -1,5 +1,5 @@
 # Master Thesis
-Hannes Wilkovits
+Hannes Wilkovits \\
 Economics, WU Vienna
 
 ### Project Overview
