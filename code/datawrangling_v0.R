@@ -8,4 +8,6 @@ pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr")
 
 #load data
 getwd()
-epic_raw <- read.csv("./rawdata/epic_data.csv")
+epic_raw <- read.csv("./raw_data/epic_data.csv")
+head(epic_raw)
+class(epic_raw)
