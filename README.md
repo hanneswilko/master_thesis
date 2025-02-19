@@ -3,7 +3,7 @@ Hannes Wilkovits
 Economics, WU Vienna  
 
 ### Project Overview
-The master thesis uses data from the OECD EPIC 2022 survey and applies Bayesian modeling techniques to analyze how various explanatory variables affect household adoption of energy-efficient technologies, aiming address barriers faced by low-income households.
+The master thesis uses data from the OECD EPIC 2022 survey and applies econometric modeling techniques to analyze how various explanatory variables affect household adoption of energy-efficient technologies, aiming address barriers faced by low-income households.
 
 ### Data Acknowledgment
 This project uses data from the OECD. The use of this data complies with the terms outlined by the OECD at [OECD Terms and Conditions](https://www.oecd.org/en/about/terms-conditions.html).
