@@ -52,6 +52,5 @@ glimpse(epic_data)
 
 #save subset of interest as .csv
 write.csv(epic_data, "./processed_data/epic_data_var_interest.csv", row.names = FALSE)
-                                      
 
                                         
