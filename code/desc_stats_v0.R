@@ -35,24 +35,9 @@ EPS_data_sub <- EPS_data %>%
 
 summary(EPS_data_sub)
 
-###Density Plot for EPS per country
-ggplot(EPS_data_sub, aes(x = OBS_VALUE)) +
-  geom_density(fill = "steelblue", alpha = 0.5) +
-  labs(title = "Density Plot of EPS Values (2010-2020)", x = "EPS", y = "Density") +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.y = element_text(color = "black", size = 12),  # Y-axis text formatting
-    axis.text.x = element_text(color = "black", size = 12),  # X-axis formatting
-    axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
-  ) +
-  scale_y_continuous(labels = scales::number_format(accuracy = 0.01)) + 
-  scale_x_continuous(labels = scales::number_format(accuracy = 0.01))
-
-
 ###Box Plot for EPS per country
 ggplot(EPS_data_sub, aes(x = REF_AREA, y = OBS_VALUE)) +
-  geom_boxplot(fill = "steelblue", color = "black", outlier.colour = "red", outlier.size = 2) +
+  geom_boxplot(fill = "steelblue", color = "black", outlier.colour = "black", outlier.size = 2) +
   labs(title = "Distribution of EPS by Country (2010-2020)", 
        y = "EPS", 
        x = "Country") +
@@ -84,5 +69,30 @@ ggplot(EPS_sub_avg, aes(x = REF_AREA, y = avg_EPS)) +
     axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
   ) +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01))  # Format y-axis to 2 decimals
+
+#--------------------------- OECD Carbon Rate ----------------------------------
+##Net effective carbon rate and carbon tax
+###time frame: 2010-2020 (2020 latest observations)
+glimpse(C02rate_data)
+unique(C02rate_data$TIME_PERIOD)
+unique(C02rate_data$CURRENCY)
+unique(C02rate_data$BASE_PER)
+
+##Subset Carbon tax
+###CARBTAX
+C02rate_data_sub <- C02rate_data %>%
+  select(-FREQ) %>%
+  filter(MEASURE %in% "CARBTAX")
+
+glimpse(C02rate_data_sub)
+
+
+
+
+
+
+
+
+
 
 
