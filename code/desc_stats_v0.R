@@ -3,16 +3,10 @@
 ##OECD: Net effective carbon rates
 ##OECD: OECD Environmental Policy Stringency Index
 ##Our World in Data: Which countries have put a price on carbon?
-##OECD: EPIC 2022
 
 #-----------------------------Data wrangling------------------------------------
 #packages
 pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr","jsonlite")
-
-#load data
-## EPIC
-epic_data <- read.csv("./processed_data/epic_data_var_interest.csv")
-glimpse(epic_data)
 
 ## OECD carbon rate
 C02rate_data <- read.csv("./processed_data/OCED_CO2rate_data.csv")
@@ -44,14 +38,14 @@ glimpse(OECD_PPP)
 ###time frame: 2010-2020 (2020 latest observations)
 EPS_data_sub <- EPS_data %>%
   select(REF_AREA, TIME_PERIOD, OBS_VALUE) %>%
-  filter(TIME_PERIOD %in% 2018:2020)
+  filter(TIME_PERIOD %in% 2010:2020)
 
 summary(EPS_data_sub)
 
 ###Box Plot for EPS per country
-ggplot(EPS_data_sub, aes(x = REF_AREA, y = OBS_VALUE)) +
+EPS_boxplot <- ggplot(EPS_data_sub, aes(x = REF_AREA, y = OBS_VALUE)) +
   geom_boxplot(fill = "steelblue", color = "black", outlier.colour = "black", outlier.size = 2) +
-  labs(title = "Distribution of EPS by Country (2018-2020)", 
+  labs(title = "OECD Environmental Policy Stringency Index (2010-2020)", 
        y = "EPS", 
        x = "Country") +
   theme_minimal() +
@@ -61,7 +55,7 @@ ggplot(EPS_data_sub, aes(x = REF_AREA, y = OBS_VALUE)) +
     axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
     axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
   ) +
-  scale_y_continuous(labels = scales::number_format(accuracy = 0.01))  # Format y-axis to 2 decimals
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.1))  # Format y-axis to 2 decimals
 
 ###Average EPS per country
 EPS_sub_avg <- EPS_data_sub %>%
@@ -69,9 +63,9 @@ EPS_sub_avg <- EPS_data_sub %>%
   summarize(avg_EPS = mean(OBS_VALUE, na.rm = TRUE)) #use summarize to collapse data
 View(EPS_sub_avg)
 
-ggplot(EPS_sub_avg, aes(x = REF_AREA, y = avg_EPS)) +
+EPS_hist <- ggplot(EPS_sub_avg, aes(x = REF_AREA, y = avg_EPS)) +
   geom_bar(stat = "identity", fill = "steelblue", color = "black") +
-  labs(title = "Average EPS by Country (2018-2020)",
+  labs(title = "OCED Environmental Policy Stringency Index (2010-2020)",
        x = "Country",
        y = "Mean EPS") +
   theme_minimal() +
@@ -81,7 +75,11 @@ ggplot(EPS_sub_avg, aes(x = REF_AREA, y = avg_EPS)) +
     axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
     axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
   ) +
-  scale_y_continuous(labels = scales::number_format(accuracy = 0.01))  # Format y-axis to 2 decimals
+  scale_y_continuous(
+    breaks = seq(0, 5, by = 1),  # Adjusted breaks for better readability
+    limits = c(0, 5),  # Adjusted scale (modify based on your data range)
+    labels = scales::number_format(accuracy = 0.1)  # Keeps two decimal places
+  )
 
 #--------------------------- OECD Carbon Rate ----------------------------------
 ##Net effective carbon rate and carbon tax
@@ -107,18 +105,7 @@ C02rate_data_sub_PPP <- C02rate_data_sub_PPP %>%
   ) # Add a new column with the PPP-adjusted tax in USD
 
 ###Box Plot for Carbon Tax Rate per country
-ggplot(C02rate_data_sub_PPP, aes(x = REF_AREA, y = comparative_tax_usd)) +
-  geom_boxplot(fill = "steelblue", color = "black", outlier.colour = "black", outlier.size = 2) +
-  labs(title = "Distribution of Carbon Taxe Rates by Country (2018, 2021, 2023)", 
-       y = "Carbon tax burden\n(PPP-adjusted in USD per ton of CO2, Mean)", 
-       x = "Country") +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.y = element_text(color = "black", size = 12),  # Y-axis text formatting
-    axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
-    axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
-  )
+###no meaningful visualization to distribution across countries with extreme values
 
 ###Average Carbon Tax Rate per country
 C02rate_data_sub_PPPavg <- C02rate_data_sub_PPP %>%
@@ -126,12 +113,12 @@ C02rate_data_sub_PPPavg <- C02rate_data_sub_PPP %>%
   summarize(comparative_tax_usd_avg = mean(comparative_tax_usd, na.rm = TRUE)) #use summarize to collapse data
 View(C02rate_data_sub_PPPavg)
 
-ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparative_tax_usd_avg)) +
+C02rate_hist <- ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparative_tax_usd_avg)) +
   geom_bar(stat = "identity", fill = "steelblue", color = "black") +
   labs(
-    title = "Average Carbon Tax Rate by Country (2018, 2021, 2023)",
+    title = "Carbon Tax Burden (2018, 2021, 2023)",
     x = "Country",
-    y = "Carbon tax burden\n(PPP-adjusted in USD per ton of CO2, Mean)"  
+    y = "Mean Carbon Tax Rate\n(PPP-adjusted in 2023 USD/tCO2)"  
   ) +
   theme_minimal() +
   theme(
@@ -139,6 +126,10 @@ ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparative_tax_usd_avg)) 
     axis.text.y = element_text(color = "black", size = 10),  # Reduced Y-axis label size
     axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
     axis.title = element_text(size = 12, face = "bold", color = "black")  # Reduced title size for axes
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 50, by = 10),  # Adjusted breaks for better readability
+    limits = c(0, 50),  # Adjusted scale (modify based on your data range)
   )
 
 #--------------------------- OWiD Carbon Rate weighted -------------------------
@@ -147,16 +138,22 @@ ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparative_tax_usd_avg)) 
 ###obs_value: emissions-weighted carbon price - expressed in 2021USD/tCO2
 wC02price_data_sub <- wC02price_data %>%
   select(Code, Year, price_with_tax_weighted_by_share_of_co2) %>%
-  filter(Year %in% 2018:2021)
+  filter(Year %in% 2010:2020)
 
 ###Box Plot for Emissions-Weighted Carbon Price per country
-ggplot(wC02price_data_sub, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2)) +
-  geom_boxplot(fill = "steelblue", color = "black", outlier.colour = "black", outlier.size = 2) +
-  labs(
-    title = "Distribution of Emissions-Weighted Carbon Price by Country (2018-2021)", 
-    y = "Emissions-Weighted Carbon Price\n(2021 USD/tCO2)", 
-    x = "Country"
-  ) +
+###no meaningful visualization to distribution across countries with extreme values
+
+###Average EPS per country
+wC02price_data_sub_avg <- wC02price_data_sub %>%
+  group_by(Code) %>%
+  summarize(price_with_tax_weighted_by_share_of_co2_avg = mean(price_with_tax_weighted_by_share_of_co2, na.rm = TRUE)) #use summarize to collapse data
+View(wC02price_data_sub_avg)
+
+wC02rate_hist <- ggplot(wC02price_data_sub_avg, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2_avg)) +
+  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+  labs(title = "Emissions-Weighted Carbon Price (2010-2020)",
+       x = "Country",
+       y = "Mean Weigthed Carbon Price\n(2021 USD/tCO2)") +
   theme_minimal() +
   theme(
     legend.position = "none",
@@ -165,34 +162,16 @@ ggplot(wC02price_data_sub, aes(x = Code, y = price_with_tax_weighted_by_share_of
     axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
   ) +
   scale_y_continuous(
-    breaks = seq(0, 60, by = 20),  # Adjusted breaks for better readability
-    limits = c(0, 65),  # Adjusted scale (modify based on your data range)
-    labels = scales::number_format(accuracy = 0.01)  # Keeps two decimal places
+    breaks = seq(0, 70, by = 10),  # Adjusted breaks for better readability
+    limits = c(0, 70),  # Adjusted scale (modify based on your data range)
   )
 
+#--------------------------- Saving Graphs -------------------------------------
 
-###Average EPS per country
-wC02price_data_sub_avg <- wC02price_data_sub %>%
-  group_by(Code) %>%
-  summarize(price_with_tax_weighted_by_share_of_co2_avg = mean(price_with_tax_weighted_by_share_of_co2, na.rm = TRUE)) #use summarize to collapse data
-View(wC02price_data_sub_avg)
-
-ggplot(wC02price_data_sub_avg, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2_avg)) +
-  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
-  labs(title = "Average Emissions-Weighted Carbon Price by Country (2018-2021)",
-       x = "Country",
-       y = "Mean Emissions-Weighted Carbon Price\n(2021 USD/tCO2)") +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.y = element_text(color = "black", size = 12),  # Y-axis text formatting
-    axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
-    axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
-  ) +
-  scale_y_continuous(labels = scales::number_format(accuracy = 0.01))  # Format y-axis to 2 decimals
-
-#Utilize average (2010-2020) Emission-weighted Carbon price with EPS
-#barcharts + summary statisitics of overall sample
+ggsave("./output/EPS_boxplot.png", plot = EPS_boxplot, width = 8, height = 6, dpi = 300)
+ggsave("./output/EPS_hist.png", plot = EPS_hist, width = 8, height = 6, dpi = 300)
+ggsave("./output/C02rate_hist.png", plot = C02rate_hist, width = 8, height = 6, dpi = 300)
+ggsave("./output/wC02rate_hist.png", plot = wC02rate_hist, width = 8, height = 6, dpi = 300)
 
 
 
