@@ -9,11 +9,11 @@
 pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr","jsonlite")
 
 ## OECD carbon rate
-C02rate_data <- read.csv("./processed_data/OCED_CO2rate_data.csv")
+C02rate_data <- read.csv("./processed_data/OECD_CO2rate_data.csv")
 glimpse(C02rate_data)
 
 ## OECD EPS
-EPS_data <- read.csv("./processed_data/OCED_EPS_data.csv")
+EPS_data <- read.csv("./processed_data/OECD_EPS_data.csv")
 glimpse(EPS_data)
 unique(EPS_data$TIME_PERIOD)
 
