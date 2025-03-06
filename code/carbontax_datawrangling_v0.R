@@ -52,7 +52,7 @@ glimpse(carbonrate_OECD_clean)
 View(carbonrate_OECD_clean)
 
 ####save subset of interest as .csv
-write.csv(carbonrate_OECD_clean, "./processed_data/OCED_CO2rate_data.csv", row.names = FALSE)
+write.csv(carbonrate_OECD_clean, "./processed_data/OECD_CO2rate_data.csv", row.names = FALSE)
 
 ###EPS
 EPS_OECD_raw <- read.csv("./raw_data/OECD_EPS.csv")
@@ -71,7 +71,7 @@ glimpse(EPS_OECD_clean)
 View(EPS_OECD_clean)
 
 ####save subset of interest as .csv
-write.csv(EPS_OECD_clean, "./processed_data/OCED_EPS_data.csv", row.names = FALSE)
+write.csv(EPS_OECD_clean, "./processed_data/OECD_EPS_data.csv", row.names = FALSE)
 
 
 
