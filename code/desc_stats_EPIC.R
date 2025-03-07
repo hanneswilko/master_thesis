@@ -31,13 +31,23 @@ View(epic_data)
 ###Solar water heating: C45_7, 1 = Yes, 2 = No, 99 = Don't know
 ###Heat pumps: C45_9, 1 = Yes, 2 = No, 99 = Don't know
 
-###Why not EET
+###Why NOT EET adoption
+###Highly energy-efficient appliances: C46_1, 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+###no info about LEDs
+###Energy-efficient windows: C46_2, 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+###Thermal insulation of walls/roof/floor: C46_3, 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+###Solar panels for electricity: C46_5, 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+###Solar water heating: C46_6, 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+###Heat pumps: C46_8, 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
 
+###Important drivers for reducing energy consumption
+###Higher energy prices: C47_2, 1 = not all - 5 = very important, 888888 = don't know
+###Reduced cost of energy-efficient devices and renovation: C47_6, 1 = not all - 5 = very important, 888888 = don't know
 
-###Drivers for adopting EET
-
-
-
+###Support of policy measures
+###Subsidies for renovation or EET adoption: C49_1, 1 = strongly against - 5 = strongly support
+###Taxing use of energy or purchase highly energy-consuming appliances: C49_2, 1 = strongly against - 5 = strongly support
+###Introducing energy efficiency standards for appliances and buildings: C49_3, 1 = strongly against - 5 = strongly support
 
 ###home ownership: S5, 1 = residenced owned, 2 = rented, 3 = another type
 ###detached housing: S18, 1 = apartment, 2 = apartment, 3 = detached house, 4 = semi-detached, 89 = other
