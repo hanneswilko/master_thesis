@@ -959,9 +959,9 @@ epic_C44_9 %>%
 
 ###Heat pumps C45_9: 1 = Yes, 2 = No, 99 = Don't know
 
-
-
-
+sum(epic$weight)
+length(epic$X)
+sum(epic$weight_2)
 
 
 
