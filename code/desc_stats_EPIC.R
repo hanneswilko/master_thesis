@@ -180,9 +180,82 @@ ggplot(epic_Income, aes(x = as.factor(Income), fill = as.factor(Income))) +
 #-------------------------------------------------------------------------------
 #------------------------- Housing characteristics -----------------------------
 #-------------------------------------------------------------------------------
+##home ownership S5: 1 = residenced owned, 2 = rented, 3 = another type 
+unique(epic$S5)
+summary(epic$S5)
+summary(as.factor(epic$S5))
+hist(epic$S5)
 
+epic_S5 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, S5)
 
+epic_S5 %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(S5, na.rm = TRUE),
+    Q1 = quantile(S5, 0.25, na.rm = TRUE),
+    Median = median(S5, na.rm = TRUE),
+    Mean = mean(S5, na.rm = TRUE),
+    Q3 = quantile(S5, 0.75, na.rm = TRUE),
+    Max = max(S5, na.rm = TRUE),
+    Count = n()
+  )
 
+ggplot(epic_S5, aes(x = as.factor(S5), fill = as.factor(S5))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "Income by S5",
+    x = "S5 (1-3)",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+##detached housing S18: 1 = apartment, 2 = apartment, 3 = detached house, 4 = semi-detached, 89 = other
+unique(epic$S18)
+summary(epic$S18[epic$S18 != 89])
+summary(as.factor(epic$S18))
+hist(epic$S18[epic$S18 != 89])
+
+epic_S18 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, S18)
+
+epic_S18 %>%
+  filter(S18 != 89) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(S18, na.rm = TRUE),
+    Q1 = quantile(S18, 0.25, na.rm = TRUE),
+    Median = median(S18, na.rm = TRUE),
+    Mean = mean(S18, na.rm = TRUE),
+    Q3 = quantile(S18, 0.75, na.rm = TRUE),
+    Max = max(S18, na.rm = TRUE),
+    Count = n()
+  )
+
+ggplot(epic_S18, aes(x = as.factor(S18), fill = as.factor(S18))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "Income by S18",
+    x = "S5 (1-4, 89)",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
 
 
 
