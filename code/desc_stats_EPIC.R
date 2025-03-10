@@ -26,12 +26,12 @@ View(epic_data)
 
 ###Environmental preferences
 ###environmental attitude: B23_1, 1 = not important - 5 = very important, 999999 = NA
-###Environmental impacts are overstated: B31_1, 1 = strongly disagree - 4 = agree
-###Protecting environment boosts economy: B31_3, 1 = strongly disagree - 4 = agree
-###Environmental issues resolved through public policies: B31_5, 1 = strongly disagree - 4 = agree
-###Environmental policies should not cost extra money: B31_6, 1 = strongly disagree - 4 = agree
-###Environmental issues resolved through technological progress: B31_7, 1 = strongly disagree - 4 = agree
-###Environmental issues resolved through individuals voluntarily changing behaviour: B31_8, 1 = strongly disagree - 4 = agree
+###Environmental impacts are overstated: B31_1, 1 = not important - 5 = very important, 999999 = NA
+###Protecting environment boosts economy: B31_3, 1 = not important - 5 = very important, 999999 = NA
+###Environmental issues resolved through public policies: B31_5, 1 = not important - 5 = very important, 999999 = NA
+###Environmental policies should not cost extra money: B31_6, 1 = not important - 5 = very important, 999999 = NA
+###Environmental issues resolved through technological progress: B31_7, 1 = not important - 5 = very important, 999999 = NA
+###Environmental issues resolved through individuals voluntarily changing behaviour: B31_8, 1 = not important - 5 = very important, 999999 = NA
 
 ###Support of policy measures
 ###Subsidies for renovation or EET adoption: C49_1, 1 = strongly against - 5 = strongly support
@@ -48,13 +48,13 @@ View(epic_data)
 ###Heat pumps: C44_9, 1 = Yes, 2 = No, 99 = Don't know
 
 ###government support
-###Highly energy-efficient appliances: C45_1, 1 = Yes, 2 = No, 99 = Don't know
+###Highly energy-efficient appliances: C45_1, 1 = Yes, 2 = No, 888888 = Don't know
 ###no financial support for LEDs
-###Energy-efficient windows: C45_3, 1 = Yes, 2 = No, 99 = Don't know
-###Thermal insulation of walls/roof/floor: C45_4, 1 = Yes, 2 = No, 99 = Don't know
-###Solar panels for electricity: C45_6, 1 = Yes, 2 = No, 99 = Don't know
-###Solar water heating: C45_7, 1 = Yes, 2 = No, 99 = Don't know
-###Heat pumps: C45_9, 1 = Yes, 2 = No, 99 = Don't know
+###Energy-efficient windows: C45_3, 1 = Yes, 2 = No, 888888 = Don't know
+###Thermal insulation of walls/roof/floor: C45_4, 1 = Yes, 2 = No, 888888 = Don't know
+###Solar panels for electricity: C45_6, 1 = Yes, 2 = No, 888888 = Don't know
+###Solar water heating: C45_7, 1 = Yes, 2 = No, 888888 = Don't know
+###Heat pumps: C45_9, 1 = Yes, 2 = No, 888888 = Don't know
 
 ###Why NOT EET adoption
 ###Highly energy-efficient appliances: C46_1, 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
@@ -947,26 +947,585 @@ epic_C44_9 %>%
 #-------------------------------------------------------------------------------
 #---------------------------- Government support -------------------------------
 #-------------------------------------------------------------------------------
-###Highly energy-efficient appliances C45_1: 1 = Yes, 2 = No, 99 = Don't know
+###Highly energy-efficient appliances C45_1: 1 = Yes, 2 = No, 888888 = Don't know
+unique(epic$C45_1)
+summary(epic$C45_1[epic$C45_1 != 888888])
+summary(as.factor(epic$C45_1[epic$C45_1 != 888888]))
+hist(epic$C45_1[epic$C45_1 != 888888])
 
-###Energy-efficient windows C45_3: 1 = Yes, 2 = No, 99 = Don't know
+epic_C45_1 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C45_1)
 
-###Thermal insulation of walls/roof/floor C45_4: 1 = Yes, 2 = No, 99 = Don't know#
+epic_C45_1 %>%
+  filter(C45_1 != 888888) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C45_1, na.rm = TRUE),
+    Q1 = quantile(C45_1, 0.25, na.rm = TRUE),
+    Median = median(C45_1, na.rm = TRUE),
+    Mean = mean(C45_1, na.rm = TRUE),
+    Q3 = quantile(C45_1, 0.75, na.rm = TRUE),
+    Max = max(C45_1, na.rm = TRUE),
+    Count = n()
+  )
 
-###Solar panels for electricity C45_6: 1 = Yes, 2 = No, 99 = Don't know
+epic_C45_1 %>%
+  drop_na(C45_1) %>%
+  ggplot(aes(x = as.factor(C45_1), fill = as.factor(C45_1))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C45_1 by Country",
+    x = "C45_1 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
 
-###Solar water heating C45_7: 1 = Yes, 2 = No, 99 = Don't know
+###Energy-efficient windows C45_3: 1 = Yes, 2 = No, 888888 = Don't know
+unique(epic$C45_3)
+summary(epic$C45_3[epic$C45_3 != 888888])
+summary(as.factor(epic$C45_3[epic$C45_3 != 888888]))
+hist(epic$C45_3[epic$C45_3 != 888888])
 
-###Heat pumps C45_9: 1 = Yes, 2 = No, 99 = Don't know
+epic_C45_3 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C45_3)
 
-sum(epic$weight)
-length(epic$X)
-sum(epic$weight_2)
+epic_C45_3 %>%
+  filter(C45_3 != 888888) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C45_3, na.rm = TRUE),
+    Q1 = quantile(C45_3, 0.25, na.rm = TRUE),
+    Median = median(C45_3, na.rm = TRUE),
+    Mean = mean(C45_3, na.rm = TRUE),
+    Q3 = quantile(C45_3, 0.75, na.rm = TRUE),
+    Max = max(C45_3, na.rm = TRUE),
+    Count = n()
+  )
 
+epic_C45_3 %>%
+  drop_na(C45_3) %>%
+  ggplot(aes(x = as.factor(C45_3), fill = as.factor(C45_3))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C45_3 by Country",
+    x = "C45_3 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
 
+###Thermal insulation of walls/roof/floor C45_4: 1 = Yes, 2 = No, 888888 = Don't know#
+unique(epic$C45_4)
+summary(epic$C45_4[epic$C45_4 != 888888])
+summary(as.factor(epic$C45_4[epic$C45_4 != 888888]))
+hist(epic$C45_4[epic$C45_4 != 888888])
 
+epic_C45_4 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C45_4)
 
+epic_C45_4 %>%
+  filter(C45_4 != 888888) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C45_4, na.rm = TRUE),
+    Q1 = quantile(C45_4, 0.25, na.rm = TRUE),
+    Median = median(C45_4, na.rm = TRUE),
+    Mean = mean(C45_4, na.rm = TRUE),
+    Q3 = quantile(C45_4, 0.75, na.rm = TRUE),
+    Max = max(C45_4, na.rm = TRUE),
+    Count = n()
+  )
 
+epic_C45_4 %>%
+  drop_na(C45_4) %>%
+  ggplot(aes(x = as.factor(C45_4), fill = as.factor(C45_4))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C45_4 by Country",
+    x = "C45_4 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Solar panels for electricity C45_6: 1 = Yes, 2 = No, 888888 = Don't know
+unique(epic$C45_6)
+summary(epic$C45_6[epic$C45_6 != 888888])
+summary(as.factor(epic$C45_6[epic$C45_6 != 888888]))
+hist(epic$C45_6[epic$C45_6 != 888888])
+
+epic_C45_6 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C45_6)
+
+epic_C45_6 %>%
+  filter(C45_6 != 888888) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C45_6, na.rm = TRUE),
+    Q1 = quantile(C45_6, 0.25, na.rm = TRUE),
+    Median = median(C45_6, na.rm = TRUE),
+    Mean = mean(C45_6, na.rm = TRUE),
+    Q3 = quantile(C45_6, 0.75, na.rm = TRUE),
+    Max = max(C45_6, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C45_6 %>%
+  drop_na(C45_6) %>%
+  ggplot(aes(x = as.factor(C45_6), fill = as.factor(C45_6))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C45_6 by Country",
+    x = "C45_6 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Solar water heating C45_7: 1 = Yes, 2 = No, 888888 = Don't know
+unique(epic$C45_7)
+summary(epic$C45_7[epic$C45_7 != 888888])
+summary(as.factor(epic$C45_7[epic$C45_7 != 888888]))
+hist(epic$C45_7[epic$C45_7 != 888888])
+
+epic_C45_7 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C45_7)
+
+epic_C45_7 %>%
+  filter(C45_7 != 888888) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C45_7, na.rm = TRUE),
+    Q1 = quantile(C45_7, 0.25, na.rm = TRUE),
+    Median = median(C45_7, na.rm = TRUE),
+    Mean = mean(C45_7, na.rm = TRUE),
+    Q3 = quantile(C45_7, 0.75, na.rm = TRUE),
+    Max = max(C45_7, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C45_7 %>%
+  drop_na(C45_7) %>%
+  ggplot(aes(x = as.factor(C45_7), fill = as.factor(C45_7))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C45_7 by Country",
+    x = "C45_7 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Heat pumps C45_9: 1 = Yes, 2 = No, 888888 = Don't know
+unique(epic$C45_9)
+summary(epic$C45_9[epic$C45_9 != 888888])
+summary(as.factor(epic$C45_9[epic$C45_9 != 888888]))
+hist(epic$C45_9[epic$C45_9 != 888888])
+
+epic_C45_9 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C45_9)
+
+epic_C45_9 %>%
+  filter(C45_9 != 888888) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C45_9, na.rm = TRUE),
+    Q1 = quantile(C45_9, 0.25, na.rm = TRUE),
+    Median = median(C45_9, na.rm = TRUE),
+    Mean = mean(C45_9, na.rm = TRUE),
+    Q3 = quantile(C45_9, 0.75, na.rm = TRUE),
+    Max = max(C45_9, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C45_9 %>%
+  drop_na(C45_9) %>%
+  ggplot(aes(x = as.factor(C45_9), fill = as.factor(C45_9))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C45_9 by Country",
+    x = "C45_9 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+#-------------------------------------------------------------------------------
+#---------------------------- Why NOT EET adoption -----------------------------
+#-------------------------------------------------------------------------------
+###Highly energy-efficient appliances C46_1:
+### 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+unique(epic$C46_1)
+summary(epic$C46_1)
+summary(as.factor(epic$C46_1))
+hist(epic$C46_1)
+
+epic_C46_1 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C46_1)
+
+epic_C46_1 %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C46_1, na.rm = TRUE),
+    Q1 = quantile(C46_1, 0.25, na.rm = TRUE),
+    Median = median(C46_1, na.rm = TRUE),
+    Mean = mean(C46_1, na.rm = TRUE),
+    Q3 = quantile(C46_1, 0.75, na.rm = TRUE),
+    Max = max(C46_1, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C46_1 %>%
+  drop_na(C46_1) %>%
+  ggplot(aes(x = as.factor(C46_1), fill = as.factor(C46_1))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C46_1 by Country",
+    x = "C46_1 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Energy-efficient windows C46_2:
+### 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+unique(epic$C46_2)
+summary(epic$C46_2)
+summary(as.factor(epic$C46_2))
+hist(epic$C46_2)
+
+epic_C46_2 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C46_2)
+
+epic_C46_2 %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C46_2, na.rm = TRUE),
+    Q1 = quantile(C46_2, 0.25, na.rm = TRUE),
+    Median = median(C46_2, na.rm = TRUE),
+    Mean = mean(C46_2, na.rm = TRUE),
+    Q3 = quantile(C46_2, 0.75, na.rm = TRUE),
+    Max = max(C46_2, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C46_2 %>%
+  drop_na(C46_2) %>%
+  ggplot(aes(x = as.factor(C46_2), fill = as.factor(C46_2))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C46_2 by Country",
+    x = "C46_2 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Thermal insulation of walls/roof/floor C46_3:
+### 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+unique(epic$C46_3)
+summary(epic$C46_3)
+summary(as.factor(epic$C46_3))
+hist(epic$C46_3)
+
+epic_C46_3 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C46_3)
+
+epic_C46_3 %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C46_3, na.rm = TRUE),
+    Q1 = quantile(C46_3, 0.25, na.rm = TRUE),
+    Median = median(C46_3, na.rm = TRUE),
+    Mean = mean(C46_3, na.rm = TRUE),
+    Q3 = quantile(C46_3, 0.75, na.rm = TRUE),
+    Max = max(C46_3, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C46_3 %>%
+  drop_na(C46_3) %>%
+  ggplot(aes(x = as.factor(C46_3), fill = as.factor(C46_3))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C46_3 by Country",
+    x = "C46_3 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Solar panels for electricity C46_5:
+### 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+unique(epic$C46_5)
+summary(epic$C46_5)
+summary(as.factor(epic$C46_5))
+hist(epic$C46_5)
+
+epic_C46_5 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C46_5)
+
+epic_C46_5 %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C46_5, na.rm = TRUE),
+    Q1 = quantile(C46_5, 0.25, na.rm = TRUE),
+    Median = median(C46_5, na.rm = TRUE),
+    Mean = mean(C46_5, na.rm = TRUE),
+    Q3 = quantile(C46_5, 0.75, na.rm = TRUE),
+    Max = max(C46_5, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C46_5 %>%
+  drop_na(C46_5) %>%
+  ggplot(aes(x = as.factor(C46_5), fill = as.factor(C46_5))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C46_5 by Country",
+    x = "C46_5 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Solar water heating C46_6:
+### 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+unique(epic$C46_6)
+summary(epic$C46_6)
+summary(as.factor(epic$C46_6))
+hist(epic$C46_6)
+
+epic_C46_6 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C46_6)
+
+epic_C46_6 %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C46_6, na.rm = TRUE),
+    Q1 = quantile(C46_6, 0.25, na.rm = TRUE),
+    Median = median(C46_6, na.rm = TRUE),
+    Mean = mean(C46_6, na.rm = TRUE),
+    Q3 = quantile(C46_6, 0.75, na.rm = TRUE),
+    Max = max(C46_6, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C46_6 %>%
+  drop_na(C46_6) %>%
+  ggplot(aes(x = as.factor(C46_6), fill = as.factor(C46_6))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C46_6 by Country",
+    x = "C46_6 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Heat pumps C46_8:
+### 1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable, 4 = not possible, 5 = not interested, 6 = not aware
+unique(epic$C46_8)
+summary(epic$C46_8)
+summary(as.factor(epic$C46_8))
+hist(epic$C46_8)
+
+epic_C46_8 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C46_8)
+
+epic_C46_8 %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C46_8, na.rm = TRUE),
+    Q1 = quantile(C46_8, 0.25, na.rm = TRUE),
+    Median = median(C46_8, na.rm = TRUE),
+    Mean = mean(C46_8, na.rm = TRUE),
+    Q3 = quantile(C46_8, 0.75, na.rm = TRUE),
+    Max = max(C46_8, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C46_8 %>%
+  drop_na(C46_8) %>%
+  ggplot(aes(x = as.factor(C46_8), fill = as.factor(C46_8))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C46_8 by Country",
+    x = "C46_8 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+#-------------------------------------------------------------------------------
+#------------- Important drivers for reducing energy consumption ---------------
+#-------------------------------------------------------------------------------
+###Higher energy prices C47_2: 1 = not all - 5 = very important, 888888 = don't know
+unique(epic$C47_2)
+summary(epic$C47_2[epic$C47_2 != 888888])
+summary(as.factor(epic$C47_2[epic$C47_2 != 888888]))
+hist(epic$C47_2[epic$C47_2 != 888888])
+
+epic_C47_2 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C47_2)
+
+epic_C47_2 %>%
+  filter(C47_2 != 888888) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C47_2, na.rm = TRUE),
+    Q1 = quantile(C47_2, 0.25, na.rm = TRUE),
+    Median = median(C47_2, na.rm = TRUE),
+    Mean = mean(C47_2, na.rm = TRUE),
+    Q3 = quantile(C47_2, 0.75, na.rm = TRUE),
+    Max = max(C47_2, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C47_2 %>%
+  drop_na(C47_2) %>%
+  ggplot(aes(x = as.factor(C47_2), fill = as.factor(C47_2))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C47_2 by Country",
+    x = "C47_2 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
+
+###Reduced cost of energy-efficient devices and renovation C47_6: 1 = not all - 5 = very important, 888888 = don't know
+unique(epic$C47_6)
+summary(epic$C47_6[epic$C47_6 != 888888])
+summary(as.factor(epic$C47_6[epic$C47_6 != 888888]))
+hist(epic$C47_6[epic$C47_6 != 888888])
+
+epic_C47_6 <- epic %>%
+  select(X, weight, weight_2, Country_code, Country_name, C47_6)
+
+epic_C47_6 %>%
+  filter(C47_6 != 888888) %>%
+  group_by(Country_name) %>%
+  summarise(
+    Min = min(C47_6, na.rm = TRUE),
+    Q1 = quantile(C47_6, 0.25, na.rm = TRUE),
+    Median = median(C47_6),
+    Mean = mean(C47_6, na.rm = TRUE),
+    Q3 = quantile(C47_6, 0.75, na.rm = TRUE),
+    Max = max(C47_6, na.rm = TRUE),
+    Count = n()
+  )
+
+epic_C47_6 %>%
+  drop_na(C47_6) %>%
+  ggplot(aes(x = as.factor(C47_6), fill = as.factor(C47_6))) +
+  geom_bar(color = "black") +
+  facet_wrap(~ Country_name) +  # Creates separate histograms per country
+  scale_fill_brewer(palette = "Set2") +  # Adds color distinction
+  labs(
+    title = "C47_6 by Country",
+    x = "C47_6 1/0/888888",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend since X-axis already shows values
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold")
+  )
 
 
 
