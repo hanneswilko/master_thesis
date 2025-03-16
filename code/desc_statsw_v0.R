@@ -1,9 +1,19 @@
-#-------------------------Environmental Stringency Data-------------------------
+#-------------------------------------------------------------------------------
+#---------------------------- Descriptive Analysis -----------------------------
+#-------------------------------------------------------------------------------
 #Data sources:
 ##OECD: Net effective carbon rates
 ##OECD: OECD Environmental Policy Stringency Index
 ##Our World in Data: Which countries have put a price on carbon?
-#-----------------------------Loading Data -------------------------------------
+
+#Table of Content
+#1. Loading data
+#2. Specifying survey desing
+#3. Descriptive Analysis
+
+#-------------------------------------------------------------------------------
+#---------------------------- 1. Loading Data ----------------------------------
+#-------------------------------------------------------------------------------
 #packages
 pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr",
                "srvyr", "survey", "ggsurvey")
@@ -30,119 +40,28 @@ epic <- epic %>%
          C49_3, C44_1, C44_2, C44_3, C44_4, C44_6, C44_7, C44_9, C45_1, C45_3, C45_4,
          C45_6, C45_7, C45_9, C46_1, C46_2, C46_3, C46_5, C46_6, C46_8, C47_2, C47_6)
 
-glimpse(epic)
 View(epic)
+#-------------------------------------------------------------------------------
+#------------------------------- 2. Survey Design ------------------------------
+#-------------------------------------------------------------------------------
+#weight: without post-stratification income adjustment
+epic_svy1 <- epic %>%
+  as_survey_design(
+    weights = weight, #weight for analysis without income var.
+    strata = Country_code #post-stratification on country-by-country basis
+  )
+
+#weight_2: with post-stratification income adjustment
+epic_svy2 <- epic %>%
+  as_survey_design(
+    weights = weight_2, #weight_2 for analysis with income var.
+    strata = Country_code #post-stratification on country-by-country basis
+  )
 
 #-------------------------------------------------------------------------------
-#------------------------------- Weights ---------------------------------------
+#------------------------- 3. Descriptive Analysis -----------------------------
 #-------------------------------------------------------------------------------
-summary(epic$weight)
-summary(epic$weight_2)
-
-#design weights
-epic %>%
-  group_by(Country_name) %>%
-  summarize(min_weight = min(weight),
-            max_weight = max(weight))
-epic %>%
-  group_by(Country_name) %>%
-  summarize(n = n(),
-            mean = mean(weight))
-
-#post-stratification weights
-epic %>%
-  group_by(Country_name) %>%
-  summarize(min_weight = min(weight_2),
-            max_weight = max(weight_2))
-epic %>%
-  group_by(Country_name) %>%
-  summarize(n = n(),
-            mean = mean(weight_2))
-
-#survey design
-epic %>%
-  as_survey(weights = weight_2) %>%
-  group_by(Country_name) %>%
-  summarize(n = survey_total())
-
-##no weights vs. weights
-mean(epic$Income, na.rm = T)
-
-epic %>%
-  as_survey(weights = weight_2) %>%
-  summarize(mean_income = survey_mean(Income, na.rm = T))
-
-mean(epic$C45_6[epic$C45_6 != 888888], na.rm = T)
-
-epic %>%
-  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
-  as_survey(weights = weight_2) %>%
-  summarize(mean_income = survey_mean(C45_6, na.rm = TRUE))
-
-epic %>%
-  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
-  as_survey(weights = c(weight, weight_2)) %>% #design + post-strat weights
-  summarize(mean_income = survey_mean(C45_6, na.rm = TRUE))
-
-#plotting outcome with and without weights
-##without weights
-solarpan <- epic %>%
-  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
-  filter(!is.na(C45_6) & C45_6 == 1) %>%  
-  group_by(Country_name, Income) %>%
-  summarize(count = n(), .groups = "drop")f
-
-ggplot(solarpan, aes(x = Country_name, y = count, fill = as.factor(Income))) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Solar Panel Adoption by Country and Income Level",
-       x = "Country",
-       y = "Number of Adopters",
-       fill = "Income Level") +
-  theme_minimal()
-
-##with weights - weight
-solarpan_w0 <- epic %>%
-  as_survey(weights = weight) %>%
-  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
-  filter(!is.na(C45_6) & C45_6 == 1) %>%  
-  group_by(Country_name, Income) %>%
-  summarize(count = n(), .groups = "drop")
-
-ggplot(solarpan_w0, aes(x = Income, y = count)) +
-  geom_bar(aes(fill = Income), stat = "identity", position = "dodge") +
-  facet_wrap(~Country_name) +
-  theme_bw()
-
-##with weights - weight_2
-solarpan_w1 <- epic %>%
-  as_survey(weights = weight_2) %>%
-  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
-  filter(!is.na(C45_6) & C45_6 == 1) %>%  
-  group_by(Country_name, Income) %>%
-  summarize(count = n(), .groups = "drop")
-
-ggplot(solarpan_w1, aes(x = Income, y = count)) +
-  geom_bar(aes(fill = Income), stat = "identity", position = "dodge") +
-  facet_wrap(~Country_name) +
-  theme_bw()
-
-##with both weights
-solarpan_w2 <- epic %>%
-  as_survey(weights = c(weight, weight_2)) %>%
-  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
-  filter(!is.na(C45_6) & C45_6 == 1) %>%  
-  group_by(Country_name, Income) %>%
-  summarize(count = n(), .groups = "drop")
-
-ggplot(solarpan_w2, aes(x = Income, y = count)) +
-  geom_bar(aes(fill = Income), stat = "identity", position = "dodge") +
-  facet_wrap(~Country_name) +
-  theme_bw()
-
-
-
-
-
+#------------------------------- 3.2 -------------------------------------------
 
 
 
