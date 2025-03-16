@@ -90,7 +90,7 @@ solarpan <- epic %>%
   mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
   filter(!is.na(C45_6) & C45_6 == 1) %>%  
   group_by(Country_name, Income) %>%
-  summarize(count = n(), .groups = "drop")
+  summarize(count = n(), .groups = "drop")f
 
 ggplot(solarpan, aes(x = Country_name, y = count, fill = as.factor(Income))) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -100,14 +100,44 @@ ggplot(solarpan, aes(x = Country_name, y = count, fill = as.factor(Income))) +
        fill = "Income Level") +
   theme_minimal()
 
-##with weights
+##with weights - weight
+solarpan_w0 <- epic %>%
+  as_survey(weights = weight) %>%
+  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
+  filter(!is.na(C45_6) & C45_6 == 1) %>%  
+  group_by(Country_name, Income) %>%
+  summarize(count = n(), .groups = "drop")
 
+ggplot(solarpan_w0, aes(x = Income, y = count)) +
+  geom_bar(aes(fill = Income), stat = "identity", position = "dodge") +
+  facet_wrap(~Country_name) +
+  theme_bw()
 
+##with weights - weight_2
+solarpan_w1 <- epic %>%
+  as_survey(weights = weight_2) %>%
+  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
+  filter(!is.na(C45_6) & C45_6 == 1) %>%  
+  group_by(Country_name, Income) %>%
+  summarize(count = n(), .groups = "drop")
 
+ggplot(solarpan_w1, aes(x = Income, y = count)) +
+  geom_bar(aes(fill = Income), stat = "identity", position = "dodge") +
+  facet_wrap(~Country_name) +
+  theme_bw()
 
+##with both weights
+solarpan_w2 <- epic %>%
+  as_survey(weights = c(weight, weight_2)) %>%
+  mutate(C45_6 = ifelse(C45_6 == 888888, NA, C45_6)) %>%
+  filter(!is.na(C45_6) & C45_6 == 1) %>%  
+  group_by(Country_name, Income) %>%
+  summarize(count = n(), .groups = "drop")
 
-
-
+ggplot(solarpan_w2, aes(x = Income, y = count)) +
+  geom_bar(aes(fill = Income), stat = "identity", position = "dodge") +
+  facet_wrap(~Country_name) +
+  theme_bw()
 
 
 
