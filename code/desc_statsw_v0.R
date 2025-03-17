@@ -51,6 +51,10 @@ epic_svy1 <- epic %>%
     strata = Country_code #post-stratification on country-by-country basis
   )
 
+##filter version weight
+epic_svy1_sub <- epic_svy1 %>%
+  filter(rowSums(!is.na(as.data.frame(select(., starts_with("C44"))))) > 0)
+
 #weight_2: with post-stratification income adjustment
 epic_svy2 <- epic %>%
   as_survey_design(
@@ -58,12 +62,35 @@ epic_svy2 <- epic %>%
     strata = Country_code #post-stratification on country-by-country basis
   )
 
+##filter version weight_2
+epic_svy2_sub <- epic_svy2 %>%
+  filter(rowSums(!is.na(as.data.frame(select(., starts_with("C44"))))) > 0)
+
 #-------------------------------------------------------------------------------
 #------------------------- 3. Descriptive Analysis -----------------------------
 #-------------------------------------------------------------------------------
-#------------------------------- 3.2 -------------------------------------------
+
+#-------------------------- 3.2 Adoption of EET --------------------------------
+##Highly energy-efficient appliances: C44_1, 1 = Yes, 2 = No, 99 = Don't know
+###C46_1:  1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable,
+###        4 = not possible, 5 = not interested, 6 = not aware
 
 
+##Low-energy light bulbs: C44_2, 1 = Yes, 2 = No, 99 = Don't know
+##Energy-efficient windows: C44_3, 1 = Yes, 2 = No, 99 = Don't know
+##Thermal insulation of walls/roof/floor: C44_4, 1 = Yes, 2 = No, 99 = Don't know
+##Solar panels for electricity: C44_6, 1 = Yes, 2 = No, 99 = Don't know
+##Heat pumps: C44_9, 1 = Yes, 2 = No, 99 = Don't know
+##Income: Income (categorized)
+
+#C44_1: appliances adoption by country
+epic_svy1_sub %>%
+  group_by(Country_name, C44_1) %>%
+  summarize(p = survey_prop())
+
+epic_svy1 %>%
+  group_by(Country_name, C44_1) %>%
+  summarize(p = survey_prop())
 
 
 
