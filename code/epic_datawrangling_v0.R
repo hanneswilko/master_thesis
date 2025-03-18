@@ -14,19 +14,105 @@ class(epic_raw)
 glimpse(epic_raw)
 View(epic_raw)
 
-#check variables of interest
-unique(epic_raw$SCR2) #HH repsonsibilty
-unique(epic_raw$Gender) #gender
-unique(epic_raw$S1) #sex2
-unique(epic_raw$Income) #income categorized --> drop S12_1 - S12_9
-unique(epic_raw$S5) #home ownership
-unique(epic_raw$C34_1_1) #heating/cooling with electricity
-unique(epic_raw$C44_9) #EET - heat pumps
-unique(epic_raw$C46_1) #EET - why not - ee appliances
-unique(epic_raw$C46_9) #EET - why not - ??
-unique(epic_raw$C47_2) #factors reducing energy consumption - higher prices
+#sample
+length(epic_raw$X) #17721 full sample
 
-#variable of interest
+##general part: A. sociodemographic & B. attitudional characterisitcs
+###A.
+summary(as.factor(epic_raw$Country))
+summary(as.factor(epic_raw$Age_cat))
+summary(as.factor(epic_raw$Gender))
+summary(as.factor(epic_raw$Income))
+summary(as.factor(epic_raw$S5)) #home ownership
+summary(as.factor(epic_raw$S18)) #dwelling characteristics
+#no NAs in part A on full sample
+
+###B.
+summary(as.factor(epic_raw$B23_1)) #importance climate change
+#no NAs in part B on full sample
+
+##thematic part: C. energy
+###C35: energy source for space heating/cooling - all respondents
+summary(as.factor(epic_raw$C34_1_1)) #electricity: 8925 NAs
+summary(as.factor(epic_raw$C34_1_6)) #heat pumps: 8925 NAs
+###C44: EET adoption - all respondents
+summary(as.factor(epic_raw$C44_1)) #appliances: 8925 NAs
+summary(as.factor(epic_raw$C44_9)) #heat pumps: 8925 NAs
+
+##thematic part: D. transport
+###D51_1: means of individual transport - all respondents
+summary(as.factor(epic_raw$D51_1_5)) #car: 8795 NAs
+summary(as.factor(epic_raw$D51_1_7)) #e-car pumps: 8795 NAs
+###D59: support of env. transport policies - all respondents
+summary(as.factor(epic_raw$D59_1)) #tax airplane tickets: 8795 NAs
+summary(as.factor(epic_raw$D59_5)) #invest in alt. modes of transport: 8795 NAs
+
+##thematic part: E. waste
+###E66: mixed waste per week - all respondents
+summary(as.factor(epic_raw$E66)) #8855 NAs
+###E66: recyclable waste per week - all respondents
+summary(as.factor(epic_raw$E70)) #8855 NAs
+
+##thematic part: F. food
+###F89_1: eat red meat - all respondents
+summary(as.factor(epic_raw$F89_1)) #8867 NAs
+###F92: improve the environmental sustainability of food systems - all respondents
+summary(as.factor(epic_raw$F92_3)) #tax on meat: 8867 NAs
+
+#-------------- Survey parts A, B and C are important --------------------------
+unique(epic_raw$order_parts)
+epic_raw_filtered <- epic_raw[grepl("C", epic_raw$order_parts), ] #observations with information on C. energy part
+
+#check outcome of filter on survey parts
+check_energy <- epic_raw %>%
+  filter(rowSums(!is.na(select(., starts_with("C44")))) > 0)
+
+length(epic_raw_filtered$X) #8796 full sample
+length(check_energy$X) #8796 equivalent
+
+##general part: A. sociodemographic & B. attitudional characterisitcs
+###A.
+summary(as.factor(epic_raw_filtered$Country))
+summary(as.factor(epic_raw_filtered$Age_cat))
+summary(as.factor(epic_raw_filtered$Gender))
+summary(as.factor(epic_raw_filtered$Income))
+summary(as.factor(epic_raw_filtered$S5)) #home ownership
+summary(as.factor(epic_raw_filtered$S18)) #dwelling characteristics
+#no NAs in part A on full sample
+
+###B.
+summary(as.factor(epic_raw_filtered$B23_1)) #importance climate change
+#no NAs in part B on full sample
+
+##thematic part: C. energy
+###C35: energy source for space heating/cooling - all respondents
+summary(as.factor(epic_raw_filtered$C34_1_1)) #electricity: 0 NAs
+summary(as.factor(epic_raw_filtered$C34_1_6)) #heat pumps: 0 NAs
+###C44: EET adoption - all respondents
+summary(as.factor(epic_raw_filtered$C44_1)) #appliances: 0 NAs
+summary(as.factor(epic_raw_filtered$C44_9)) #heat pumps: 0 NAs
+
+##thematic part: D. transport
+###D51_1: means of individual transport - all respondents
+summary(as.factor(epic_raw_filtered$D51_1_5)) #car: 5836 NAs
+summary(as.factor(epic_raw_filtered$D51_1_7)) #e-car pumps: 5836 NAs
+###D59: support of env. transport policies - all respondents
+summary(as.factor(epic_raw_filtered$D59_1)) #tax airplane tickets: 5836 NAs
+summary(as.factor(epic_raw_filtered$D59_5)) #invest in alt. modes of transport: 5836 NAs
+
+##thematic part: E. waste
+###E66: mixed waste per week - all respondents
+summary(as.factor(epic_raw_filtered$E66)) #5876 NAs
+###E66: recyclable waste per week - all respondents
+summary(as.factor(epic_raw_filtered$E70)) #5876 NAs
+
+##thematic part: F. food
+###F89_1: eat red meat - all respondents
+summary(as.factor(epic_raw_filtered$F89_1)) #5880 NAs
+###F92: improve the environmental sustainability of food systems - all respondents
+summary(as.factor(epic_raw_filtered$F92_3)) #tax on meat: 5880 NAs
+
+#----------------------- Variables of Interest ----------------------------------
 var_interest <- c("X", "weight", "weight_2", "Country", "Gender",
                   "Age_cat", "Income", "S20", "S5", "S18", "S19_1",
                   "S19_1_1", "S19_2", "S9_US", "S9_UK", "S9_FR",
@@ -52,5 +138,18 @@ glimpse(epic_data)
 
 #save subset of interest as .csv
 write.csv(epic_data, "./processed_data/epic_data_var_interest.csv", row.names = FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                                         
