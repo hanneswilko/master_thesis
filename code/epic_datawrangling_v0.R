@@ -2,7 +2,6 @@
 ##Feedback loop Nr. 1
 ##Goal: data variation in variable of interests
 
-#-----------------------------Data wrangling------------------------------------
 #packages
 pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr")
 
@@ -14,6 +13,7 @@ class(epic_raw)
 glimpse(epic_raw)
 View(epic_raw)
 
+#-----------------------------Data wrangling------------------------------------
 #sample
 length(epic_raw$X) #17721 full sample
 
