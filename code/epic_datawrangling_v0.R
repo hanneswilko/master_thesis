@@ -7,7 +7,7 @@ pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr")
 
 #load data
 getwd()
-epic_raw <- read.csv("./raw_data/epic_data.csv")
+epic_raw <- read_sav("./raw_data/epic_data.sav") #using .sav file cuz column name attr
 head(epic_raw)
 class(epic_raw)
 glimpse(epic_raw)
@@ -15,7 +15,7 @@ View(epic_raw)
 
 #-----------------------------Data wrangling------------------------------------
 #sample
-length(epic_raw$X) #17721 full sample
+length(epic_raw$ID) #17721 full sample
 
 ##general part: A. sociodemographic & B. attitudional characterisitcs
 ###A.
@@ -67,8 +67,8 @@ epic_raw_filtered <- epic_raw[grepl("C", epic_raw$order_parts), ] #observations 
 check_energy <- epic_raw %>%
   filter(rowSums(!is.na(select(., starts_with("C44")))) > 0)
 
-length(epic_raw_filtered$X) #8796 full sample
-length(check_energy$X) #8796 equivalent
+length(epic_raw_filtered$ID) #8796 full sample
+length(check_energy$ID) #8796 equivalent
 
 ##general part: A. sociodemographic & B. attitudional characterisitcs
 ###A.
@@ -112,9 +112,14 @@ summary(as.factor(epic_raw_filtered$F89_1)) #5880 NAs
 ###F92: improve the environmental sustainability of food systems - all respondents
 summary(as.factor(epic_raw_filtered$F92_3)) #tax on meat: 5880 NAs
 
+##checking sum observations without NAs in other parts
+length(epic_raw_filtered$F89_1[!is.na(epic_raw_filtered$F89_1)])
+
 #----------------------- Variables of Interest ----------------------------------
-var_interest <- c("X", "weight", "weight_2", "Country", "Gender",
-                  "Age_cat", "Income", "S20", "S5", "S18", "S19_1",
+var_interest <- c("ID", "weight", "weight_2", "Country", "REGION_UK", "REGION_SE3",
+                  "REGION_US2", "REGION_NL2", "REGION_CH", "REGION_FR2", "REGION_CA",
+                  "REGION_BE", "REGION_IL","Gender",
+                  "Age_cat", "Income", "order_parts", "S20", "S5", "S18", "S19_1",
                   "S19_1_1", "S19_2", "S9_US", "S9_UK", "S9_FR",
                   "S9_SE", "S9_CH", "S9_NL", "S9_CA", "S9_BE", "S9_IL",
                   "S10", "B23_1", "B31_1", "B31_3", "B31_5", "B31_6",
@@ -131,13 +136,21 @@ var_interest <- c("X", "weight", "weight_2", "Country", "Gender",
                   "C46_6", "C46_7", "C46_8", "C46_9", "C47_1", "C47_2",
                   "C47_4", "C47_6", "C49_1", "C49_2", "C49_3", "C50")
 
+#subset filtered - variables of interest
+epic_data_ABC <- epic_raw_filtered %>% select(var_interest)
+length(epic_data_ABC)
+length(epic_data_ABC$ID)
+glimpse(epic_data_ABC)
+
 #subset - variables of interest
 epic_data <- epic_raw %>% select(var_interest)
 length(epic_data)
+length(epic_data$ID)
 glimpse(epic_data)
 
 #save subset of interest as .csv
-write.csv(epic_data, "./processed_data/epic_data_var_interest.csv", row.names = FALSE)
+write.csv(epic_data_ABC, "./processed_data/epic_data_ABC_VoI.csv", row.names = FALSE)
+write.csv(epic_data, "./processed_data/epic_data_VoI.csv", row.names = FALSE)
 
 
 
