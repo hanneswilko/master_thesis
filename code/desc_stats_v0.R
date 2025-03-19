@@ -18,7 +18,7 @@ pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr",
                "srvyr", "survey", "ggsurvey")
 
 #EPIC
-epic <- read.csv("./processed_data/epic_data_var_interest.csv")
+epic <- read.csv("./processed_data/epic_data_ABC_VoI.csv") #subsample var interest of survey parts A,B,C
 
 epic <- epic %>%
   mutate(Country_name = case_when(
@@ -34,10 +34,11 @@ epic <- epic %>%
     TRUE ~ NA_character_  # Assign NA if no match
   )) %>%
   rename(Country_code = Country) %>%
-  select(X, weight, weight_2, Country_code, Country_name, Age_cat, Income, S5,
-         S18, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C49_1, C49_2,
-         C49_3, C44_1, C44_2, C44_3, C44_4, C44_6, C44_7, C44_9, C45_1, C45_3, C45_4,
-         C45_6, C45_7, C45_9, C46_1, C46_2, C46_3, C46_5, C46_6, C46_8, C47_2, C47_6)
+  select(ID, Country_code, Country_name, Age_cat, Income, S5, REGION_UK, REGION_SE3,
+         REGION_US2, REGION_NL2, REGION_CH, REGION_FR2, REGION_CA, REGION_BE, REGION_IL,
+         S18, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C49_1, C49_2,C49_3, C44_1,
+         C44_2, C44_3, C44_4, C44_6, C44_7, C44_9, C45_1, C45_3, C45_4,C45_6, C45_7,
+         C45_9, C46_1, C46_2, C46_3, C46_5, C46_6, C46_8, C47_2, C47_6)
 
 View(epic)
 
@@ -59,13 +60,42 @@ View(epic)
 ##Income: Income (categorized)
 
 #C44_1: appliances adoption by country
-epic_svy1_sub %>%
+epic %>%
   group_by(Country_name, C44_1) %>%
   summarize(p = survey_prop())
 
-epic_svy1 %>%
+epic_C44_1_p <- epic %>%
   group_by(Country_name, C44_1) %>%
-  summarize(p = survey_prop())
+  summarize(count = n()) %>%
+  mutate(p = round((count / sum(count)) * 100, 2))
+
+epic_C44_1_income <- epic %>%
+  filter(C44_1 == 1) %>%
+  group_by(Country_name, Income) %>%
+  summarize(count_1 = n()) %>%
+  left_join(
+    epic %>%
+      group_by(Country_name, Income) %>%
+      summarize(total_count = n()), 
+    by = c("Country_name", "Income")
+  ) %>%
+  mutate(proportion_1 = round((count_1 / total_count) * 100, 2))
+
+#bar plot adoption of EET appliances per income level and country
+ggplot(epic_C44_1_income, aes(x = factor(Income, levels = c(1, 2, 3, 4, 5), ordered = TRUE), 
+                              y = proportion_1, 
+                              fill = factor(Income, levels = c(1, 2, 3, 4, 5), ordered = TRUE))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Country_name) +  # Create a facet for each country
+  labs(title = "Proportion of C44_1 == 1 by Income Level and Country",
+       x = "Income Level",
+       y = "Proportion of C44_1 == 1 (%)") +
+  scale_fill_brewer(palette = "Set2") +  # Optional: Use a color palette for better differentiation
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.title = element_blank())  # Remove legend title if desired
+
+
 
 
 
