@@ -41,59 +41,108 @@ epic <- epic %>%
          C45_9, C46_1, C46_2, C46_3, C46_5, C46_6, C46_8, C47_2, C47_6)
 
 View(epic)
+attach(epic)
 
 #-------------------------------------------------------------------------------
 #------------------------- 2. Descriptive Analysis -----------------------------
 #-------------------------------------------------------------------------------
 
-#-------------------------- 3.2 Adoption of EET --------------------------------
-##Highly energy-efficient appliances: C44_1, 1 = Yes, 2 = No, 99 = Don't know
-###C46_1:  1 = installed >10Y, 2 = planning to 2/3Y, 3 = interest but not affordable,
-###        4 = not possible, 5 = not interested, 6 = not aware
+#-------------- C44_6: solar panels for electricity ----------------------------
+epic_C46_6exc <- epic %>%
+  filter(is.na(C46_6) | C46_6 != 4)  # Keep NAs and exclude only C46_6 == 4
 
-
-##Low-energy light bulbs: C44_2, 1 = Yes, 2 = No, 99 = Don't know
-##Energy-efficient windows: C44_3, 1 = Yes, 2 = No, 99 = Don't know
-##Thermal insulation of walls/roof/floor: C44_4, 1 = Yes, 2 = No, 99 = Don't know
-##Solar panels for electricity: C44_6, 1 = Yes, 2 = No, 99 = Don't know
-##Heat pumps: C44_9, 1 = Yes, 2 = No, 99 = Don't know
-##Income: Income (categorized)
-
-#C44_1: appliances adoption by country
-epic %>%
-  group_by(Country_name, C44_1) %>%
-  summarize(p = survey_prop())
-
-epic_C44_1_p <- epic %>%
-  group_by(Country_name, C44_1) %>%
-  summarize(count = n()) %>%
-  mutate(p = round((count / sum(count)) * 100, 2))
-
-epic_C44_1_income <- epic %>%
-  filter(C44_1 == 1) %>%
-  group_by(Country_name, Income) %>%
-  summarize(count_1 = n()) %>%
+epic_C46_6exc_income <- epic_C46_6exc %>% 
+  filter(C44_6 == 1) %>%  # Only consider households that adopted solar panels
+  group_by(Country_name, Income) %>% 
+  summarize(count_1 = n(), .groups = "drop") %>%  # Count number of adoptions per country and income level
   left_join(
-    epic %>%
-      group_by(Country_name, Income) %>%
-      summarize(total_count = n()), 
+    epic_C46_6exc %>%  # Use the filtered epic_C46_6exc to calculate total counts
+      group_by(Country_name, Income) %>% 
+      summarize(total_count = n(), .groups = "drop"), 
     by = c("Country_name", "Income")
   ) %>%
-  mutate(proportion_1 = round((count_1 / total_count) * 100, 2))
+  mutate(proportion_1 = round((count_1 / total_count) * 100, 2))  # Calculate proportion of adoption
 
 #bar plot adoption of EET appliances per income level and country
-ggplot(epic_C44_1_income, aes(x = factor(Income, levels = c(1, 2, 3, 4, 5), ordered = TRUE), 
+ggplot(epic_C46_6exc_income, aes(x = factor(Income, levels = c(1, 2, 3, 4, 5), ordered = TRUE), 
                               y = proportion_1, 
                               fill = factor(Income, levels = c(1, 2, 3, 4, 5), ordered = TRUE))) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap(~Country_name) +  # Create a facet for each country
-  labs(title = "Proportion of C44_1 == 1 by Income Level and Country",
+  labs(title = "Proportion of C44_6 == 1 by Income Level and Country",
        x = "Income Level",
-       y = "Proportion of C44_1 == 1 (%)") +
+       y = "Proportion of C44_6 == 1 (%)") +
   scale_fill_brewer(palette = "Set2") +  # Optional: Use a color palette for better differentiation
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), 
         legend.title = element_blank())  # Remove legend title if desired
+
+# Recode S5 and S18
+epic_C46_6exc_recoded <- epic_C46_6exc %>% 
+  mutate(
+    # Recode S5 for homeownership (1 = yes, 0 = no)
+    S5 = case_when(
+      S5 == 1 ~ 1,  # Homeownership
+      S5 %in% c(2, 3) ~ 0,  # No Homeownership
+      TRUE ~ NA_real_  # Handle any unexpected values (replace with NA)
+    ),
+    
+    # Recode S18 for housing type (1 = detached house, 0 = not detached house)
+    S18 = case_when(
+      S18 %in% c(3, 4) ~ 1,  # Detached House
+      TRUE ~ 0  # Not Detached House
+    )
+  )
+
+# Filter the dataset for households that have adopted solar panels (C44_6 == 1)
+epic_adopted <- epic_C46_6exc_recoded %>%
+  filter(C44_6 == 1)
+
+# Summarize the data by country, income, homeownership, and housing type
+summary_table <- epic_adopted %>%
+  group_by(Country_name, Income, S5, S18) %>%
+  summarize(
+    count_adopted = n(),  # Count of households that adopted solar panels
+    .groups = "drop"
+  ) %>%
+  left_join(
+    epic_C46_6exc_recoded %>%
+      filter(!is.na(C44_6)) %>%
+      group_by(Country_name, Income, S5, S18) %>%
+      summarize(total_count = n(), .groups = "drop"),
+    by = c("Country_name", "Income", "S5", "S18")
+  ) %>%
+  mutate(
+    proportion_adopted = round((count_adopted / total_count) * 100, 2)
+  )
+
+# View the summary table
+summary_table
+
+# Case of Sweden
+summary_table_se <- summary_table %>%
+  filter(Country_name == "SE")
+
+ggplot(summary_table_se, aes(x = factor(Income), y = proportion_adopted, fill = factor(S5))) + 
+  geom_bar(stat = "identity", position = "dodge") +  # Bar plot with dodge position
+  facet_wrap(~S18) +  # Separate the plots by Housing Type (S18)
+  labs(
+    title = "Proportion of Solar Panel Adoption in Sweden by Income, Homeownership, and Housing Type",
+    x = "Income Level",
+    y = "Proportion Adopted (%)",
+    fill = "Homeownership (1 = Yes, 0 = No)"
+  ) +
+  scale_fill_manual(
+    values = c("0" = "orange", "1" = "blue"),  # Custom colors for homeownership (0 = No, 1 = Yes)
+    labels = c("No Homeownership", "Homeownership")  # Labels for the legend
+  ) +  
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels
+
+summary_table %>%
+  filter(Country_name %in% "SE") %>%
+  View()
+
 
 
 
