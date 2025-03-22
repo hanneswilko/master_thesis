@@ -196,7 +196,7 @@ epic_lowEET <- epic_EET %>%
   select(Country_code, Country_name, Income, S5, S18, C44_2, C46_2,
          low_EET, low_EET_possible)
 
-#Adoption of LEDs per country and income level
+#Adoption (in total) of LEDs per country and income level
 lowEET_country_income <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = factor(Income), fill = factor(Income))) + 
   geom_bar(position = "dodge") +  # Bar plot with dodge position
   facet_wrap(~Country_name) +  # By country
@@ -207,41 +207,142 @@ lowEET_country_income <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = fact
     fill = "Income Level"
   ) + 
   scale_fill_brewer(palette = "Set2") +  # Custom color palette
+  scale_y_continuous(
+    breaks = seq(0, max(table(epic_lowEET$Income)), by = 50)  # Smaller steps for the y-axis
+  ) + 
   theme_minimal() + 
   theme(
     axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
     strip.text.x = element_text(size = 8),  # Adjust facet label size
-    panel.grid.major = element_blank(),  # Remove gridlines for a cleaner plot
-    panel.grid.minor = element_blank()   # Remove minor gridlines
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
+    panel.grid.minor = element_blank(),  # Remove minor gridlines
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines
+  )
+
+#calculate the proportion of adopters
+epic_lowEET_proportion <- epic_lowEET %>%
+  group_by(Country_name, Income) %>%
+  summarise(
+    total_adopters = sum(C44_2 == 1, na.rm = TRUE),
+    total_households = n(),  # total number of households
+    proportion_adopters = total_adopters / total_households
+  ) %>%
+  ungroup()
+
+#Adoption (in %) of LEDs per country and income level
+lowEET_country_income_proportion <- ggplot(epic_lowEET_proportion, aes(x = factor(Income), y = proportion_adopters, fill = factor(Income))) + 
+  geom_bar(stat = "identity", position = "dodge") +  # Bar plot with dodge position
+  facet_wrap(~Country_name) +  # By country
+  labs(
+    title = "Proportion of LED Adoption per Country and Income Level",
+    x = "Income Level",
+    y = "Proportion of Adopters",
+    fill = "Income Level"
+  ) + 
+  scale_fill_brewer(palette = "Set2") +  # Custom color palette
+  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
+    strip.text.x = element_text(size = 8),  # Adjust facet label size
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
+    panel.grid.minor = element_blank(),  # Remove minor gridlines
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
 
 #--------------------------- middle-cost EETs -------------------------------------
 attr(epic_raw$C45_1, "label")
 attr(epic_raw$C45_1, "labels")
 
+#select variables presenting middle-cost EETs
 epic_middleEET <- epic_EET %>%
   filter(middle_EET_possible != 0) %>%
-  select(Country_code, Country_name, Income, S5, S18, C44_2, C45_1, C46_2, 
-         low_EET, low_EET_possible)
+  select(Country_code, Country_name, Income, S5, S18, C44_1, C46_1, C45_1,
+         middle_EET, middle_EET_possible)
 
-#Adoption of LEDs per country and income level
-lowEET_country_income <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = factor(Income), fill = factor(Income))) + 
+'#transform government support binary 1/0
+epic_middleEET <- epic_middleEET %>%
+  mutate(gov_support = case_when(
+    C45_1 == 1 ~ 1,  # Government support received
+    C45_1 %in% c(2, 99) ~ 0,  # No support
+    TRUE ~ NA  #else 
+  ))
+'
+#Adoption of Appliances per country and income level
+middleEET_country_income <- ggplot(epic_middleEET %>% filter(C44_1 == 1), aes(x = factor(Income), fill = factor(Income))) + 
   geom_bar(position = "dodge") +  # Bar plot with dodge position
   facet_wrap(~Country_name) +  # By country
   labs(
-    title = "Adoption of LEDs per Country and Income Level",
+    title = "Adoption of Appliances per Country and Income Level",
     x = "Income Level",
     y = "Adopters",
     fill = "Income Level"
   ) + 
   scale_fill_brewer(palette = "Set2") +  # Custom color palette
+  scale_y_continuous(
+    breaks = seq(0, max(table(epic_middleEET$Income)), by = 50)  # Smaller steps for the y-axis
+  ) + 
   theme_minimal() + 
   theme(
     axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
     strip.text.x = element_text(size = 8),  # Adjust facet label size
-    panel.grid.major = element_blank(),  # Remove gridlines for a cleaner plot
-    panel.grid.minor = element_blank()   # Remove minor gridlines
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
+    panel.grid.minor = element_blank(),  # Remove minor gridlines
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
+
+#calculate the proportion of adopters
+epic_middleEET_proportion <- epic_middleEET %>%
+  group_by(Country_name, Income) %>%
+  summarise(
+    total_adopters = sum(C44_1 == 1, na.rm = TRUE),
+    total_households = n(),  # total number of households
+    proportion_adopters = total_adopters / total_households
+  ) %>%
+  ungroup()
+
+#Adoption (in %) of Appliances per country and income level
+middleEET_country_income_proportion <- ggplot(epic_middleEET_proportion, aes(x = factor(Income), y = proportion_adopters, fill = factor(Income))) + 
+  geom_bar(stat = "identity", position = "dodge") +  # Bar plot with dodge position
+  facet_wrap(~Country_name) +  # By country
+  labs(
+    title = "Proportion of Appliances Adoption per Country and Income Level",
+    x = "Income Level",
+    y = "Proportion of Adopters",
+    fill = "Income Level"
+  ) + 
+  scale_fill_brewer(palette = "Set2") +  # Custom color palette
+  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
+    strip.text.x = element_text(size = 8),  # Adjust facet label size
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
+    panel.grid.minor = element_blank(),  # Remove minor gridlines
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines
+  )
+'
+#Government support thereof
+ggplot(epic_middleEET %>% filter(middle_EET == 1), aes(x = factor(Income), fill = factor(gov_support))) + 
+  geom_bar(position = "stack") +  # Stacked bar chart to show total adoption with/without gov support
+  facet_wrap(~Country_name) +  # By country
+  labs(
+    title = "Interaction Between Income Level and Government Support on Adoption",
+    x = "Income Level",
+    y = "Count of Adopters",
+    fill = "Government Support"
+  ) +
+  scale_fill_manual(values = c("gray", "blue")) +  # Different colors for support and no support
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text.x = element_text(size = 8),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor = element_blank()
+  )
+'
+
+                    
 
 
 
