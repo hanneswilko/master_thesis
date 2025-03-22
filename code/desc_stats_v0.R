@@ -37,10 +37,9 @@ epic <- epic %>%
   select(ID, Country_code, Country_name, Age_cat, Income, S5, REGION_UK, REGION_SE3,
          REGION_US2, REGION_NL2, REGION_CH, REGION_FR2, REGION_CA, REGION_BE, REGION_IL,
          S18, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C49_1, C49_2, C49_3, C44_1,
-         C44_2, C44_3, C44_4, C44_6, C44_9, C45_1, C45_3, C45_4,C45_6, C45_7,
-         C45_9, C46_1, C46_2, C46_3, C46_4, C46_6, C46_9, C47_2, C47_6)
+         C44_2, C44_3, C44_4, C44_6, C44_9, C45_1, C45_3, C45_4, C45_6, C45_9, C46_1,
+         C46_2, C46_3, C46_4, C46_6, C46_9, C47_2, C47_6)
 
-View(epic)
 attach(epic)
 
 #-------------------------------------------------------------------------------
@@ -143,7 +142,7 @@ summary_table %>%
   filter(Country_name %in% "SE") %>%
   View()
 
-#----------------------------- Summary Stats EET -------------------------------
+#--------------------------- Data wrangling EETs -------------------------------
 #C44_1: Appliances
 #C44_2: LEDs
 #C44_3: Windows
@@ -170,19 +169,79 @@ epic_EET <- epic %>%
     high_EET = ifelse(C44_3 == 1 | C44_4 == 1 | C44_6 == 1 | C44_9 == 1, 1, 0),
     
     # Low-cost EET adoption (LEDs) not possible
-    low_EET_possible = ifelse(C46_2 == 4, 0, 1), #0 = not possible
+    low_EET_possible = case_when(
+      C44_2 == 1 ~ 1, #if adopted = possible
+      C46_2 == 4 ~ 0, #no possible
+      TRUE ~ 1 #else possible
+    ),
     
     # Middle-cost EET adoption (Highly energy-efficient appliances) not possible
-    middle_EET_possible = ifelse(C46_1 == 4, 0, 1), #0 = not possible
+    middle_EET_possible = case_when(
+      C44_1 == 1 ~ 1, #if adopted = possible
+      C46_1 == 4 ~ 0, #no possible
+      TRUE ~ 1 #else possible
+    ),
     
     # High-cost EET adoption (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps) not possible
-    high_EET_possible = ifelse(C46_3 == 4 | C46_4 == 4 | C46_6 == 4 | C46_9 == 4, 0, 1) #0 = not possible
-    
+    high_EET_possible = case_when(
+      C44_3 == 1 | C44_4 == 1 | C44_6 == 1 | C44_9 == 1 ~ 1,  #if adopted = possible
+      C46_3 == 4 | C46_4 == 4 | C46_6 == 4 | C46_9 == 4 ~ 0,  #no possible
+      TRUE ~ 1  #else possible
+    )
   )
 
-summary(as_factor(epic_raw$C46_2))
+#--------------------------- low-cost EETs -------------------------------------
+epic_lowEET <- epic_EET %>%
+  filter(low_EET_possible != 0) %>%
+  select(Country_code, Country_name, Income, S5, S18, C44_2, C46_2,
+         low_EET, low_EET_possible)
 
+#Adoption of LEDs per country and income level
+lowEET_country_income <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = factor(Income), fill = factor(Income))) + 
+  geom_bar(position = "dodge") +  # Bar plot with dodge position
+  facet_wrap(~Country_name) +  # By country
+  labs(
+    title = "Adoption of LEDs per Country and Income Level",
+    x = "Income Level",
+    y = "Adopters",
+    fill = "Income Level"
+  ) + 
+  scale_fill_brewer(palette = "Set2") +  # Custom color palette
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
+    strip.text.x = element_text(size = 8),  # Adjust facet label size
+    panel.grid.major = element_blank(),  # Remove gridlines for a cleaner plot
+    panel.grid.minor = element_blank()   # Remove minor gridlines
+  )
 
+#--------------------------- middle-cost EETs -------------------------------------
+attr(epic_raw$C45_1, "label")
+attr(epic_raw$C45_1, "labels")
+
+epic_middleEET <- epic_EET %>%
+  filter(middle_EET_possible != 0) %>%
+  select(Country_code, Country_name, Income, S5, S18, C44_2, C45_1, C46_2, 
+         low_EET, low_EET_possible)
+
+#Adoption of LEDs per country and income level
+lowEET_country_income <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = factor(Income), fill = factor(Income))) + 
+  geom_bar(position = "dodge") +  # Bar plot with dodge position
+  facet_wrap(~Country_name) +  # By country
+  labs(
+    title = "Adoption of LEDs per Country and Income Level",
+    x = "Income Level",
+    y = "Adopters",
+    fill = "Income Level"
+  ) + 
+  scale_fill_brewer(palette = "Set2") +  # Custom color palette
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
+    strip.text.x = element_text(size = 8),  # Adjust facet label size
+    panel.grid.major = element_blank(),  # Remove gridlines for a cleaner plot
+    panel.grid.minor = element_blank()   # Remove minor gridlines
+  )
 
 
 
