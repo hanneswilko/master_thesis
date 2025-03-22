@@ -143,14 +143,44 @@ summary_table %>%
   filter(Country_name %in% "SE") %>%
   View()
 
+#----------------------------- Summary Stats EET -------------------------------
+#C44_1: Appliances
+#C44_2: LEDs
+#C44_3: Windows
+#C44_4: Thermal insulation
+#C44_6: Solar panels electricity
+#C44_9: Heat pumps
 
+#C46_1: Why not Appliances
+#C46_2: Why not LEDs
+#C46_3: Why not Windows
+#C46_4: Why not Thermal insulation
+#C46_6: Why not Solar panels electricity
+#C46_9: Why not Heat pumps
 
+epic_EET <- epic %>%
+  mutate(
+    # Low-cost EET adoption (LEDs)
+    low_EET = ifelse(C44_2 == 1, 1, 0),
+    
+    # Middle-cost EET adoption (Highly energy-efficient appliances)
+    middle_EET = ifelse(C44_1 == 1, 1, 0),
+    
+    # High-cost EET adoption (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps)
+    high_EET = ifelse(C44_3 == 1 | C44_4 == 1 | C44_6 == 1 | C44_9 == 1, 1, 0),
+    
+    # Low-cost EET adoption (LEDs) not possible
+    low_EET_possible = ifelse(C46_2 == 4, 0, 1), #0 = not possible
+    
+    # Middle-cost EET adoption (Highly energy-efficient appliances) not possible
+    middle_EET_possible = ifelse(C46_1 == 4, 0, 1), #0 = not possible
+    
+    # High-cost EET adoption (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps) not possible
+    high_EET_possible = ifelse(C46_3 == 4 | C46_4 == 4 | C46_6 == 4 | C46_9 == 4, 0, 1) #0 = not possible
+    
+  )
 
-
-
-
-
-
+summary(as_factor(epic_raw$C46_2))
 
 
 
