@@ -36,9 +36,9 @@ epic <- epic %>%
   rename(Country_code = Country) %>%
   select(ID, Country_code, Country_name, Age_cat, Income, S5, REGION_UK, REGION_SE3,
          REGION_US2, REGION_NL2, REGION_CH, REGION_FR2, REGION_CA, REGION_BE, REGION_IL,
-         S18, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C49_1, C49_2,C49_3, C44_1,
-         C44_2, C44_3, C44_4, C44_6, C44_7, C44_9, C45_1, C45_3, C45_4,C45_6, C45_7,
-         C45_9, C46_1, C46_2, C46_3, C46_5, C46_6, C46_8, C47_2, C47_6)
+         S18, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C49_1, C49_2, C49_3, C44_1,
+         C44_2, C44_3, C44_4, C44_6, C44_9, C45_1, C45_3, C45_4,C45_6, C45_7,
+         C45_9, C46_1, C46_2, C46_3, C46_4, C46_6, C46_9, C47_2, C47_6)
 
 View(epic)
 attach(epic)
