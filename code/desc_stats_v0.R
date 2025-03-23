@@ -157,6 +157,7 @@ summary_table %>%
 #C46_6: Why not Solar panels electricity
 #C46_9: Why not Heat pumps
 
+#create variable with merged info on low, medium and high-cost EETs adoption
 epic_EET <- epic %>%
   mutate(
     # Low-cost EET adoption (LEDs)
@@ -187,6 +188,29 @@ epic_EET <- epic %>%
       C44_3 == 1 | C44_4 == 1 | C44_6 == 1 | C44_9 == 1 ~ 1,  #if adopted = possible
       C46_3 == 4 | C46_4 == 4 | C46_6 == 4 | C46_9 == 4 ~ 0,  #no possible
       TRUE ~ 1  #else possible
+    )
+  )
+
+#create variable with merged info on medium and high-cost EETs government support for adoption
+##values: Yes 1, No 2, Don't know 888888
+##C45_1: Appliances
+##C45_3: Windows
+##C45_4: Thermal insulation
+##C45_6: Solar panels electricity
+##C45_9: heat pumps
+
+epic_EET <- epic_EET %>%
+  mutate(
+    # Middle-cost EET gov support (Highly energy-efficient appliances)
+    middle_EET_gov_support = case_when(
+      C45_1 == 1 ~ 1, #support
+      TRUE ~ 0 #else no support
+    ),
+    
+    # High-cost EET gov support (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps)
+    high_EET_gov_support = case_when(
+      C45_3 == 1 | C45_4 == 1 | C45_6 == 1 | C45_9 == 1 ~ 1,  #support
+      TRUE ~ 0  #else no support
     )
   )
 
@@ -251,23 +275,12 @@ lowEET_country_income_proportion <- ggplot(epic_lowEET_proportion, aes(x = facto
   )
 
 #--------------------------- middle-cost EETs -------------------------------------
-attr(epic_raw$C45_1, "label")
-attr(epic_raw$C45_1, "labels")
-
-#select variables presenting middle-cost EETs
+#select variables presenting middle-cost EETs and filter for possibility of adoption
 epic_middleEET <- epic_EET %>%
   filter(middle_EET_possible != 0) %>%
   select(Country_code, Country_name, Income, S5, S18, C44_1, C46_1, C45_1,
-         middle_EET, middle_EET_possible)
+         middle_EET, middle_EET_possible, middle_EET_gov_support)
 
-'#transform government support binary 1/0
-epic_middleEET <- epic_middleEET %>%
-  mutate(gov_support = case_when(
-    C45_1 == 1 ~ 1,  # Government support received
-    C45_1 %in% c(2, 99) ~ 0,  # No support
-    TRUE ~ NA  #else 
-  ))
-'
 #Adoption of Appliances per country and income level
 middleEET_country_income <- ggplot(epic_middleEET %>% filter(C44_1 == 1), aes(x = factor(Income), fill = factor(Income))) + 
   geom_bar(position = "dodge") +  # Bar plot with dodge position
@@ -321,28 +334,48 @@ middleEET_country_income_proportion <- ggplot(epic_middleEET_proportion, aes(x =
     panel.grid.minor = element_blank(),  # Remove minor gridlines
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
-'
+
 #Government support thereof
-ggplot(epic_middleEET %>% filter(middle_EET == 1), aes(x = factor(Income), fill = factor(gov_support))) + 
-  geom_bar(position = "stack") +  # Stacked bar chart to show total adoption with/without gov support
-  facet_wrap(~Country_name) +  # By country
+#calculate the proportion of adopters with support
+glimpse(epic_middleEET_proportion2)
+
+epic_middleEET_proportion2 <- epic_middleEET %>%
+  group_by(Country_name, Income) %>%
+  summarise(
+    total_adopters = sum(C44_1 == 1, na.rm = TRUE),
+    total_households = n(),
+    proportion_adopters = total_adopters / total_households,
+    gov_support_received = sum(middle_EET_gov_support == 1, na.rm = TRUE),
+    gov_support_not_received = total_adopters - gov_support_received,
+    proportion_gov_support_received = gov_support_received / total_adopters,
+    proportion_gov_support_not_received = gov_support_not_received / total_adopters
+  ) %>%
+  ungroup()
+
+# Prepare data for stacked proportions
+epic_middleEET_proportion2_long <- epic_middleEET_proportion2 %>%
+  select(Country_name, Income, proportion_adopters, proportion_gov_support_received, proportion_gov_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_gov_support_received, proportion_gov_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_gov_support_received" = "Received Support",
+                                 "proportion_gov_support_not_received" = "No Support"))
+
+# Create the plot
+middleEET_country_income_proportion2 <- ggplot(epic_middleEET_proportion2_long, aes(x = as.factor(Income), y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Country_name) +
   labs(
-    title = "Interaction Between Income Level and Government Support on Adoption",
+    title = "Proportion of Adopters by Income Level and Government Support",
     x = "Income Level",
-    y = "Count of Adopters",
+    y = "Proportion of Adopters",
     fill = "Government Support"
   ) +
-  scale_fill_manual(values = c("gray", "blue")) +  # Different colors for support and no support
-  theme_minimal() + 
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    strip.text.x = element_text(size = 8),
-    panel.grid.major.y = element_line(color = "gray", size = 0.3),
-    panel.grid.minor = element_blank()
-  )
-'
+  theme_minimal() +
+  scale_fill_manual(values = c("Received Support" = "#1b9e77", "No Support" = "#d95f02"))
 
-                    
+
 
 
 
