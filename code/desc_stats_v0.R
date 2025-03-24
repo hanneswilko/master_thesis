@@ -160,7 +160,7 @@ barchart_lowEET_prop <- ggplot(epic_lowEET_prop, aes(x = factor(Income), y = pro
   geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
   facet_wrap(~Country_name) +  # By country  
   labs(
-    title = "Adoption of Low-cost Energy-efficient Technology",
+    title = "Adoption of low-cost Energy-efficient Technology",
     x = "Income Level",
     y = "Proportions of Adopters"
   ) +  
@@ -188,7 +188,7 @@ barchart_middleEET_totals <- ggplot(epic_middleEET %>% filter(C44_1 == 1), aes(x
   geom_bar(position = "dodge", fill = "#8da0cb") +  # Bar plot with dodge position  
   facet_wrap(~Country_name) +  # By country  
   labs(
-    title = "Adoption of Middle-cost Energy-efficient Technology",
+    title = "Adoption of middle-cost Energy-efficient Technology",
     x = "Income Level",
     y = "Number of Adopters"
   ) +  
@@ -289,8 +289,18 @@ barchart_middleEET_govsup_totals <- ggplot(epic_middleEET_govsup_totals,
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
 
+##creating long table for proportions of adopters with support
+epic_middleEET_govsup_prop_long <- epic_middleEET_govsup_prop %>%
+  select(Country_name, Income, proportion_adopters, proportion_gov_support_received, proportion_gov_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_gov_support_received, proportion_gov_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_gov_support_received" = "Received Support",
+                                 "proportion_gov_support_not_received" = "No Support"))
 
-# Create the plot
+
+##Adoption of middle-cost EET per Country, Income level and Government support in proportions
 barchart_middleEET_govsup_prop <- ggplot(epic_middleEET_govsup_prop_long, aes(x = as.factor(Income), 
                                                                               y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
