@@ -9,7 +9,7 @@
 #Table of Content
 #1. Loading data
 #2. Descriptive Analysis
-#3. Plots
+#3. Graphs
 
 #-------------------------------------------------------------------------------
 #---------------------------- 1. Loading Data ----------------------------------
@@ -122,24 +122,27 @@ epic_lowEET <- epic_EET %>%
          low_EET, low_EET_possible)
 
 #Adoption of low-cost EET per Country and Income level in totals
-barchart_lowEET_totals <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = factor(Income))) + 
-  geom_bar(position = "dodge", fill = "#8da0cb") +
-  facet_wrap(~Country_name) +  # By country
+barchart_lowEET_totals <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = factor(Income))) +  
+  geom_bar(position = "dodge", fill = "#8da0cb") +  
+  facet_wrap(~Country_name) +  # By country  
   labs(
-    title = "Adoption of low-cost Energy-efficient Technology",
+    title = "Adoption of Low-cost Energy-efficient Technology",
     x = "Income Level",
     y = "Number of Adopters"
-  ) + 
+  ) +  
   scale_y_continuous(
-    breaks = seq(0, max(table(epic_lowEET$Income)), by = 50)  # Smaller steps for the y-axis
-  ) + 
-  theme_minimal() + 
+    breaks = seq(0, max(table(epic_lowEET$Income)), by = 50)  # Smaller steps for the y-axis  
+  ) +  
+  theme_minimal() +  
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
-    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
-    panel.grid.minor = element_blank(),  # Remove minor gridlines
-    panel.grid.major.x = element_blank()   # Remove vertical gridlines
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title  
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title  
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title  
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)  
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable  
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines  
+    panel.grid.minor = element_blank(),  # Remove minor gridlines  
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines  
   )
 
 #calculating proportions for low-cost EET
@@ -153,22 +156,25 @@ epic_lowEET_prop <- epic_lowEET %>%
   ungroup()
 
 #Adoption of low-cost EET per Country and Income level in proportions
-barchart_lowEET_prop <- ggplot(epic_lowEET_prop, aes(x = factor(Income), y = proportion_adopters)) + 
-  geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +
-  facet_wrap(~Country_name) +  # By country
+barchart_lowEET_prop <- ggplot(epic_lowEET_prop, aes(x = factor(Income), y = proportion_adopters)) +  
+  geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
+  facet_wrap(~Country_name) +  # By country  
   labs(
-    title = "Adoption of low-cost Energy-efficient Technology",
+    title = "Adoption of Low-cost Energy-efficient Technology",
     x = "Income Level",
     y = "Proportions of Adopters"
-  ) + 
-  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
-  theme_minimal() + 
+  ) +  
+  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1  
+  theme_minimal() +  
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
-    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
-    panel.grid.minor = element_blank(),  # Remove minor gridlines
-    panel.grid.major.x = element_blank()   # Remove vertical gridlines
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title  
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title  
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title  
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)  
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable  
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines  
+    panel.grid.minor = element_blank(),  # Remove minor gridlines  
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines  
   )
 
 #--------------------------- middle-cost EETs -------------------------------------
@@ -177,25 +183,28 @@ epic_middleEET <- epic_EET %>%
   select(Country_code, Country_name, Income, S5, S18, C44_1, C46_1, C45_1,
          middle_EET, middle_EET_possible, middle_EET_gov_support)
 
-#Adoption of middle-cost EET per Country and Income level in totals
-barchart_middleEET_totals <- ggplot(epic_middleEET %>% filter(C44_1 == 1), aes(x = factor(Income))) + 
-  geom_bar(position = "dodge", fill = "#8da0cb") +  # Bar plot with dodge position
-  facet_wrap(~Country_name) +  # By country
+# Adoption of middle-cost EET per Country and Income level in totals
+barchart_middleEET_totals <- ggplot(epic_middleEET %>% filter(C44_1 == 1), aes(x = factor(Income))) +  
+  geom_bar(position = "dodge", fill = "#8da0cb") +  # Bar plot with dodge position  
+  facet_wrap(~Country_name) +  # By country  
   labs(
-    title = "Adoption of middle-cost Energy-efficient Technology",
+    title = "Adoption of Middle-cost Energy-efficient Technology",
     x = "Income Level",
     y = "Number of Adopters"
-  ) + 
+  ) +  
   scale_y_continuous(
-    breaks = seq(0, max(table(epic_middleEET$Income)), by = 50)  # Smaller steps for the y-axis
-  ) + 
-  theme_minimal() + 
+    breaks = seq(0, max(table(epic_middleEET$Income)), by = 50)  # Smaller steps for the y-axis  
+  ) +  
+  theme_minimal() +  
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
-    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
-    panel.grid.minor = element_blank(),  # Remove minor gridlines
-    panel.grid.major.x = element_blank()   # Remove vertical gridlines
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title  
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title  
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title  
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)  
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable  
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines  
+    panel.grid.minor = element_blank(),  # Remove minor gridlines  
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines  
   )
 
 #calculating proportions for middle-cost EET
@@ -209,22 +218,25 @@ epic_middleEET_prop <- epic_middleEET %>%
   ungroup()
 
 #Adoption of middle-cost EET per Country and Income level in proportions
-barchart_middleEET_prop <- ggplot(epic_middleEET_prop, aes(x = factor(Income), y = proportion_adopters)) + 
+barchart_middleEET_prop <- ggplot(epic_middleEET_prop, aes(x = factor(Income), y = proportion_adopters)) +  
   geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
-  facet_wrap(~Country_name) +  # By country
+  facet_wrap(~Country_name) +  # By country  
   labs(
     title = "Adoption of middle-cost Energy-efficient Technology",
     x = "Income Level",
-    y = "Proportions of Adopters",
-  ) + 
-  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
-  theme_minimal() + 
+    y = "Proportions of Adopters"
+  ) +  
+  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1  
+  theme_minimal() +  
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
-    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
-    panel.grid.minor = element_blank(),  # Remove minor gridlines
-    panel.grid.major.x = element_blank()   # Remove vertical gridlines
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title  
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title  
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title  
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)  
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable  
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines  
+    panel.grid.minor = element_blank(),  # Remove minor gridlines  
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines  
   )
 
 #Government support
@@ -254,7 +266,7 @@ epic_middleEET_govsup_totals <- epic_middleEET_govsup_prop %>%
 
 ##Adoption of middle-cost EET per Country, Income level and Government support in totals
 barchart_middleEET_govsup_totals <- ggplot(epic_middleEET_govsup_totals, 
-                                          aes(x = as.factor(Income), y = Total_Support, fill = Support_Status)) +
+                                           aes(x = as.factor(Income), y = Total_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
@@ -266,22 +278,17 @@ barchart_middleEET_govsup_totals <- ggplot(epic_middleEET_govsup_totals,
   theme_minimal() +
   scale_fill_manual(values = c("Received Support" = "#fc8d62", "No Support" = "#8da0cb")) +
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title
+    legend.title = element_text(size = 12, face = "bold"),  # Bold legend title
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable
     panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
     panel.grid.minor = element_blank(),  # Remove minor gridlines
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
 
-##creating long table for proportions of adopters with support
-epic_middleEET_govsup_prop_long <- epic_middleEET_govsup_prop %>%
-  select(Country_name, Income, proportion_adopters, proportion_gov_support_received, proportion_gov_support_not_received) %>%
-  tidyr::pivot_longer(cols = c(proportion_gov_support_received, proportion_gov_support_not_received), 
-                      names_to = "Support_Status", 
-                      values_to = "Proportion_Support") %>%
-  mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_gov_support_received" = "Received Support",
-                                 "proportion_gov_support_not_received" = "No Support"))
 
 # Create the plot
 barchart_middleEET_govsup_prop <- ggplot(epic_middleEET_govsup_prop_long, aes(x = as.factor(Income), 
@@ -297,13 +304,16 @@ barchart_middleEET_govsup_prop <- ggplot(epic_middleEET_govsup_prop_long, aes(x 
   theme_minimal() +
   scale_fill_manual(values = c("Received Support" = "#fc8d62", "No Support" = "#8da0cb")) +
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title
+    legend.title = element_text(size = 12, face = "bold"),  # Bold legend title
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable
     panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
     panel.grid.minor = element_blank(),  # Remove minor gridlines
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
-
 
 #--------------------------- high-cost EETs -------------------------------------
 epic_highEET <- epic_EET %>%
@@ -312,25 +322,28 @@ epic_highEET <- epic_EET %>%
          C46_3, C46_4, C46_6, C46_9, C45_3, C45_4, C45_6, C45_9,
          high_EET, high_EET_possible, high_EET_gov_support)
 
-#Adoption of high-cost EET per Country and Income level in totals
-barchart_highEET_totals <- ggplot(epic_highEET %>% filter(high_EET == 1), aes(x = factor(Income))) + 
-  geom_bar(position = "dodge", fill = "#8da0cb") +  # Bar plot with dodge position
-  facet_wrap(~Country_name) +  # By country
+# Adoption of high-cost EET per Country and Income level in totals
+barchart_highEET_totals <- ggplot(epic_highEET %>% filter(high_EET == 1), aes(x = factor(Income))) +  
+  geom_bar(position = "dodge", fill = "#8da0cb") +  # Bar plot with dodge position  
+  facet_wrap(~Country_name) +  # By country  
   labs(
     title = "Adoption of high-cost Energy-efficient Technology",
     x = "Income Level",
     y = "Number of Adopters"
-  ) + 
+  ) +  
   scale_y_continuous(
-    breaks = seq(0, max(table(epic_highEET$Income)), by = 50)  # Smaller steps for the y-axis
-  ) + 
-  theme_minimal() + 
+    breaks = seq(0, max(table(epic_highEET$Income)), by = 50)  # Smaller steps for the y-axis  
+  ) +  
+  theme_minimal() +  
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
-    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
-    panel.grid.minor = element_blank(),  # Remove minor gridlines
-    panel.grid.major.x = element_blank()   # Remove vertical gridlines
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title  
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title  
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title  
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)  
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable  
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines  
+    panel.grid.minor = element_blank(),  # Remove minor gridlines  
+    panel.grid.major.x = element_blank()   # Remove vertical gridlines  
   )
 
 #calculating proportions for high-cost EET
@@ -350,13 +363,16 @@ barchart_highEET_prop <- ggplot(epic_highEET_prop, aes(x = factor(Income), y = p
   labs(
     title = "Adoption of high-cost Energy-efficient Technology",
     x = "Income Level",
-    y = "Proportions of Adopters",
-  ) + 
+    y = "Proportions of Adopters"
+  ) +  
   scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
-  theme_minimal() + 
+  theme_minimal() +  
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable
     panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
     panel.grid.minor = element_blank(),  # Remove minor gridlines
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
@@ -389,7 +405,7 @@ epic_highEET_govsup_totals <- epic_highEET_govsup_prop %>%
 
 ##Adoption of high-cost EET per Country, Income level and Government support in totals
 barchart_highEET_govsup_totals <- ggplot(epic_highEET_govsup_totals, 
-                                           aes(x = as.factor(Income), y = Total_Support, fill = Support_Status)) +
+                                         aes(x = as.factor(Income), y = Total_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
@@ -401,12 +417,17 @@ barchart_highEET_govsup_totals <- ggplot(epic_highEET_govsup_totals,
   theme_minimal() +
   scale_fill_manual(values = c("Received Support" = "#fc8d62", "No Support" = "#8da0cb")) +
   theme(
-    axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title
+    legend.title = element_text(size = 12, face = "bold"),  # Bold legend title
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)
+    axis.text.x = element_text(angle = 0, hjust = 1),  # Keep x-axis labels readable
     panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
     panel.grid.minor = element_blank(),  # Remove minor gridlines
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
+
 
 ##creating long table for proportions of adopters with support
 epic_highEET_govsup_prop_long <- epic_highEET_govsup_prop %>%
@@ -418,9 +439,9 @@ epic_highEET_govsup_prop_long <- epic_highEET_govsup_prop %>%
                                  "proportion_gov_support_received" = "Received Support",
                                  "proportion_gov_support_not_received" = "No Support"))
 
-# Create the plot
+##Adoption of high-cost EET per Country, Income level and Government support in proportions
 barchart_highEET_govsup_prop <- ggplot(epic_highEET_govsup_prop_long, aes(x = as.factor(Income), 
-                                                                              y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+                                                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
@@ -433,8 +454,12 @@ barchart_highEET_govsup_prop <- ggplot(epic_highEET_govsup_prop_long, aes(x = as
   theme_minimal() +
   scale_fill_manual(values = c("Received Support" = "#fc8d62", "No Support" = "#8da0cb")) +
   theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Increase size, bold, and center title
+    axis.title.x = element_text(size = 12, face = "bold"),  # Bold x-axis title
+    axis.title.y = element_text(size = 12, face = "bold"),  # Bold y-axis title
+    legend.title = element_text(size = 12, face = "bold"),  # Bold legend title
+    strip.text.x = element_text(size = 10, face = "bold"),  # Bold facet labels (country names)
     axis.text.x = element_text(angle = 0, hjust = 1),  # Rotate x-axis labels for better fit
-    strip.text.x = element_text(size = 8),  # Adjust facet label size
     panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Add horizontal gridlines
     panel.grid.minor = element_blank(),  # Remove minor gridlines
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
@@ -443,7 +468,19 @@ barchart_highEET_govsup_prop <- ggplot(epic_highEET_govsup_prop_long, aes(x = as
 
 
 
-
+#-------------------------------------------------------------------------------
+#---------------------------- 3. Saving Graphs ---------------------------------
+#-------------------------------------------------------------------------------
+ggsave("./output/barchart_lowEET_totals.png", plot = barchart_lowEET_totals, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_lowEET_prop.png", plot = barchart_lowEET_prop, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_middleEET_totals.png", plot = barchart_middleEET_totals, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_middleEET_prop.png", plot = barchart_middleEET_prop, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_middleEET_govsup_totals.png", plot = barchart_middleEET_govsup_totals, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_middleEET_govsup_prop.png", plot = barchart_middleEET_govsup_prop, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_highEET_totals.png", plot = barchart_highEET_totals, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_highEET_prop.png", plot = barchart_highEET_prop, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_highEET_govsup_prop.png", plot = barchart_highEET_govsup_prop, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_highEET_govsup_totals.png", plot = barchart_highEET_govsup_totals, width = 8, height = 6, dpi = 300)
 
 
 
