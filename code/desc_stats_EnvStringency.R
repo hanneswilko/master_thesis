@@ -42,20 +42,24 @@ EPS_data_sub <- EPS_data %>%
 
 summary(EPS_data_sub)
 
-###Box Plot for EPS per country
 EPS_boxplot <- ggplot(EPS_data_sub, aes(x = REF_AREA, y = OBS_VALUE)) +
-  geom_boxplot(fill = "steelblue", color = "black", outlier.colour = "black", outlier.size = 2) +
-  labs(title = "OECD Environmental Policy Stringency Index (2010-2020)", 
-       y = "EPS", 
-       x = "Country") +
+  geom_boxplot(fill = "#8da0cb", color = "black", outlier.colour = "black", outlier.size = 2) +  # Consistent blue fill
+  labs(
+    title = "OECD Environmental Policy Stringency Index (2010-2020)", 
+    y = "EPS", 
+    x = "Country"
+  ) +
   theme_minimal() +
   theme(
-    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold and centered title
     axis.text.y = element_text(color = "black", size = 12),  # Y-axis text formatting
     axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
-    axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
+    axis.title = element_text(size = 14, face = "bold", color = "black"),  # Bold axis labels
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Horizontal gridlines
+    panel.grid.minor = element_blank()  # Remove minor gridlines
   ) +
-  scale_y_continuous(labels = scales::number_format(accuracy = 0.1))  # Format y-axis to 2 decimals
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.1))  # Format y-axis with 1 decimal
+
 
 ###Average EPS per country
 EPS_sub_avg <- EPS_data_sub %>%
@@ -64,21 +68,25 @@ EPS_sub_avg <- EPS_data_sub %>%
 View(EPS_sub_avg)
 
 EPS_hist <- ggplot(EPS_sub_avg, aes(x = REF_AREA, y = avg_EPS)) +
-  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
-  labs(title = "OCED Environmental Policy Stringency Index (2010-2020)",
-       x = "Country",
-       y = "Mean EPS") +
+  geom_bar(stat = "identity", fill = "#8da0cb", color = "black") +  # Updated fill color
+  labs(
+    title = "OECD Environmental Policy Stringency Index (2010-2020)",
+    x = "Country",
+    y = "Average EPS"
+  ) +
   theme_minimal() +
   theme(
-    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold, centered title
     axis.text.y = element_text(color = "black", size = 12),  # Y-axis text formatting
     axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
-    axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
+    axis.title = element_text(size = 14, face = "bold", color = "black"),  # Bold axis labels
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Horizontal gridlines
+    panel.grid.minor = element_blank()  # Remove minor gridlines
   ) +
   scale_y_continuous(
     breaks = seq(0, 5, by = 1),  # Adjusted breaks for better readability
     limits = c(0, 5),  # Adjusted scale (modify based on your data range)
-    labels = scales::number_format(accuracy = 0.1)  # Keeps two decimal places
+    labels = scales::number_format(accuracy = 0.1)  # Keeps one decimal place
   )
 
 #--------------------------- OECD Carbon Rate ----------------------------------
@@ -114,23 +122,26 @@ C02rate_data_sub_PPPavg <- C02rate_data_sub_PPP %>%
 View(C02rate_data_sub_PPPavg)
 
 C02rate_hist <- ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparative_tax_usd_avg)) +
-  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+  geom_bar(stat = "identity", fill = "#8da0cb", color = "black") +  # Updated fill color
   labs(
-    title = "Carbon Tax Burden (2018, 2021, 2023)",
+    title = "OECD Carbon Tax Burden (2018, 2021, 2023)",
     x = "Country",
-    y = "Mean Carbon Tax Rate\n(PPP-adjusted in 2023 USD/tCO2)"  
+    y = "Average Carbon Tax Rate\n(PPP-adjusted in 2023 USD/tCO2)"
   ) +
   theme_minimal() +
   theme(
-    legend.position = "none",
-    axis.text.y = element_text(color = "black", size = 10),  # Reduced Y-axis label size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold, centered title
+    axis.text.y = element_text(color = "black", size = 12),  # Y-axis text formatting
     axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
-    axis.title = element_text(size = 12, face = "bold", color = "black")  # Reduced title size for axes
+    axis.title = element_text(size = 14, face = "bold", color = "black"),  # Bold axis labels
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Horizontal gridlines
+    panel.grid.minor = element_blank()  # Remove minor gridlines
   ) +
   scale_y_continuous(
     breaks = seq(0, 50, by = 10),  # Adjusted breaks for better readability
-    limits = c(0, 50),  # Adjusted scale (modify based on your data range)
+    limits = c(0, 50)  # Adjusted scale (modify based on your data range)
   )
+
 
 #--------------------------- OWiD Carbon Rate weighted -------------------------
 ##Net effective carbon rate and carbon tax
@@ -139,6 +150,8 @@ C02rate_hist <- ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparativ
 wC02price_data_sub <- wC02price_data %>%
   select(Code, Year, price_with_tax_weighted_by_share_of_co2) %>%
   filter(Year %in% 2010:2020)
+
+glimpse(wC02price_data)
 
 ###Box Plot for Emissions-Weighted Carbon Price per country
 ###no meaningful visualization to distribution across countries with extreme values
@@ -150,20 +163,22 @@ wC02price_data_sub_avg <- wC02price_data_sub %>%
 View(wC02price_data_sub_avg)
 
 wC02rate_hist <- ggplot(wC02price_data_sub_avg, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2_avg)) +
-  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+  geom_bar(stat = "identity", fill = "#8da0cb", color = "black") +  # Matching color scheme
   labs(title = "Emissions-Weighted Carbon Price (2010-2020)",
        x = "Country",
-       y = "Mean Weigthed Carbon Price\n(2021 USD/tCO2)") +
+       y = "Average Weighted Carbon Price\n(2021 USD/tCO2)") +  # Fixed typo
   theme_minimal() +
   theme(
-    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Bold, centered title
     axis.text.y = element_text(color = "black", size = 12),  # Y-axis text formatting
     axis.text.x = element_text(color = "black", size = 12, angle = 45, hjust = 1),  # X-axis formatting
-    axis.title = element_text(size = 14, face = "bold", color = "black")  # Bold axis labels
+    axis.title = element_text(size = 14, face = "bold", color = "black"),  # Bold axis labels
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),  # Horizontal gridlines
+    panel.grid.minor = element_blank()  # Remove minor gridlines
   ) +
   scale_y_continuous(
     breaks = seq(0, 70, by = 10),  # Adjusted breaks for better readability
-    limits = c(0, 70),  # Adjusted scale (modify based on your data range)
+    limits = c(0, 70)  # Adjusted scale (modify based on your data range)
   )
 
 #--------------------------- Saving Graphs -------------------------------------
