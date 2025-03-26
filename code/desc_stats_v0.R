@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-#---------------- Descriptive Analysis - unweighted Stats ----------------------
+#------------------- Descriptive Analysis - EPIC -------------------------------
 #-------------------------------------------------------------------------------
 #Data sources:
 ##OECD: Net effective carbon rates
@@ -44,6 +44,7 @@ epic <- epic %>%
 #-------------------------------------------------------------------------------
 #------------------------- 2. Descriptive Analysis -----------------------------
 #-------------------------------------------------------------------------------
+
 #--------------------------- Data wrangling EETs -------------------------------
 #C44_1: Appliances
 #C44_2: LEDs
@@ -121,7 +122,7 @@ epic_lowEET <- epic_EET %>%
   select(Country_code, Country_name, Income, S5, S18, C44_2, C46_2,
          low_EET, low_EET_possible)
 
-#Adoption of low-cost EET per Country and Income level in totals
+#adoption of low-cost EET per Country and Income level in totals
 barchart_lowEET_totals <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = factor(Income))) +  
   geom_bar(position = "dodge", fill = "#8da0cb") +  
   facet_wrap(~Country_name) +  # By country  
@@ -155,7 +156,7 @@ epic_lowEET_prop <- epic_lowEET %>%
   ) %>%
   ungroup()
 
-#Adoption of low-cost EET per Country and Income level in proportions
+#adoption of low-cost EET per Country and Income level in proportions
 barchart_lowEET_prop <- ggplot(epic_lowEET_prop, aes(x = factor(Income), y = proportion_adopters)) +  
   geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
   facet_wrap(~Country_name) +  # By country  
@@ -183,7 +184,7 @@ epic_middleEET <- epic_EET %>%
   select(Country_code, Country_name, Income, S5, S18, C44_1, C46_1, C45_1,
          middle_EET, middle_EET_possible, middle_EET_gov_support)
 
-# Adoption of middle-cost EET per Country and Income level in totals
+#adoption of middle-cost EET per Country and Income level in totals
 barchart_middleEET_totals <- ggplot(epic_middleEET %>% filter(C44_1 == 1), aes(x = factor(Income))) +  
   geom_bar(position = "dodge", fill = "#8da0cb") +  # Bar plot with dodge position  
   facet_wrap(~Country_name) +  # By country  
@@ -217,7 +218,7 @@ epic_middleEET_prop <- epic_middleEET %>%
   ) %>%
   ungroup()
 
-#Adoption of middle-cost EET per Country and Income level in proportions
+#adoption of middle-cost EET per Country and Income level in proportions
 barchart_middleEET_prop <- ggplot(epic_middleEET_prop, aes(x = factor(Income), y = proportion_adopters)) +  
   geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
   facet_wrap(~Country_name) +  # By country  
@@ -264,7 +265,7 @@ epic_middleEET_govsup_totals <- epic_middleEET_govsup_prop %>%
                                  "gov_support_received" = "Received Support",
                                  "gov_support_not_received" = "No Support"))
 
-##Adoption of middle-cost EET per Country, Income level and Government support in totals
+##adoption of middle-cost EET per Country, Income level and Government support in totals
 barchart_middleEET_govsup_totals <- ggplot(epic_middleEET_govsup_totals, 
                                            aes(x = as.factor(Income), y = Total_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
@@ -300,7 +301,7 @@ epic_middleEET_govsup_prop_long <- epic_middleEET_govsup_prop %>%
                                  "proportion_gov_support_not_received" = "No Support"))
 
 
-##Adoption of middle-cost EET per Country, Income level and Government support in proportions
+##adoption of middle-cost EET per Country, Income level and Government support in proportions
 barchart_middleEET_govsup_prop <- ggplot(epic_middleEET_govsup_prop_long, aes(x = as.factor(Income), 
                                                                               y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
@@ -332,7 +333,7 @@ epic_highEET <- epic_EET %>%
          C46_3, C46_4, C46_6, C46_9, C45_3, C45_4, C45_6, C45_9,
          high_EET, high_EET_possible, high_EET_gov_support)
 
-# Adoption of high-cost EET per Country and Income level in totals
+#adoption of high-cost EET per Country and Income level in totals
 barchart_highEET_totals <- ggplot(epic_highEET %>% filter(high_EET == 1), aes(x = factor(Income))) +  
   geom_bar(position = "dodge", fill = "#8da0cb") +  # Bar plot with dodge position  
   facet_wrap(~Country_name) +  # By country  
@@ -366,7 +367,7 @@ epic_highEET_prop <- epic_highEET %>%
   ) %>%
   ungroup()
 
-#Adoption of high-cost EET per Country and Income level in proportions
+#adoption of high-cost EET per Country and Income level in proportions
 barchart_highEET_prop <- ggplot(epic_highEET_prop, aes(x = factor(Income), y = proportion_adopters)) + 
   geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
   facet_wrap(~Country_name) +  # By country
@@ -413,7 +414,7 @@ epic_highEET_govsup_totals <- epic_highEET_govsup_prop %>%
                                  "gov_support_received" = "Received Support",
                                  "gov_support_not_received" = "No Support"))
 
-##Adoption of high-cost EET per Country, Income level and Government support in totals
+##adoption of high-cost EET per Country, Income level and Government support in totals
 barchart_highEET_govsup_totals <- ggplot(epic_highEET_govsup_totals, 
                                          aes(x = as.factor(Income), y = Total_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
@@ -449,7 +450,7 @@ epic_highEET_govsup_prop_long <- epic_highEET_govsup_prop %>%
                                  "proportion_gov_support_received" = "Received Support",
                                  "proportion_gov_support_not_received" = "No Support"))
 
-##Adoption of high-cost EET per Country, Income level and Government support in proportions
+##adoption of high-cost EET per Country, Income level and Government support in proportions
 barchart_highEET_govsup_prop <- ggplot(epic_highEET_govsup_prop_long, aes(x = as.factor(Income), 
                                                                           y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
