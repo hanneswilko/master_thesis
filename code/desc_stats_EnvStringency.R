@@ -43,7 +43,7 @@ EPS_data_sub <- EPS_data %>%
 summary(EPS_data_sub)
 
 EPS_boxplot <- ggplot(EPS_data_sub, aes(x = REF_AREA, y = OBS_VALUE)) +
-  geom_boxplot(fill = "#8da0cb", color = "black", outlier.colour = "black", outlier.size = 2) +  # Consistent blue fill
+  geom_boxplot(fill = "#8da0cb", outlier.colour = "black", outlier.size = 2) +  # Consistent blue fill
   labs(
     title = "OECD Environmental Policy Stringency Index (2010-2020)", 
     y = "EPS", 
@@ -68,7 +68,7 @@ EPS_sub_avg <- EPS_data_sub %>%
 View(EPS_sub_avg)
 
 EPS_hist <- ggplot(EPS_sub_avg, aes(x = REF_AREA, y = avg_EPS)) +
-  geom_bar(stat = "identity", fill = "#8da0cb", color = "black") +  # Updated fill color
+  geom_bar(stat = "identity", fill = "#8da0cb") +  # Updated fill color
   labs(
     title = "OECD Environmental Policy Stringency Index (2010-2020)",
     x = "Country",
@@ -122,7 +122,7 @@ C02rate_data_sub_PPPavg <- C02rate_data_sub_PPP %>%
 View(C02rate_data_sub_PPPavg)
 
 C02rate_hist <- ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparative_tax_usd_avg)) +
-  geom_bar(stat = "identity", fill = "#8da0cb", color = "black") +  # Updated fill color
+  geom_bar(stat = "identity", fill = "#8da0cb") +  # Updated fill color
   labs(
     title = "OECD Carbon Tax Burden (2018, 2021, 2023)",
     x = "Country",
@@ -163,7 +163,7 @@ wC02price_data_sub_avg <- wC02price_data_sub %>%
 View(wC02price_data_sub_avg)
 
 wC02rate_hist <- ggplot(wC02price_data_sub_avg, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2_avg)) +
-  geom_bar(stat = "identity", fill = "#8da0cb", color = "black") +  # Matching color scheme
+  geom_bar(stat = "identity", fill = "#8da0cb") +  # Matching color scheme
   labs(title = "Emissions-Weighted Carbon Price (2010-2020)",
        x = "Country",
        y = "Average Weighted Carbon Price\n(2021 USD/tCO2)") +  # Fixed typo
