@@ -146,8 +146,34 @@ barchart_lowEET_totals <- ggplot(epic_lowEET %>% filter(C44_2 == 1), aes(x = fac
     panel.grid.major.x = element_blank()   # Remove vertical gridlines  
   )
 
-#calculating proportions for low-cost EET
-epic_lowEET_prop <- epic_lowEET %>%
+#calculating proportions for low-cost EET by country
+epic_lowEET_prop1 <- epic_lowEET %>%
+  group_by(Country_name) %>%
+  summarise(
+    total_adopters = sum(C44_2 == 1, na.rm = TRUE),
+    total_households = n(),
+    proportion_adopters = total_adopters / total_households
+  )
+
+#adoption of low-cost EET per Country in proportions
+barchart_lowEET_country_prop <- ggplot(epic_lowEET_prop1, aes(x = reorder(Country_name, -proportion_adopters), y = proportion_adopters)) +  
+  geom_bar(stat = "identity", fill = "#8da0cb") +   
+  labs(
+    title = "Adoption of low-cost Energy-efficient Technology",
+    x = "Country",
+    y = "Proportions of Adopters"
+  ) +  
+  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
+  theme_minimal() +  
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold"),
+    axis.title.y = element_text(size = 12, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+#calculating proportions for low-cost EET by country and income
+epic_lowEET_prop2 <- epic_lowEET %>%
   group_by(Country_name, Income) %>%
   summarise(
     total_adopters = sum(C44_2 == 1, na.rm = TRUE),
@@ -157,7 +183,7 @@ epic_lowEET_prop <- epic_lowEET %>%
   ungroup()
 
 #adoption of low-cost EET per Country and Income level in proportions
-barchart_lowEET_prop <- ggplot(epic_lowEET_prop, aes(x = factor(Income), y = proportion_adopters)) +  
+barchart_lowEET_country_income_prop <- ggplot(epic_lowEET_prop2, aes(x = factor(Income), y = proportion_adopters)) +  
   geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
   facet_wrap(~Country_name) +  # By country  
   labs(
@@ -208,8 +234,34 @@ barchart_middleEET_totals <- ggplot(epic_middleEET %>% filter(C44_1 == 1), aes(x
     panel.grid.major.x = element_blank()   # Remove vertical gridlines  
   )
 
-#calculating proportions for middle-cost EET
-epic_middleEET_prop <- epic_middleEET %>%
+#calculating proportions for medium-cost EET by country
+epic_middleEET_prop1 <- epic_middleEET %>%
+  group_by(Country_name) %>%
+  summarise(
+    total_adopters = sum(C44_1 == 1, na.rm = TRUE),
+    total_households = n(),
+    proportion_adopters = total_adopters / total_households
+  )
+
+#adoption of medium-cost EET per Country in proportions
+barchart_middleEET_country_income_prop <- ggplot(epic_middleEET_prop1, aes(x = reorder(Country_name, -proportion_adopters), y = proportion_adopters)) +  
+  geom_bar(stat = "identity", fill = "#8da0cb") +   
+  labs(
+    title = "Adoption of middle-cost Energy-efficient Technology",
+    x = "Country",
+    y = "Proportions of Adopters"
+  ) +   
+  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
+  theme_minimal() +  
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold"),
+    axis.title.y = element_text(size = 12, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+#calculating proportions for middle-cost EET by country and income
+epic_middleEET_prop2 <- epic_middleEET %>%
   group_by(Country_name, Income) %>%
   summarise(
     total_adopters = sum(C44_1 == 1, na.rm = TRUE),
@@ -219,7 +271,7 @@ epic_middleEET_prop <- epic_middleEET %>%
   ungroup()
 
 #adoption of middle-cost EET per Country and Income level in proportions
-barchart_middleEET_prop <- ggplot(epic_middleEET_prop, aes(x = factor(Income), y = proportion_adopters)) +  
+barchart_middleEET_country_income_prop <- ggplot(epic_middleEET_prop2, aes(x = factor(Income), y = proportion_adopters)) +  
   geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
   facet_wrap(~Country_name) +  # By country  
   labs(
@@ -326,6 +378,46 @@ barchart_middleEET_govsup_prop <- ggplot(epic_middleEET_govsup_prop_long, aes(x 
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
 
+# Creating long table by country only
+epic_middleEET_govsup_prop_long2 <- epic_middleEET_govsup_prop %>%
+  group_by(Country_name) %>%
+  summarise(
+    proportion_adopters = mean(proportion_adopters, na.rm = TRUE),  # Assuming you want the average proportion across incomes
+    proportion_gov_support_received = mean(proportion_gov_support_received, na.rm = TRUE),
+    proportion_gov_support_not_received = mean(proportion_gov_support_not_received, na.rm = TRUE)
+  ) %>%
+  tidyr::pivot_longer(
+    cols = c(proportion_gov_support_received, proportion_gov_support_not_received),
+    names_to = "Support_Status",
+    values_to = "Proportion_Support"
+  ) %>%
+  mutate(Support_Status = recode(Support_Status,
+                                 "proportion_gov_support_received" = "Received Support",
+                                 "proportion_gov_support_not_received" = "No Support"))
+
+barchart_middleEET_govsup_prop_country <- ggplot(epic_middleEET_govsup_prop_long2, 
+                                                 aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
+                                                     y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(
+    title = "Adoption of Middle-cost EET by Country and Government Support",
+    x = "Country",
+    y = "Proportions of Adopters",
+    fill = "Government Support"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("Received Support" = "#fc8d62", "No Support" = "#8da0cb")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold"),
+    axis.title.y = element_text(size = 12, face = "bold"),
+    legend.title = element_text(size = 12, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", linewidth = 0.3),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
 #--------------------------- high-cost EETs -------------------------------------
 epic_highEET <- epic_EET %>%
   filter(high_EET_possible != 0) %>% #filter for cases where adoption is possible
@@ -357,8 +449,35 @@ barchart_highEET_totals <- ggplot(epic_highEET %>% filter(high_EET == 1), aes(x 
     panel.grid.major.x = element_blank()   # Remove vertical gridlines  
   )
 
-#calculating proportions for high-cost EET
-epic_highEET_prop <- epic_highEET %>%
+#calculating proportions for high-cost EET by country
+epic_highEET_prop1 <- epic_highEET %>%
+  group_by(Country_name) %>%
+  summarise(
+    total_adopters = sum(high_EET == 1, na.rm = TRUE),
+    total_households = n(),  # total number of households
+    proportion_adopters = total_adopters / total_households
+  ) %>%
+  ungroup()
+
+#adoption of high-cost EET per Country in proportions
+barchart_highEET_country_income_prop <- ggplot(epic_highEET_prop1, aes(x = reorder(Country_name, -proportion_adopters), y = proportion_adopters)) +  
+  geom_bar(stat = "identity", fill = "#8da0cb") +   
+  labs(
+    title = "Adoption of high-cost Energy-efficient Technology",
+    x = "Country",
+    y = "Proportions of Adopters"
+  ) +   
+  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
+  theme_minimal() +  
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold"),
+    axis.title.y = element_text(size = 12, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+#calculating proportions for high-cost EET by country and income
+epic_highEET_prop2 <- epic_highEET %>%
   group_by(Country_name, Income) %>%
   summarise(
     total_adopters = sum(high_EET == 1, na.rm = TRUE),
@@ -368,7 +487,7 @@ epic_highEET_prop <- epic_highEET %>%
   ungroup()
 
 #adoption of high-cost EET per Country and Income level in proportions
-barchart_highEET_prop <- ggplot(epic_highEET_prop, aes(x = factor(Income), y = proportion_adopters)) + 
+barchart_highEET_country_income_prop <- ggplot(epic_highEET_prop2, aes(x = factor(Income), y = proportion_adopters)) + 
   geom_bar(stat = "identity", position = "dodge", fill = "#8da0cb") +  
   facet_wrap(~Country_name) +  # By country
   labs(
@@ -439,7 +558,6 @@ barchart_highEET_govsup_totals <- ggplot(epic_highEET_govsup_totals,
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
 
-
 ##creating long table for proportions of adopters with support
 epic_highEET_govsup_prop_long <- epic_highEET_govsup_prop %>%
   select(Country_name, Income, proportion_adopters, proportion_gov_support_received, proportion_gov_support_not_received) %>%
@@ -476,8 +594,46 @@ barchart_highEET_govsup_prop <- ggplot(epic_highEET_govsup_prop_long, aes(x = as
     panel.grid.major.x = element_blank()   # Remove vertical gridlines
   )
 
+# Creating long table by country only
+epic_highEET_govsup_prop_long_country <- epic_highEET_govsup_prop %>%
+  group_by(Country_name) %>%
+  summarise(
+    proportion_adopters = mean(proportion_adopters, na.rm = TRUE),  # Average proportion across incomes
+    proportion_gov_support_received = mean(proportion_gov_support_received, na.rm = TRUE),
+    proportion_gov_support_not_received = mean(proportion_gov_support_not_received, na.rm = TRUE)
+  ) %>%
+  tidyr::pivot_longer(
+    cols = c(proportion_gov_support_received, proportion_gov_support_not_received),
+    names_to = "Support_Status",
+    values_to = "Proportion_Support"
+  ) %>%
+  mutate(Support_Status = recode(Support_Status,
+                                 "proportion_gov_support_received" = "Received Support",
+                                 "proportion_gov_support_not_received" = "No Support"))
 
-
+barchart_highEET_govsup_prop_country <- ggplot(epic_highEET_govsup_prop_long_country, 
+                                               aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
+                                                   y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(
+    title = "Adoption of High-cost EET by Country and Government Support",
+    x = "Country",
+    y = "Proportions of Adopters",
+    fill = "Government Support"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +  # Set y-axis from 0 to 1
+  theme_minimal() +
+  scale_fill_manual(values = c("Received Support" = "#fc8d62", "No Support" = "#8da0cb")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold"),
+    axis.title.y = element_text(size = 12, face = "bold"),
+    legend.title = element_text(size = 12, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", linewidth = 0.3),  # Fixing deprecation warning
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
 
 #-------------------------------------------------------------------------------
 #---------------------------- 3. Saving Graphs ---------------------------------
