@@ -56,12 +56,16 @@ wC02price <- read.csv("./processed_data/OWiD_C02price_data.csv")
 #C44_3: Windows
 #C44_4: Thermal insulation
 #C44_6: Solar panels electricity
+#C44_7: Solar panels water
+#C44_8: Battery storage
 #C44_9: Heat pumps
 
 #C45_1: Government support for Appliances
 #C45_3: Government support for Windows
 #C45_4: Government support for Thermal insulation
 #C45_6: Government support for Solar panels electricity
+#C45_7: Government support for Solar panels water
+#C45_8: Government support for Battery storage
 #C45_9: Government support for Heat pumps
 
 #C46_1: Why not Appliances
@@ -69,6 +73,8 @@ wC02price <- read.csv("./processed_data/OWiD_C02price_data.csv")
 #C46_3: Why not Windows
 #C46_4: Why not Thermal insulation
 #C46_6: Why not Solar panels electricity
+#C46_7: Why not Solar panels water
+#C46_8: Why not Battery storage
 #C46_9: Why not Heat pumps
 
 #create flagging for HHs where respective EET adoption wasn't possible
@@ -105,40 +111,76 @@ epic_EET <- epic %>%
       TRUE ~ 1 #else possible
     ),
     # Battery storage
-    Solarw_p = case_when(
+    Battery_p = case_when(
       C44_8 == 1 ~ 1, #if adopted = possible
       C46_8 == 4 ~ 0, #no possible
       TRUE ~ 1 #else possible
     ),
     # Heat pumps
-    Solare_p = case_when(
+    Pump_p = case_when(
       C44_9 == 1 ~ 1, #if adopted = possible
       C46_9 == 4 ~ 0, #no possible
       TRUE ~ 1 #else possible
     )
   )
 
-#create variable with merged info on medium and high-cost EETs government support for adoption
-epic_EET <- epic_EET %>%
-  mutate(
-    # Middle-cost EET gov support (Highly energy-efficient appliances)
-    middle_EET_gov_support = case_when(
-      C45_1 == 1 ~ 1, #support
-      TRUE ~ 0 #else no support
-    ),
-    
-    # High-cost EET gov support (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps)
-    high_EET_gov_support = case_when(
-      C45_3 == 1 | C45_4 == 1 | C45_6 == 1 | C45_9 == 1 ~ 1,  #support
-      TRUE ~ 0  #else no support
-    )
-  )
-
-
 #-------------------------------------------------------------------------------
 #------------------------- 3. Descriptive Analysis -----------------------------
 #-------------------------------------------------------------------------------
 
+#-------------------------- 1. Summary table EET adoption ----------------------
+glimpse(epic_EET)
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(purrr)
+
+# Define mapping for EETs
+EETs <- tibble::tibble(
+  tech_name = c("Appliances", "Windows", "Thermal insulation", 
+                "Solar panels electricity", "Solar panels water", 
+                "Battery storage", "Heat pumps"),
+  adoption = c("C44_1", "C44_3", "C44_4", "C44_6", "C44_7", "C44_8", "C44_9"),
+  support = c("C45_1", "C45_3", "C45_4", "C45_6", "C45_7", "C45_8", "C45_9"),
+  possible = c("Appl_p", "Window_p", "Thermal_p", "Solare_p", "Solarw_p", "Battery_p", "Pump_p")
+)
+
+# Function to process each technology
+process_eet <- function(data, tech_row) {
+  data %>%
+    group_by(country = .data$Country_name) %>%
+    summarise(
+      eet = tech_row$tech_name,
+      adopted = sum(.data[[tech_row$adoption]] == 1, na.rm = TRUE),
+      not_possible = sum(.data[[tech_row$possible]] == 0, na.rm = TRUE),
+      mean_adoption_rate = mean(.data[[tech_row$adoption]] == 1, na.rm = TRUE),
+      mean_adoption_rate_possible = mean(.data[[tech_row$adoption]][.data[[tech_row$possible]] == 1] == 1, na.rm = TRUE),
+      support_count = sum(.data[[tech_row$support]] == 1, na.rm = TRUE),
+      mean_support_rate = mean(.data[[tech_row$support]] == 1, na.rm = TRUE),
+      mean_support_rate_possible = mean(.data[[tech_row$support]][.data[[tech_row$possible]] == 1] == 1, na.rm = TRUE),
+      .groups = "drop"
+    )
+}
+
+# Apply the function to each EET and bind results
+summary_table <- EETs %>%
+  split(.$tech_name) %>%
+  map_dfr(~process_eet(epic_EET, .x))
+
+# View result
+print(summary_table)
+
+#Check
+epic_EET %>%
+  filter(Country_name == "BE") %>%
+  summarise(mean_adoption = mean(C44_1 == 1, na.rm = TRUE))
+
+summary(as.factor(epic_EET$C44_1[epic_EET$Country_name == "BE"]))
+
+summary(as.factor(epic_EET$Appl_p[epic_EET$Country_name == "BE"]))
+
+summary(as.factor(epic_EET$C45_1[epic_EET$Country_name == "BE"]))
 
 
 
