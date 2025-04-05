@@ -17,13 +17,28 @@ class(carbonprice_OWiD_raw)
 glimpse(carbonprice_OWiD_raw)
 View(carbonprice_OWiD_raw)
 
-###Carbon Price
+##Carbon Price
 unique(carbonprice_OWiD_raw$Code)
 unique(carbonprice_OWiD_raw$Year)
 carbonprice_OWiD_clean <- carbonprice_OWiD_raw %>%
   filter(Code %in% c("USA", "GBR", "FRA", "NLD", "SWE",
                          "CHE", "ISR", "CAN", "BEL")) %>%
   filter(Year %in% 2010:2021)
+
+##Rename Countries to match EPIC labelling
+carbonprice_OWiD_clean <- carbonprice_OWiD_clean %>%
+  mutate(Code = case_when(
+    Code == "USA" ~ "US",
+    Code == "GBR" ~ "UK",
+    Code == "FRA" ~ "FR",
+    Code == "NLD" ~ "NL",
+    Code == "SWE" ~ "SE",
+    Code == "CHE" ~ "CH",
+    Code == "ISR" ~ "IL",
+    Code == "CAN" ~ "CA",
+    Code == "BEL" ~ "BE",
+    TRUE ~ NA_character_  # Assign NA if no match
+  ))
 
 glimpse(carbonprice_OWiD_clean)
 unique(carbonprice_OWiD_clean$Entity)
@@ -48,6 +63,21 @@ carbonrate_OECD_clean <- carbonrate_OECD_raw %>%
   filter(REF_AREA %in% c("USA", "GBR", "FRA", "NLD",
                          "SWE", "CHE", "ISR", "CAN", "BEL"))
 
+##Rename Countries to match EPIC labelling
+carbonrate_OECD_clean <- carbonrate_OECD_clean %>%
+  mutate(REF_AREA = case_when(
+    REF_AREA == "USA" ~ "US",
+    REF_AREA == "GBR" ~ "UK",
+    REF_AREA == "FRA" ~ "FR",
+    REF_AREA == "NLD" ~ "NL",
+    REF_AREA == "SWE" ~ "SE",
+    REF_AREA == "CHE" ~ "CH",
+    REF_AREA == "ISR" ~ "IL",
+    REF_AREA == "CAN" ~ "CA",
+    REF_AREA == "BEL" ~ "BE",
+    TRUE ~ NA_character_  # Assign NA if no match
+  ))
+
 glimpse(carbonrate_OECD_clean)
 View(carbonrate_OECD_clean)
 
@@ -66,6 +96,21 @@ EPS_OECD_clean <- EPS_OECD_raw %>%
   select(REF_AREA, FREQ, MEASURE, CLIM_POL, TIME_PERIOD, OBS_VALUE) %>%
   filter(REF_AREA %in% c("USA", "GBR", "FRA", "NLD",
                          "SWE", "CHE", "ISR", "CAN", "BEL"))
+
+##Rename Countries to match EPIC labelling
+EPS_OECD_clean <- EPS_OECD_clean %>%
+  mutate(REF_AREA = case_when(
+    REF_AREA == "USA" ~ "US",
+    REF_AREA == "GBR" ~ "UK",
+    REF_AREA == "FRA" ~ "FR",
+    REF_AREA == "NLD" ~ "NL",
+    REF_AREA == "SWE" ~ "SE",
+    REF_AREA == "CHE" ~ "CH",
+    REF_AREA == "ISR" ~ "IL",
+    REF_AREA == "CAN" ~ "CA",
+    REF_AREA == "BEL" ~ "BE",
+    TRUE ~ NA_character_  # Assign NA if no match
+  ))
 
 glimpse(EPS_OECD_clean)
 View(EPS_OECD_clean)
