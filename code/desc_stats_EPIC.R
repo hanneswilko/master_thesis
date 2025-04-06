@@ -9,6 +9,7 @@
 #1. Loading data
 #2. Data wrangling
 #3. Descriptive Analysis
+#4. Saving plots
 
 #-------------------------------------------------------------------------------
 #---------------------------- 1. Loading Data ----------------------------------
@@ -203,7 +204,7 @@ barchart_Appl_support_prop <- ggplot(epic_Appl_support_prop_long,
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of Appliances by Country",
+    title = "Adoption of highly energy-efficient Appliances by Country",
     x = "Country",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -254,7 +255,7 @@ barchart_Appl_income_support_prop <- ggplot(epic_Appl_income_support_prop_long, 
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = "Adoption of Appliances by Country and Income level",
+    title = "Adoption of highly energy-efficient Appliances by Country and Income level",
     x = "Income level",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -416,7 +417,7 @@ barchart_Windows_support_prop <- ggplot(epic_Window_support_prop_long,
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of Windows by Country",
+    title = "Adoption of energy-efficient Windows by Country",
     x = "Country",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -466,7 +467,7 @@ barchart_Windows_income_support_prop <- ggplot(epic_Window_income_support_prop_l
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = "Adoption of Windows by Country and Income level",
+    title = "Adoption of energy-efficient Windows by Country and Income level",
     x = "Income level",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -521,7 +522,7 @@ barchart_Thermal_support_prop <- ggplot(epic_Thermal_support_prop_long,
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of Thermal insulation by Country",
+    title = "Adoption of Thermal Insulation of Walls/Roof/Floor by Country",
     x = "Country",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -571,7 +572,7 @@ barchart_Thermal_income_support_prop <- ggplot(epic_Thermal_income_support_prop_
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = "Adoption of Thermal insulation by Country and Income level",
+    title = "Adoption of Thermal Insulation of Walls/Roof/Floor by Country and Income level",
     x = "Income level",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -626,7 +627,7 @@ barchart_Solare_support_prop <- ggplot(epic_Solare_support_prop_long,
                                             y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of Solar panels for electricity by Country",
+    title = "Adoption of Solar Panels for Electricity by Country",
     x = "Country",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -676,7 +677,7 @@ barchart_Solare_income_support_prop <- ggplot(epic_Solare_income_support_prop_lo
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = "Adoption of Solar panels for electricity by Country and Income level",
+    title = "Adoption of Solar Panels for Electricity by Country and Income level",
     x = "Income level",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -731,7 +732,7 @@ barchart_Solarw_support_prop <- ggplot(epic_Solarw_support_prop_long,
                                            y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of Solar water heating by Country",
+    title = "Adoption of Solar Water Heating by Country",
     x = "Country",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -781,7 +782,7 @@ barchart_Solarw_income_support_prop <- ggplot(epic_Solarw_income_support_prop_lo
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = "Adoption of Solar water heating by Country and Income level",
+    title = "Adoption of Solar Water Heating by Country and Income level",
     x = "Income level",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -836,7 +837,7 @@ barchart_Battery_support_prop <- ggplot(epic_Battery_support_prop_long,
                                            y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of Battery storage by Country",
+    title = "Adoption of Battery Storage by Country",
     x = "Country",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -886,7 +887,7 @@ barchart_Battery_income_support_prop <- ggplot(epic_Battery_income_support_prop_
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = "Adoption of Battery storage by Country and Income level",
+    title = "Adoption of Battery Storage by Country and Income level",
     x = "Income level",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -942,7 +943,7 @@ barchart_Pump_support_prop <- ggplot(epic_Pump_support_prop_long,
                                             y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of Heat pumps by Country",
+    title = "Adoption of Heat Pumps by Country",
     x = "Country",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -992,7 +993,7 @@ barchart_Pump_income_support_prop <- ggplot(epic_Pump_income_support_prop_long, 
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = "Adoption of Heat pumps by Country and Income level",
+    title = "Adoption of Heat Pumps by Country and Income level",
     x = "Income level",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -1015,16 +1016,29 @@ barchart_Pump_income_support_prop <- ggplot(epic_Pump_income_support_prop_long, 
 #-------------------------------------------------------------------------------
 #---------------------------- 3. Saving Graphs ---------------------------------
 #-------------------------------------------------------------------------------
-ggsave("./output/barchart_lowEET_totals.png", plot = barchart_lowEET_totals, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_lowEET_prop.png", plot = barchart_lowEET_prop, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_middleEET_totals.png", plot = barchart_middleEET_totals, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_middleEET_prop.png", plot = barchart_middleEET_prop, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_middleEET_govsup_totals.png", plot = barchart_middleEET_govsup_totals, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_middleEET_govsup_prop.png", plot = barchart_middleEET_govsup_prop, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_highEET_totals.png", plot = barchart_highEET_totals, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_highEET_prop.png", plot = barchart_highEET_prop, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_highEET_govsup_prop.png", plot = barchart_highEET_govsup_prop, width = 8, height = 6, dpi = 300)
-ggsave("./output/barchart_highEET_govsup_totals.png", plot = barchart_highEET_govsup_totals, width = 8, height = 6, dpi = 300)
+ggsave("./output/barchart_Appl_income_support_prop.png", plot = barchart_Appl_income_support_prop, dpi = 300)
+ggsave("./output/barchart_Appl_support_prop.png", plot = barchart_Appl_support_prop, dpi = 300)
+
+ggsave("./output/barchart_Battery_income_support_prop.png", plot = barchart_Battery_income_support_prop, dpi = 300)
+ggsave("./output/barchart_Battery_support_prop.png", plot = barchart_Battery_support_prop, dpi = 300)
+
+ggsave("./output/barchart_highEET_income_support_prop.png", plot = barchart_highEET_income_support_prop, dpi = 300)
+ggsave("./output/barchart_highEET_support_prop.png", plot = barchart_highEET_support_prop, dpi = 300)
+
+ggsave("./output/barchart_Pump_income_support_prop.png", plot = barchart_Pump_income_support_prop, dpi = 300)
+ggsave("./output/barchart_Pump_support_prop.png", plot = barchart_Pump_support_prop, dpi = 300)
+
+ggsave("./output/barchart_Solare_income_support_prop.png", plot = barchart_Solare_income_support_prop, dpi = 300)
+ggsave("./output/barchart_Solare_support_prop.png", plot = barchart_Solare_support_prop, dpi = 300)
+
+ggsave("./output/barchart_Solarw_income_support_prop.png", plot = barchart_Solarw_income_support_prop, dpi = 300)
+ggsave("./output/barchart_Solarw_support_prop.png", plot = barchart_Solarw_support_prop, dpi = 300)
+
+ggsave("./output/barchart_Thermal_income_support_prop.png", plot = barchart_Thermal_income_support_prop, dpi = 300)
+ggsave("./output/barchart_Thermal_support_prop.png", plot = barchart_Thermal_support_prop, dpi = 300)
+
+ggsave("./output/barchart_Windows_income_support_prop.png", plot = barchart_Windows_income_support_prop, dpi = 300)
+ggsave("./output/barchart_Windows_support_prop.png", plot = barchart_Windows_support_prop, dpi = 300)
 
 
 
