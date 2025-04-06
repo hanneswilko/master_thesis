@@ -16,7 +16,7 @@
 #-------------------------------------------------------------------------------
 #packages
 pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr",
-               "srvyr", "survey", "ggsurvey")
+               "srvyr", "survey", "ggsurvey", "purrr")
 
 #EPIC
 epic <- read.csv("./processed_data/epic_data_ABC_VoI.csv") #subsample var interest of survey parts A,B,C
@@ -131,56 +131,56 @@ epic_EET <- epic %>%
 #-------------------------- 1. Summary table EET adoption ----------------------
 glimpse(epic_EET)
 
-library(dplyr)
-library(tidyr)
-library(stringr)
-library(purrr)
+#Define the countries
+countries <- unique(epic_EET$Country_name)
 
-# Define mapping for EETs
-EETs <- tibble::tibble(
-  tech_name = c("Appliances", "Windows", "Thermal insulation", 
-                "Solar panels electricity", "Solar panels water", 
-                "Battery storage", "Heat pumps"),
-  adoption = c("C44_1", "C44_3", "C44_4", "C44_6", "C44_7", "C44_8", "C44_9"),
-  support = c("C45_1", "C45_3", "C45_4", "C45_6", "C45_7", "C45_8", "C45_9"),
-  possible = c("Appl_p", "Window_p", "Thermal_p", "Solare_p", "Solarw_p", "Battery_p", "Pump_p")
-)
+#Define the technologies with corresponding column names
+technologies <- c("Appliances", "Windows", "Thermal insulation", 
+                  "Solar panels for electricity", "Solar water heating", 
+                  "Battery storage", "Heat pumps")
 
-# Function to process each technology
-process_eet <- function(data, tech_row) {
-  data %>%
-    group_by(country = .data$Country_name) %>%
-    summarise(
-      eet = tech_row$tech_name,
-      adopted = sum(.data[[tech_row$adoption]] == 1, na.rm = TRUE),
-      not_possible = sum(.data[[tech_row$possible]] == 0, na.rm = TRUE),
-      mean_adoption_rate = mean(.data[[tech_row$adoption]] == 1, na.rm = TRUE),
-      mean_adoption_rate_possible = mean(.data[[tech_row$adoption]][.data[[tech_row$possible]] == 1] == 1, na.rm = TRUE),
-      support_count = sum(.data[[tech_row$support]] == 1, na.rm = TRUE),
-      mean_support_rate = mean(.data[[tech_row$support]] == 1, na.rm = TRUE),
-      mean_support_rate_possible = mean(.data[[tech_row$support]][.data[[tech_row$possible]] == 1] == 1, na.rm = TRUE),
-      .groups = "drop"
+adopt_cols <- c("C44_1", "C44_3", "C44_4", "C44_6", "C44_7", "C44_8", "C44_9")
+support_cols <- c("C45_1", "C45_3", "C45_4", "C45_6", "C45_7", "C45_8", "C45_9")
+possible_cols <- c("Appl_p", "Window_p", "Thermal_p", "Solare_p", "Solarw_p", "Battery_p", "Pump_p")
+
+#Core Function
+get_summary <- function(country) {
+  data_country <- epic_EET %>% filter(Country_name == country)
+  
+  map2_dfr(seq_along(technologies), technologies, function(i, tech) {
+    adopt <- data_country[[adopt_cols[i]]]
+    support <- data_country[[support_cols[i]]]
+    possible <- data_country[[possible_cols[i]]]
+    
+    # Clean valid cases
+    is_possible <- possible == 1
+    valid_adopt <- adopt %in% c(1, 2)
+    valid_support <- support %in% c(1, 2)
+    
+    total_possible <- sum(is_possible, na.rm = TRUE)
+    adopted <- sum(adopt == 1, na.rm = TRUE)
+    not_possible <- sum(possible == 0, na.rm = TRUE)
+    supported <- sum(support == 1, na.rm = TRUE)
+    
+    # Mean rates among possible
+    mean_adopt_rate <- sum(adopt[is_possible] == 1, na.rm = TRUE) / total_possible
+    mean_support_rate <- sum(support[is_possible & adopt == 1] == 1, na.rm = TRUE) / 
+      sum(is_possible & adopt == 1, na.rm = TRUE)
+    
+    tibble(
+      Country = country,
+      Technology = tech,
+      Adopted = adopted,
+      Not_Possible = not_possible,
+      Supported = supported,
+      Mean_Adoption_Rate = round(mean_adopt_rate, 3),
+      Mean_Support_Rate = round(mean_support_rate, 3)
     )
+  })
 }
 
-# Apply the function to each EET and bind results
-summary_table <- EETs %>%
-  split(.$tech_name) %>%
-  map_dfr(~process_eet(epic_EET, .x))
-
-# View result
-print(summary_table)
-
-#Check
-epic_EET %>%
-  filter(Country_name == "BE") %>%
-  summarise(mean_adoption = mean(C44_1 == 1, na.rm = TRUE))
-
-summary(as.factor(epic_EET$C44_1[epic_EET$Country_name == "BE"]))
-
-summary(as.factor(epic_EET$Appl_p[epic_EET$Country_name == "BE"]))
-
-summary(as.factor(epic_EET$C45_1[epic_EET$Country_name == "BE"]))
+#Create Summary Data Frame
+summary_df <- map_dfr(countries, get_summary)
 
 
 
