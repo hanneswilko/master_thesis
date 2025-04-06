@@ -180,7 +180,7 @@ get_summary <- function(country) {
 }
 
 #Create Summary Data Frame
-summary_df <- map_dfr(countries, get_summary)
+EET_summary_df <- map_dfr(countries, get_summary)
 
 
 
