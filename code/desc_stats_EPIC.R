@@ -4,7 +4,6 @@
 #Data sources:
 ##OECD: Net effective carbon rates
 ##OECD: OECD Environmental Policy Stringency Index
-##Our World in Data: Which countries have put a price on carbon?
 
 #Table of Content
 #1. Loading data
