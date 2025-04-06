@@ -412,7 +412,7 @@ epic_Window_support_prop_long <- epic_Window_support_prop %>%
                                  "proportion_support_not_received" = "no support"))
 
 ##Adoption of Windows per Country and Government support in proportions
-barchart_Appl_support_prop <- ggplot(epic_Window_support_prop_long, 
+barchart_Windows_support_prop <- ggplot(epic_Window_support_prop_long, 
                                      aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
@@ -487,20 +487,19 @@ barchart_Windows_income_support_prop <- ggplot(epic_Window_income_support_prop_l
     panel.grid.major.x = element_blank()
   )
 
-
 #--------------------------- Thermal insulation --------------------------------
-epic_Window <- epic_EET %>%
-  filter(Window_p != 0) %>% #filter for cases where adoption is possible
-  select(Country_code, Country_name, Income, S5, S18, C44_3, C46_3, C45_3, Window_p)
+epic_Thermal <- epic_EET %>%
+  filter(Thermal_p != 0) %>% #filter for cases where adoption is possible
+  select(Country_code, Country_name, Income, S5, S18, C44_4, C46_4, C45_4, Thermal_p)
 
 ##calculating the proportion of adopters with support
-epic_Window_support_prop <- epic_Window %>%
+epic_Thermal_support_prop <- epic_Thermal %>%
   group_by(Country_name) %>%
   summarise(
-    adopters = sum(C44_3 == 1, na.rm = TRUE),
+    adopters = sum(C44_4 == 1, na.rm = TRUE),
     total_hh = n(),
     proportion_adopters = adopters / total_hh,
-    support_received = sum(C45_3 == 1, na.rm = TRUE),
+    support_received = sum(C45_4 == 1, na.rm = TRUE),
     support_not_received = adopters - support_received,
     proportion_support_received = support_received / adopters,
     proportion_support_not_received = support_not_received / adopters
@@ -508,7 +507,7 @@ epic_Window_support_prop <- epic_Window %>%
   ungroup()
 
 ##creating long table for proportions of adopters with support
-epic_Window_support_prop_long <- epic_Window_support_prop %>%
+epic_Thermal_support_prop_long <- epic_Thermal_support_prop %>%
   select(Country_name, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
   tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
                       names_to = "Support_Status", 
@@ -517,13 +516,13 @@ epic_Window_support_prop_long <- epic_Window_support_prop %>%
                                  "proportion_support_received" = "support",
                                  "proportion_support_not_received" = "no support"))
 
-##Adoption of Windows per Country and Government support in proportions
-barchart_Appl_support_prop <- ggplot(epic_Window_support_prop_long, 
+##Adoption of Thermal insulation per Country and Government support in proportions
+barchart_Thermal_support_prop <- ggplot(epic_Thermal_support_prop_long, 
                                      aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of Windows by Country",
+    title = "Adoption of Thermal insulation by Country",
     x = "Country",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -544,13 +543,13 @@ barchart_Appl_support_prop <- ggplot(epic_Window_support_prop_long,
   )
 
 ##calculating the proportion of adopters with support per income level
-epic_Window_income_support_prop <- epic_Window %>%
+epic_Thermal_income_support_prop <- epic_Thermal %>%
   group_by(Country_name, Income) %>%
   summarise(
-    adopters = sum(C44_3 == 1, na.rm = TRUE),
+    adopters = sum(C44_4 == 1, na.rm = TRUE),
     total_hh = n(),
     proportion_adopters = adopters / total_hh,
-    support_received = sum(C45_3 == 1, na.rm = TRUE),
+    support_received = sum(C45_4 == 1, na.rm = TRUE),
     support_not_received = adopters - support_received,
     proportion_support_received = support_received / adopters,
     proportion_support_not_received = support_not_received / adopters
@@ -558,7 +557,7 @@ epic_Window_income_support_prop <- epic_Window %>%
   ungroup()
 
 ##creating long table for proportions of adopters with support per income level
-epic_Window_income_support_prop_long <- epic_Window_income_support_prop %>%
+epic_Thermal_income_support_prop_long <- epic_Thermal_income_support_prop %>%
   select(Country_name, Income, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
   tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
                       names_to = "Support_Status", 
@@ -567,13 +566,328 @@ epic_Window_income_support_prop_long <- epic_Window_income_support_prop %>%
                                  "proportion_support_received" = "support",
                                  "proportion_support_not_received" = "no support"))
 
-##adoption of Windows per Country, Income level and Government support in proportions
-barchart_Windows_income_support_prop <- ggplot(epic_Window_income_support_prop_long, aes(x = as.factor(Income), 
+##adoption of Thermal insulation per Country, Income level and Government support in proportions
+barchart_Thermal_income_support_prop <- ggplot(epic_Thermal_income_support_prop_long, aes(x = as.factor(Income), 
                                                                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = "Adoption of Windows by Country and Income level",
+    title = "Adoption of Thermal insulation by Country and Income level",
+    x = "Income level",
+    y = "Proportions of adopters",
+    fill = "Government support"
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+#--------------------- Solar panels for electricity ----------------------------
+epic_Solare <- epic_EET %>%
+  filter(Solare_p != 0) %>% #filter for cases where adoption is possible
+  select(Country_code, Country_name, Income, S5, S18, C44_6, C46_6, C45_6, Solare_p)
+
+##calculating the proportion of adopters with support
+epic_Solare_support_prop <- epic_Solare %>%
+  group_by(Country_name) %>%
+  summarise(
+    adopters = sum(C44_6 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(C45_6 == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support
+epic_Solare_support_prop_long <- epic_Solare_support_prop %>%
+  select(Country_name, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+##Adoption of Solar panels for electricity per Country and Government support in proportions
+barchart_Solare_support_prop <- ggplot(epic_Solare_support_prop_long, 
+                                        aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
+                                            y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(
+    title = "Adoption of Solar panels for electricity by Country",
+    x = "Country",
+    y = "Proportions of adopters",
+    fill = "Government support"
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+##calculating the proportion of adopters with support per income level
+epic_Solare_income_support_prop <- epic_Solare %>%
+  group_by(Country_name, Income) %>%
+  summarise(
+    adopters = sum(C44_6 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(C45_6 == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support per income level
+epic_Solare_income_support_prop_long <- epic_Solare_income_support_prop %>%
+  select(Country_name, Income, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+##adoption of Solar panels for electricity per Country, Income level and Government support in proportions
+barchart_Solare_income_support_prop <- ggplot(epic_Solare_income_support_prop_long, aes(x = as.factor(Income), 
+                                                                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Country_name) +
+  labs(
+    title = "Adoption of Solar panels for electricity by Country and Income level",
+    x = "Income level",
+    y = "Proportions of adopters",
+    fill = "Government support"
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+#------------------------- Solar water heating ---------------------------------
+epic_Solarw <- epic_EET %>%
+  filter(Solarw_p != 0) %>% #filter for cases where adoption is possible
+  select(Country_code, Country_name, Income, S5, S18, C44_7, C46_7, C45_7, Solarw_p)
+
+##calculating the proportion of adopters with support
+epic_Solarw_support_prop <- epic_Solarw %>%
+  group_by(Country_name) %>%
+  summarise(
+    adopters = sum(C44_7 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(C45_7 == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support
+epic_Solarw_support_prop_long <- epic_Solarw_support_prop %>%
+  select(Country_name, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+##Adoption of Solar water heating per Country and Government support in proportions
+barchart_Solarw_support_prop <- ggplot(epic_Solarw_support_prop_long, 
+                                       aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
+                                           y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(
+    title = "Adoption of Solar water heating by Country",
+    x = "Country",
+    y = "Proportions of adopters",
+    fill = "Government support"
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+##calculating the proportion of adopters with support per income level
+epic_Solarw_income_support_prop <- epic_Solarw %>%
+  group_by(Country_name, Income) %>%
+  summarise(
+    adopters = sum(C44_7 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(C45_7 == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support per income level
+epic_Solarw_income_support_prop_long <- epic_Solarw_income_support_prop %>%
+  select(Country_name, Income, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+##adoption of Solar water heating per Country, Income level and Government support in proportions
+barchart_Solarw_income_support_prop <- ggplot(epic_Solarw_income_support_prop_long, aes(x = as.factor(Income), 
+                                                                                        y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Country_name) +
+  labs(
+    title = "Adoption of Solar water heating by Country and Income level",
+    x = "Income level",
+    y = "Proportions of adopters",
+    fill = "Government support"
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+#----------------------------- Battery storage ---------------------------------
+epic_Battery <- epic_EET %>%
+  filter(Battery_p != 0) %>% #filter for cases where adoption is possible
+  select(Country_code, Country_name, Income, S5, S18, C44_8, C46_8, C45_8, Battery_p)
+
+##calculating the proportion of adopters with support
+epic_Battery_support_prop <- epic_Battery %>%
+  group_by(Country_name) %>%
+  summarise(
+    adopters = sum(C44_8 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(C45_8 == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support
+epic_Battery_support_prop_long <- epic_Battery_support_prop %>%
+  select(Country_name, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+##Adoption of Battery storage per Country and Government support in proportions
+barchart_Battery_support_prop <- ggplot(epic_Battery_support_prop_long, 
+                                       aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
+                                           y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(
+    title = "Adoption of Battery storage by Country",
+    x = "Country",
+    y = "Proportions of adopters",
+    fill = "Government support"
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+##calculating the proportion of adopters with support per income level
+epic_Battery_income_support_prop <- epic_Battery %>%
+  group_by(Country_name, Income) %>%
+  summarise(
+    adopters = sum(C44_8 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(C45_8 == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support per income level
+epic_Battery_income_support_prop_long <- epic_Battery_income_support_prop %>%
+  select(Country_name, Income, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+##adoption of Battery storage per Country, Income level and Government support in proportions
+barchart_Battery_income_support_prop <- ggplot(epic_Battery_income_support_prop_long, aes(x = as.factor(Income), 
+                                                                                        y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Country_name) +
+  labs(
+    title = "Adoption of Battery storage by Country and Income level",
     x = "Income level",
     y = "Proportions of adopters",
     fill = "Government support"
@@ -594,6 +908,110 @@ barchart_Windows_income_support_prop <- ggplot(epic_Window_income_support_prop_l
   )
 
 
+#--------------------------- Heat pump -----------------------------------------
+epic_Pump <- epic_EET %>%
+  filter(Pump_p != 0) %>% #filter for cases where adoption is possible
+  select(Country_code, Country_name, Income, S5, S18, C44_9, C46_9, C45_9, Pump_p)
+
+##calculating the proportion of adopters with support
+epic_Pump_support_prop <- epic_Pump %>%
+  group_by(Country_name) %>%
+  summarise(
+    adopters = sum(C44_9 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(C45_9 == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support
+epic_Pump_support_prop_long <- epic_Pump_support_prop %>%
+  select(Country_name, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+##Adoption of Heat pumps per Country and Government support in proportions
+barchart_Pump_support_prop <- ggplot(epic_Pump_support_prop_long, 
+                                        aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
+                                            y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(
+    title = "Adoption of Heat pumps by Country",
+    x = "Country",
+    y = "Proportions of adopters",
+    fill = "Government support"
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+##calculating the proportion of adopters with support per income level
+epic_Pump_income_support_prop <- epic_Pump %>%
+  group_by(Country_name, Income) %>%
+  summarise(
+    adopters = sum(C44_9 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(C45_9 == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support per income level
+epic_Pump_income_support_prop_long <- epic_Pump_income_support_prop %>%
+  select(Country_name, Income, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+##adoption of Heat pumps per Country, Income level and Government support in proportions
+barchart_Pump_income_support_prop <- ggplot(epic_Pump_income_support_prop_long, aes(x = as.factor(Income), 
+                                                                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Country_name) +
+  labs(
+    title = "Adoption of Heat pumps by Country and Income level",
+    x = "Income level",
+    y = "Proportions of adopters",
+    fill = "Government support"
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
 
 #-------------------------------------------------------------------------------
 #---------------------------- 3. Saving Graphs ---------------------------------
