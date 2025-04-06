@@ -206,7 +206,7 @@ barchart_Appl_support_prop <- ggplot(epic_Appl_support_prop_long,
   labs(
     title = "Adoption of highly energy-efficient Appliances by Country",
     x = "Country",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -257,7 +257,7 @@ barchart_Appl_income_support_prop <- ggplot(epic_Appl_income_support_prop_long, 
   labs(
     title = "Adoption of highly energy-efficient Appliances by Country and Income level",
     x = "Income level",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -314,7 +314,7 @@ barchart_highEET_support_prop <- ggplot(epic_highEET_support_prop_long,
   labs(
     title = "Adoption of high-cost EETs by Country",
     x = "Country",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -364,7 +364,7 @@ barchart_highEET_income_support_prop <- ggplot(epic_highEET_income_support_prop_
   labs(
     title = "Adoption of high-cost EETs by Country and Income level",
     x = "Income level",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -419,7 +419,7 @@ barchart_Windows_support_prop <- ggplot(epic_Window_support_prop_long,
   labs(
     title = "Adoption of energy-efficient Windows by Country",
     x = "Country",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -469,7 +469,7 @@ barchart_Windows_income_support_prop <- ggplot(epic_Window_income_support_prop_l
   labs(
     title = "Adoption of energy-efficient Windows by Country and Income level",
     x = "Income level",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -524,7 +524,7 @@ barchart_Thermal_support_prop <- ggplot(epic_Thermal_support_prop_long,
   labs(
     title = "Adoption of Thermal Insulation of Walls/Roof/Floor by Country",
     x = "Country",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -574,7 +574,7 @@ barchart_Thermal_income_support_prop <- ggplot(epic_Thermal_income_support_prop_
   labs(
     title = "Adoption of Thermal Insulation of Walls/Roof/Floor by Country and Income level",
     x = "Income level",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -629,7 +629,7 @@ barchart_Solare_support_prop <- ggplot(epic_Solare_support_prop_long,
   labs(
     title = "Adoption of Solar Panels for Electricity by Country",
     x = "Country",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -679,7 +679,7 @@ barchart_Solare_income_support_prop <- ggplot(epic_Solare_income_support_prop_lo
   labs(
     title = "Adoption of Solar Panels for Electricity by Country and Income level",
     x = "Income level",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -734,7 +734,7 @@ barchart_Solarw_support_prop <- ggplot(epic_Solarw_support_prop_long,
   labs(
     title = "Adoption of Solar Water Heating by Country",
     x = "Country",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -784,7 +784,7 @@ barchart_Solarw_income_support_prop <- ggplot(epic_Solarw_income_support_prop_lo
   labs(
     title = "Adoption of Solar Water Heating by Country and Income level",
     x = "Income level",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -839,7 +839,7 @@ barchart_Battery_support_prop <- ggplot(epic_Battery_support_prop_long,
   labs(
     title = "Adoption of Battery Storage by Country",
     x = "Country",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -889,7 +889,7 @@ barchart_Battery_income_support_prop <- ggplot(epic_Battery_income_support_prop_
   labs(
     title = "Adoption of Battery Storage by Country and Income level",
     x = "Income level",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -945,7 +945,7 @@ barchart_Pump_support_prop <- ggplot(epic_Pump_support_prop_long,
   labs(
     title = "Adoption of Heat Pumps by Country",
     x = "Country",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
@@ -995,7 +995,7 @@ barchart_Pump_income_support_prop <- ggplot(epic_Pump_income_support_prop_long, 
   labs(
     title = "Adoption of Heat Pumps by Country and Income level",
     x = "Income level",
-    y = "Proportions of adopters",
+    y = "Proportions of Adopters",
     fill = "Government support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
