@@ -37,8 +37,9 @@ epic <- epic %>%
   rename(Country_code = Country) %>%
   select(ID, Country_code, Country_name, Age_cat, Income, S5, REGION_UK, REGION_SE3,
          REGION_US2, REGION_NL2, REGION_CH, REGION_FR2, REGION_CA, REGION_BE, REGION_IL,
-         S18, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C49_1, C49_2, C49_3, C44_1,
-         C44_2, C44_3, C44_4, C44_6, C44_7, C44_8, C44_9, C45_1, C45_3, C45_4, C45_6, C45_7, C45_8, C45_9, C46_1,
+         S18, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C37_1, C37_2, C37_3, C37_4,
+         C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C44_1, C44_2, C44_3, C44_4, C44_6, C44_7,
+         C44_8, C44_9, C45_1, C45_3, C45_4, C45_6, C45_7, C45_8, C45_9, C46_1,
          C46_2, C46_3, C46_4, C46_6, C46_7, C46_8, C46_9, C47_2, C47_6)
 
 #EPS Index
@@ -181,6 +182,19 @@ get_summary <- function(country) {
 
 #Create Summary Data Frame
 EET_summary_df <- map_dfr(countries, get_summary)
+
+#----------------- 3. Table: characteristics of dwellings ----------------------
+attr(epic_raw$C37_8, "label")
+#C37_1: energy costs US
+#C37_2: energy costs FR, NL and BE
+#C37_3: energy costs UK
+#C37_4: energy costs SE
+#C37_5: energy costs CH
+#C37_6: energy costs IL
+#C37_8: energy costs CA
+attach(epic_EET)
+summary(C37_1[C37_1 != 888888], rm.na = T)
+
 
 
 
