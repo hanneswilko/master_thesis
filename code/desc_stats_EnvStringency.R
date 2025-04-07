@@ -227,7 +227,7 @@ ggsave("./output/EPS_hist.png", plot = EPS_hist, dpi = 300, scale = 1.2)
 ggsave("./output/C02rate_hist.png", plot = C02rate_hist, dpi = 300, scale = 1.2)
 
 ggsave("./output/wC02rate_boxplot.png", plot = wC02rate_boxplot, dpi = 300, scale = 1.2)
-ggsave("./output/wC02rate_hist.png", plot = EPS_hist, dpi = 300, scale = 1.2)
+ggsave("./output/wC02rate_hist.png", plot = wC02rate_hist, dpi = 300, scale = 1.2)
 
 
 
