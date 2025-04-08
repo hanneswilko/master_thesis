@@ -37,7 +37,7 @@ epic <- epic %>%
   rename(Country_code = Country) %>%
   select(ID, Country_code, Country_name, Age_cat, Income, S5, REGION_UK, REGION_SE3,
          REGION_US2, REGION_NL2, REGION_CH, REGION_FR2, REGION_CA, REGION_BE, REGION_IL,
-         S18, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C37_1, C37_2, C37_3, C37_4,
+         S18, S20, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C37_1, C37_2, C37_3, C37_4,
          C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C44_1, C44_2, C44_3, C44_4, C44_6, C44_7,
          C44_8, C44_9, C45_1, C45_3, C45_4, C45_6, C45_7, C45_8, C45_9, C46_1,
          C46_2, C46_3, C46_4, C46_6, C46_7, C46_8, C46_9, C47_2, C47_6)
@@ -180,10 +180,12 @@ get_summary <- function(country) {
   })
 }
 
-#Create Summary Data Frame
+#Create Summary Data Frame --> Table 1
 EET_summary_df <- map_dfr(countries, get_summary)
 
 #----------------- 3. Table: characteristics of dwellings ----------------------
+
+#Energy costs
 attr(epic_raw$C37_8, "label")
 #C37_1: energy costs US
 #C37_2: energy costs FR, NL and BE
@@ -192,27 +194,76 @@ attr(epic_raw$C37_8, "label")
 #C37_5: energy costs CH
 #C37_6: energy costs IL
 #C37_8: energy costs CA
-attach(epic_EET)
-summary(C37_1[C37_1 != 888888], rm.na = T)
+#creating new variable with merged info on average monthly cost
+epic_EET <- epic_EET %>%
+  mutate(
+    Energy_costs = case_when(
+      Country_name == "US" ~ C37_1,
+      Country_name %in% c("FR", "NL", "BE") ~ C37_2,
+      Country_name == "UK" ~ C37_3,
+      Country_name == "SE" ~ C37_4,
+      Country_name == "CH" ~ C37_5,
+      Country_name == "IL" ~ C37_6,
+      Country_name == "CA" ~ C37_8,
+      TRUE ~ NA_real_
+    ),
+    Energy_costs = ifelse(Energy_costs == 888888, NA, Energy_costs)
+  )
 
+#Home ownership
+attr(epic_raw$S5, "labels")
+#S5
+#Living in a residence owned = 1, Living in a residence rented = 2, Living in another type of accommodation no owned = 3
+#creating new variable of home ownership with only two categories owned/not owned
+epic_EET <- epic_EET %>%
+  mutate(
+    Home_owned = case_when(
+      S5 == 1 ~ 1,           # Owned
+      S5 %in% c(2, 3) ~ 0,   # Not owned
+      TRUE ~ NA_real_        # Preserve NAs
+    )
+  )
 
+#Dwelling
+attr(epic_raw$S18, "labels")
+#S18
+#apartment in a building with less than 12 apartments = 1, apartment in a building with 12 or more apartments = 2
+#A detached house = 3, A semi-detached/terraced house  = 4, Other = 89
+#creating new variable of home ownership with only two categories owned/not owned
+epic_EET <- epic_EET %>%
+  mutate(
+    Dwelling_house = case_when(
+      S18 == 3 ~ 1, #detached house
+      S18 == 4 ~ 1, #house
+      S18 %in% c(1, 2, 89) ~ 0,   #apartment/other
+      TRUE ~ NA_real_ #NAs
+    )
+  )
 
+#Rural
+attr(epic_raw$S20, "labels")
+#S20 - area
+#major town/city = 1, suburban = 2, small town/village = 3, isolated dwelling = 4, Other = 89
+#creating new variable of home ownership with only two categories owned/not owned
+epic_EET <- epic_EET %>%
+  mutate(
+    Rural = case_when(
+      S20 %in% c(3, 4, 89) ~ 1,
+      S20 %in% c(1, 2) ~ 0,
+      TRUE ~ NA_real_
+    )
+  )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#creating summary table --> table 3
+Dwelling_summary_df <- epic_EET %>%
+  group_by(Country_name) %>%
+  summarise(
+    Avg_Home_Owned = mean(Home_owned, na.rm = TRUE),
+    Avg_Dwelling_House = mean(Dwelling_house, na.rm = TRUE),
+    Avg_Rural = mean(Rural, na.rm = TRUE),
+    Avg_Energy_Costs = mean(Energy_costs, na.rm = TRUE)
+  ) %>%
+  arrange(Country_name)
 
 
 
