@@ -37,7 +37,7 @@ epic <- epic %>%
   rename(Country_code = Country) %>%
   select(ID, Country_code, Country_name, Age_cat, Income, S5, REGION_UK, REGION_SE3,
          REGION_US2, REGION_NL2, REGION_CH, REGION_FR2, REGION_CA, REGION_BE, REGION_IL,
-         S18, S20, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C37_1, C37_2, C37_3, C37_4,
+         S18, S19_1, S19_1_1, S20, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C37_1, C37_2, C37_3, C37_4,
          C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C44_1, C44_2, C44_3, C44_4, C44_6, C44_7,
          C44_8, C44_9, C45_1, C45_3, C45_4, C45_6, C45_7, C45_8, C45_9, C46_1,
          C46_2, C46_3, C46_4, C46_6, C46_7, C46_8, C46_9, C47_2, C47_6)
@@ -183,6 +183,45 @@ get_summary <- function(country) {
 #Create Summary Data Frame --> Table 1
 EET_summary_df <- map_dfr(countries, get_summary)
 
+
+#---------------- 2. Table: socioeconomic characteristics ----------------------
+
+#Age
+attr(epic_raw$Age_cat, "labels")
+#Age_cat: 18-24 = 1, 25-34 = 2, 35-44 = 3, 45-54 = 4, 55+ = 5
+summary(epic_EET$Age_cat)
+
+#Sex
+attr(epic_raw$Gender, "labels")
+#Age_cat: Male = 1, Female = 2
+summary(epic_EET$Age_cat)
+
+#Income quintile
+attr(epic_raw$Income, "labels")
+attr(epic_raw$S12_1, "labels")
+#Age_cat: 18-24 = 1, 25-34 = 2, 35-44 = 3, 45-54 = 4, 55+ = 5
+summary(epic_EET$Income)
+
+#Environmental concern
+attr(epic_raw$B23_1, "label")
+#B23_1: Not at all important        Not important   Somewhat important            Important       Very important    Prefer not to say 
+summary(epic_EET$B23_1)
+#create new variable with binary level for low and high environmental concern
+epic_EET <- epic_EET %>%
+  mutate(
+    Env_concern = ifelse(B23_1 == 999999, NA, B23_1),
+    Env_concern = case_when(
+      Env_concern %in% c(4, 5) ~ 1, #high
+      Env_concern %in% c(1, 2, 3) ~ 0, #low
+      TRUE ~ NA_real_
+    )
+  )
+
+summary(epic_EET$Env_concern)
+
+#Education
+#
+
 #----------------- 3. Table: characteristics of dwellings ----------------------
 
 #Energy costs
@@ -240,6 +279,23 @@ epic_EET <- epic_EET %>%
     )
   )
 
+#Dwelling size
+attr(epic_raw$S19_1, "labels")
+attr(epic_raw$S19_1_1, "labels")
+summary(epic_EET$S19_1)
+summary(epic_EET$S19_1_1)
+#S19_1: Rest & S19_1_1: US & CA
+#Less than 25m2 = 1, 25m2-50m2 = 2, 51m2-75m2 = 3, 76m2-100m2 = 4, 101m2-150m2 = 5, 151m2-200m2 = 6, More than 200m2 = 7 Don’t know = 888888
+#creating new variable for mergerd info auf dwelling size (m2 and ft2)
+epic_EET <- epic_EET %>%
+  mutate(
+    Dwelling_size = case_when(
+      !is.na(S19_1) & S19_1 != 888888 ~ S19_1,
+      !is.na(S19_1_1) & S19_1_1 != 888888 ~ S19_1_1,
+      TRUE ~ NA_integer_
+    )
+  )
+
 #Rural
 attr(epic_raw$S20, "labels")
 #S20 - area
@@ -260,6 +316,7 @@ Dwelling_summary_df <- epic_EET %>%
   summarise(
     Avg_Home_Owned = mean(Home_owned, na.rm = TRUE),
     Avg_Dwelling_House = mean(Dwelling_house, na.rm = TRUE),
+    Avg_Dwelling_Size = mean(Dwelling_size, na.rm = TRUE),
     Avg_Rural = mean(Rural, na.rm = TRUE),
     Avg_Energy_Costs = mean(Energy_costs, na.rm = TRUE)
   ) %>%
