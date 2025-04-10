@@ -35,8 +35,9 @@ epic <- epic %>%
     TRUE ~ NA_character_  # Assign NA if no match
   )) %>%
   rename(Country_code = Country) %>%
-  select(ID, Country_code, Country_name, Age_cat, Income, S5, REGION_UK, REGION_SE3,
+  select(ID, Country_code, Country_name, Age_cat, Income, Gender, S5, REGION_UK, REGION_SE3,
          REGION_US2, REGION_NL2, REGION_CH, REGION_FR2, REGION_CA, REGION_BE, REGION_IL,
+         S9_US, S9_UK, S9_FR, S9_SE, S9_CH, S9_NL, S9_CA, S9_BE, S9_IL,
          S18, S19_1, S19_1_1, S20, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C37_1, C37_2, C37_3, C37_4,
          C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C44_1, C44_2, C44_3, C44_4, C44_6, C44_7,
          C44_8, C44_9, C45_1, C45_3, C45_4, C45_6, C45_7, C45_8, C45_9, C46_1,
@@ -193,8 +194,17 @@ summary(epic_EET$Age_cat)
 
 #Sex
 attr(epic_raw$Gender, "labels")
-#Age_cat: Male = 1, Female = 2
-summary(epic_EET$Age_cat)
+#Gender: Male = 1, Female = 2
+summary(epic_EET$Gender)
+
+epic_EET <- epic_EET %>%
+  mutate(
+    Female = case_when(
+      Gender == 2 ~ 1,
+      Gender == 1 ~ 0,
+      TRUE ~ NA_real_
+    )
+  )
 
 #Income quintile
 attr(epic_raw$Income, "labels")
@@ -220,7 +230,95 @@ epic_EET <- epic_EET %>%
 summary(epic_EET$Env_concern)
 
 #Education
-#
+attr(epic_raw$S9_SE, "label")
+#S9_X
+summary(epic_EET$S9_SE)
+
+epic_EET <- epic_EET %>%
+  mutate(
+    # US
+    Education_US = case_when(
+      S9_US %in% 1:6 ~ 0,
+      S9_US %in% 7:13 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # UK
+    Education_UK = case_when(
+      S9_UK %in% 1:5 ~ 0,
+      S9_UK %in% 6:7 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # FR
+    Education_FR = case_when(
+      S9_FR %in% 1:4 ~ 0,
+      S9_FR %in% 5:7 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # SE
+    Education_SE = case_when(
+      S9_SE %in% 1:3 ~ 0,
+      S9_SE == 4 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # CH
+    Education_CH = case_when(
+      S9_CH %in% 1:4 ~ 0,
+      S9_CH %in% 5:8 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # NL
+    Education_NL = case_when(
+      S9_NL %in% 3:7 ~ 0,
+      S9_NL %in% 1:2 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # CA
+    Education_CA = case_when(
+      S9_CA %in% 1:3 ~ 0,
+      S9_CA %in% 4:8 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # BE
+    Education_BE = case_when(
+      S9_BE %in% 1:6 ~ 0,
+      S9_BE %in% 7:10 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # IL
+    Education_IL = case_when(
+      S9_IL %in% 1:2 ~ 0,
+      S9_IL %in% 3:5 ~ 1,
+      TRUE ~ NA_real_
+    ),
+    
+    # Merge into one variable
+    Edu_level = coalesce(
+      Education_US, Education_UK, Education_FR, Education_SE,
+      Education_CH, Education_NL, Education_CA, Education_BE, Education_IL
+    )
+  )
+
+summary(epic_EET$Edu_level)
+
+#creating summary table --> table 2
+Socioeco_summary_df <- epic_EET %>%
+  group_by(Country_name) %>%
+  summarise(
+    Avg_Age_cat = mean(Age_cat, na.rm = TRUE),
+    Avg_Edu_level = mean(Edu_level, na.rm = TRUE),
+    Avg_Income = mean(Income, na.rm = TRUE),
+    Avg_Female = mean(Female, na.rm = TRUE),
+    Avg_Env_concern = mean(Env_concern, na.rm = TRUE)
+  ) %>%
+  arrange(Country_name)
 
 #----------------- 3. Table: characteristics of dwellings ----------------------
 
@@ -322,7 +420,39 @@ Dwelling_summary_df <- epic_EET %>%
   ) %>%
   arrange(Country_name)
 
+#------------- Additional Environmental Preference Information -----------------
+#Environmental issues should be resolved mainly through public policies
+attr(epic_raw$B31_5, "labels")
+#Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
+summary(epic_EET$B31_5[epic_EET$B31_5 != 999999])
 
+#Environmental policies introduced by the government should not cost me extra money
+attr(epic_raw$B31_6, "label")
+#Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
+summary(epic_EET$B31_6[epic_EET$B31_6 != 999999])
+
+epic_EET <- epic_EET %>%
+  mutate(
+    Env_policy_public = case_when(
+      B31_5 %in% c(4, 5) ~ 1,  # Agree or Strongly agree
+      B31_5 %in% c(1, 2, 3) ~ 0,
+      B31_5 == 999999 ~ NA_real_
+    ),
+    Env_policy_costs = case_when(
+      B31_6 %in% c(1, 2) ~ 1,  # Strongly disagree or Disagree = willing to pay
+      B31_6 %in% c(3, 4, 5) ~ 0,  # neutral or against paying
+      B31_6 == 999999 ~ NA_real_
+    )
+  )
+
+#creating summary table --> table 4
+Env_policy_summary_df <- epic_EET %>%
+  group_by(Country_name) %>%
+  summarise(
+    Avg_Env_policy_public = mean(Env_policy_public, na.rm = TRUE),
+    Avg_Env_policy_costs = mean(Env_policy_costs, na.rm = TRUE),
+  ) %>%
+  arrange(Country_name)
 
 
 
