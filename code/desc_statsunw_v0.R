@@ -163,6 +163,7 @@ get_summary <- function(country) {
     adopted <- sum(adopt == 1, na.rm = TRUE)
     not_possible <- sum(possible == 0, na.rm = TRUE)
     supported <- sum(support == 1, na.rm = TRUE)
+    total <- total_possible + not_possible
     
     # Mean rates among possible
     mean_adopt_rate <- sum(adopt[is_possible] == 1, na.rm = TRUE) / total_possible
@@ -172,8 +173,8 @@ get_summary <- function(country) {
     tibble(
       Country = country,
       Technology = tech,
+      Possible = total_possible,
       Adopted = adopted,
-      Not_Possible = not_possible,
       Supported = supported,
       Mean_Adoption_Rate = round(mean_adopt_rate, 3),
       Mean_Support_Rate = round(mean_support_rate, 3)
@@ -190,14 +191,14 @@ EET_summary_df <- map_dfr(countries, get_summary)
 #Age
 attr(epic_raw$Age_cat, "labels")
 #Age_cat: 18-24 = 1, 25-34 = 2, 35-44 = 3, 45-54 = 4, 55+ = 5
-summary(epic_EET$Age_cat)
+summary(epic$Age_cat)
 
 #Sex
 attr(epic_raw$Gender, "labels")
 #Gender: Male = 1, Female = 2
-summary(epic_EET$Gender)
+summary(epic$Gender)
 
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     Female = case_when(
       Gender == 2 ~ 1,
@@ -210,14 +211,14 @@ epic_EET <- epic_EET %>%
 attr(epic_raw$Income, "labels")
 attr(epic_raw$S12_1, "labels")
 #Age_cat: 18-24 = 1, 25-34 = 2, 35-44 = 3, 45-54 = 4, 55+ = 5
-summary(epic_EET$Income)
+summary(epic$Income)
 
 #Environmental concern
 attr(epic_raw$B23_1, "label")
 #B23_1: Not at all important        Not important   Somewhat important            Important       Very important    Prefer not to say 
-summary(epic_EET$B23_1)
+summary(epic$B23_1)
 #create new variable with binary level for low and high environmental concern
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     Env_concern = ifelse(B23_1 == 999999, NA, B23_1),
     Env_concern = case_when(
@@ -227,75 +228,75 @@ epic_EET <- epic_EET %>%
     )
   )
 
-summary(epic_EET$Env_concern)
+summary(epic$Env_concern)
 
 #Education
-attr(epic_raw$S9_SE, "label")
+attr(epic_raw$S9_CH, "labels")
 #S9_X
-summary(epic_EET$S9_SE)
+summary(as.factor(epic$S9_SE))
 
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     # US
     Education_US = case_when(
-      S9_US %in% 1:6 ~ 0,
-      S9_US %in% 7:13 ~ 1,
+      S9_US %in% 1:9 ~ 0,  # lower education
+      S9_US %in% 10:13 ~ 1, # higher education (Bachelor's, Master's, PhD)
       TRUE ~ NA_real_
     ),
     
     # UK
     Education_UK = case_when(
-      S9_UK %in% 1:5 ~ 0,
-      S9_UK %in% 6:7 ~ 1,
+      S9_UK %in% 1:5 ~ 0,  # up to secondary education
+      S9_UK %in% 6:7 ~ 1,  # Bachelor's degree (NVQ4, HNC/HND), Post-graduate diploma
       TRUE ~ NA_real_
     ),
     
     # FR
     Education_FR = case_when(
-      S9_FR %in% 1:4 ~ 0,
-      S9_FR %in% 5:7 ~ 1,
+      S9_FR %in% 1:5 ~ 0,  # Primary, Lower Secondary, or Vocational Upper Secondary education
+      S9_FR %in% 6:7 ~ 1,  # Higher education (Bachelor's and Master's)
       TRUE ~ NA_real_
     ),
     
     # SE
     Education_SE = case_when(
-      S9_SE %in% 1:3 ~ 0,
-      S9_SE == 4 ~ 1,
+      S9_SE %in% 1:3 ~ 0,   # Compulsory or General Upper Secondary education
+      S9_SE %in% 4 ~ 1,     # Technical/practical/occupational/research higher education
       TRUE ~ NA_real_
     ),
     
     # CH
     Education_CH = case_when(
-      S9_CH %in% 1:4 ~ 0,
-      S9_CH %in% 5:8 ~ 1,
+      S9_CH %in% 1:5 ~ 0,  # Primary to Vocational Secondary education
+      S9_CH %in% 6:8 ~ 1,  # University degree, Master's, or Doctorate
       TRUE ~ NA_real_
     ),
     
     # NL
     Education_NL = case_when(
-      S9_NL %in% 3:7 ~ 0,
-      S9_NL %in% 1:2 ~ 1,
+      S9_NL %in% 1:2 ~ 1,  # HBO, University degree (Bachelor's, Master's, PhD)
+      S9_NL %in% 3:7 ~ 0,  
       TRUE ~ NA_real_
     ),
     
     # CA
     Education_CA = case_when(
-      S9_CA %in% 1:3 ~ 0,
-      S9_CA %in% 4:8 ~ 1,
+      S9_CA %in% 1:6 ~ 0,  # Primary, some high school, or graduated high school
+      S9_CA %in% 7:8 ~ 1,  # University undergraduate degree or higher
       TRUE ~ NA_real_
     ),
     
     # BE
     Education_BE = case_when(
-      S9_BE %in% 1:6 ~ 0,
-      S9_BE %in% 7:10 ~ 1,
+      S9_BE %in% 1:6 ~ 0,  # Primary, lower secondary, or professional upper secondary education
+      S9_BE %in% 7:10 ~ 1, # Bachelor's, Master's, or Doctorate
       TRUE ~ NA_real_
     ),
     
     # IL
     Education_IL = case_when(
-      S9_IL %in% 1:2 ~ 0,
-      S9_IL %in% 3:5 ~ 1,
+      S9_IL %in% 1:3 ~ 0,  # No formal education or High school diploma
+      S9_IL %in% 4:5 ~ 1,  # Bachelor's degree or above
       TRUE ~ NA_real_
     ),
     
@@ -306,10 +307,10 @@ epic_EET <- epic_EET %>%
     )
   )
 
-summary(epic_EET$Edu_level)
+summary(as.factor(epic$Edu_level[epic$Country_name == "SE"]))
 
 #creating summary table --> table 2
-Socioeco_summary_df <- epic_EET %>%
+Socioeco_summary_df <- epic %>%
   group_by(Country_name) %>%
   summarise(
     Avg_Age_cat = mean(Age_cat, na.rm = TRUE),
@@ -332,7 +333,7 @@ attr(epic_raw$C37_8, "label")
 #C37_6: energy costs IL
 #C37_8: energy costs CA
 #creating new variable with merged info on average monthly cost
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     Energy_costs = case_when(
       Country_name == "US" ~ C37_1,
@@ -352,7 +353,7 @@ attr(epic_raw$S5, "labels")
 #S5
 #Living in a residence owned = 1, Living in a residence rented = 2, Living in another type of accommodation no owned = 3
 #creating new variable of home ownership with only two categories owned/not owned
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     Home_owned = case_when(
       S5 == 1 ~ 1,           # Owned
@@ -367,7 +368,7 @@ attr(epic_raw$S18, "labels")
 #apartment in a building with less than 12 apartments = 1, apartment in a building with 12 or more apartments = 2
 #A detached house = 3, A semi-detached/terraced house  = 4, Other = 89
 #creating new variable of home ownership with only two categories owned/not owned
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     Dwelling_house = case_when(
       S18 == 3 ~ 1, #detached house
@@ -380,12 +381,12 @@ epic_EET <- epic_EET %>%
 #Dwelling size
 attr(epic_raw$S19_1, "labels")
 attr(epic_raw$S19_1_1, "labels")
-summary(epic_EET$S19_1)
-summary(epic_EET$S19_1_1)
+summary(epic$S19_1)
+summary(epic$S19_1_1)
 #S19_1: Rest & S19_1_1: US & CA
 #Less than 25m2 = 1, 25m2-50m2 = 2, 51m2-75m2 = 3, 76m2-100m2 = 4, 101m2-150m2 = 5, 151m2-200m2 = 6, More than 200m2 = 7 Don’t know = 888888
 #creating new variable for mergerd info auf dwelling size (m2 and ft2)
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     Dwelling_size = case_when(
       !is.na(S19_1) & S19_1 != 888888 ~ S19_1,
@@ -399,7 +400,7 @@ attr(epic_raw$S20, "labels")
 #S20 - area
 #major town/city = 1, suburban = 2, small town/village = 3, isolated dwelling = 4, Other = 89
 #creating new variable of home ownership with only two categories owned/not owned
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     Rural = case_when(
       S20 %in% c(3, 4, 89) ~ 1,
@@ -409,7 +410,7 @@ epic_EET <- epic_EET %>%
   )
 
 #creating summary table --> table 3
-Dwelling_summary_df <- epic_EET %>%
+Dwelling_summary_df <- epic %>%
   group_by(Country_name) %>%
   summarise(
     Avg_Home_Owned = mean(Home_owned, na.rm = TRUE),
@@ -424,14 +425,14 @@ Dwelling_summary_df <- epic_EET %>%
 #Environmental issues should be resolved mainly through public policies
 attr(epic_raw$B31_5, "labels")
 #Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
-summary(epic_EET$B31_5[epic_EET$B31_5 != 999999])
+summary(epic$B31_5[epic_EET$B31_5 != 999999])
 
 #Environmental policies introduced by the government should not cost me extra money
 attr(epic_raw$B31_6, "label")
 #Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
-summary(epic_EET$B31_6[epic_EET$B31_6 != 999999])
+summary(epic$B31_6[epic$B31_6 != 999999])
 
-epic_EET <- epic_EET %>%
+epic <- epic %>%
   mutate(
     Env_policy_public = case_when(
       B31_5 %in% c(4, 5) ~ 1,  # Agree or Strongly agree
@@ -446,13 +447,118 @@ epic_EET <- epic_EET %>%
   )
 
 #creating summary table --> table 4
-Env_policy_summary_df <- epic_EET %>%
+Env_policy_summary_df <- epic %>%
   group_by(Country_name) %>%
   summarise(
     Avg_Env_policy_public = mean(Env_policy_public, na.rm = TRUE),
     Avg_Env_policy_costs = mean(Env_policy_costs, na.rm = TRUE),
   ) %>%
   arrange(Country_name)
+
+#---------------------- Objective summary statistics ---------------------------
+##EPS
+EPS_sub <- EPS %>%
+  select(REF_AREA, TIME_PERIOD, OBS_VALUE) %>%
+  filter(TIME_PERIOD %in% 2010:2020)
+###Average EPS per country
+EPS_sub_avg <- EPS_sub %>%
+  group_by(REF_AREA) %>%
+  summarize(avg_EPS = mean(OBS_VALUE, na.rm = TRUE)) #use summarize to collapse data
+
+##emissions-weighted carbon price - expressed in 2021USD/tCO2
+wC02price_sub <- wC02price %>%
+  select(Code, Year, price_with_tax_weighted_by_share_of_co2) %>%
+  filter(Year %in% 2010:2020)
+###Average Price per country
+wC02price_sub_avg <- wC02price_sub %>%
+  group_by(Code) %>%
+  summarize(price_with_tax_weighted_by_share_of_co2_avg = mean(price_with_tax_weighted_by_share_of_co2, na.rm = TRUE)) #use summarize to collapse data
+
+#Merged Info about EETs
+epic_EET <- epic_EET %>%
+  mutate(
+    # Low-cost EET adoption (LEDs)
+    low_EET = ifelse(C44_2 == 1, 1, 0),
+    
+    # Middle-cost EET adoption (Highly energy-efficient appliances)
+    middle_EET = ifelse(C44_1 == 1, 1, 0),
+    
+    # High-cost EET adoption (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps)
+    high_EET = ifelse(C44_3 == 1 | C44_4 == 1 | C44_6 == 1 | C44_7 == 1 | C44_8 == 1 | C44_9 == 1, 1, 0),
+    
+    # Low-cost EET adoption (LEDs) not possible
+    low_EET_p = case_when(
+      C44_2 == 1 ~ 1, #if adopted = possible
+      C46_2 == 4 ~ 0, #no possible
+      TRUE ~ 1 #else possible
+    ),
+    
+    # Middle-cost EET adoption (Highly energy-efficient appliances) not possible
+    middle_EET_p = case_when(
+      C44_1 == 1 ~ 1, #if adopted = possible
+      C46_1 == 4 ~ 0, #no possible
+      TRUE ~ 1 #else possible
+    ),
+    
+    # High-cost EET adoption (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps) not possible
+    high_EET_p = case_when(
+      C44_3 == 1 | C44_4 == 1 | C44_6 == 1 | C44_7 == 1 | C44_8 == 1 | C44_9 == 1 ~ 1,  #if adopted = possible
+      C46_3 == 4 | C46_4 == 4 | C46_6 == 4 | C46_7 == 1 | C46_8 == 1 | C46_9 == 4 ~ 0,  #no possible
+      TRUE ~ 1  #else possible
+    )
+  )
+
+#create variable with merged info on medium and high-cost EETs government support for adoption
+epic_EET <- epic_EET %>%
+  mutate(
+    # Middle-cost EET gov support (Highly energy-efficient appliances)
+    middle_EET_support = case_when(
+      C45_1 == 1 ~ 1, #support
+      TRUE ~ 0 #else no support
+    ),
+    
+    # High-cost EET gov support (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps)
+    high_EET_support = case_when(
+      C45_3 == 1 | C45_4 == 1 | C45_6 == 1 | C45_7 == 1 | C45_8 == 1 | C45_9 == 1 ~ 1,  #support
+      TRUE ~ 0  #else no support
+    )
+  )
+
+
+#middle-cost EETs (Appliances)
+epic_Appl <- epic_EET %>%
+  filter(Appl_p != 0) %>% #filter for cases where adoption is possible
+  select(Country_code, Country_name, Income, S5, S18, C44_1, C46_1, C45_1,
+         middle_EET, middle_EET_p, middle_EET_support)
+
+##calculating the proportion of adopters with support
+epic_Appl_support_prop <- epic_Appl %>%
+  group_by(Country_name) %>%
+  summarise(
+    adopters = sum(C44_1 == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(middle_EET_support == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support
+epic_Appl_support_prop_long <- epic_Appl_support_prop %>%
+  select(Country_name, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+# Merge the data on the country name
+epic_Appl_EPS_wC02 <- epic_Appl_support_prop_long %>%
+  left_join(wC02price_sub_avg, by = c("Country_name" = "Code")) %>%
+  left_join(EPS_sub_avg, by = c("Country_name" = "REF_AREA"))
 
 
 

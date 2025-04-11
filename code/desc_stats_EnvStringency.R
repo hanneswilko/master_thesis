@@ -163,8 +163,6 @@ C02rate_hist <- ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparativ
 
 
 #--------------------------- OWiD Carbon Rate weighted -------------------------
-##Net effective carbon rate and carbon tax
-###data: 
 ###obs_value: emissions-weighted carbon price - expressed in 2021USD/tCO2
 wC02price_data_sub <- wC02price_data %>%
   select(Code, Year, price_with_tax_weighted_by_share_of_co2) %>%
