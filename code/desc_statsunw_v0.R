@@ -18,7 +18,7 @@
 #-------------------------------------------------------------------------------
 #packages
 pacman::p_load("dplyr","ggplot2","tidyverse","haven","data.table","tidyr",
-               "srvyr", "survey", "ggsurvey", "purrr")
+               "srvyr", "survey", "ggsurvey", "purrr", "kableExtra")
 
 #EPIC
 epic <- read.csv("./processed_data/epic_data_ABC_VoI.csv") #subsample var interest of survey parts A,B,C
@@ -187,6 +187,17 @@ get_summary <- function(country) {
 #Create Summary Data Frame --> Table 1
 EET_summary_df <- map_dfr(countries, get_summary)
 
+EET_summary_df %>%
+  arrange(Technology, Country) %>%
+  select(-Technology) %>%
+  kbl(
+    caption = "Summary Table 1: Energy-efficient Technology Adoption",
+    format = "latex",
+    booktabs = TRUE,
+    longtable = TRUE   #THIS enables multi-page support
+  ) %>%
+  kable_styling(latex_options = c("striped"),  font_size = 8) %>% # 'hold_position' not needed with longtable
+  pack_rows(index = table(EET_summary_df$Technology) %>% as.list())
 
 #---------------- 2. Table: socioeconomic characteristics ----------------------
 
