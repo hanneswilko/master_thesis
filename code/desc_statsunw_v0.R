@@ -10,6 +10,8 @@
 #1. Loading data
 #2. Data wrangling
 #3. Descriptive Analysis
+#4. Objective summary statistics
+#5. 5. Saving Graphs
 
 #-------------------------------------------------------------------------------
 #---------------------------- 1. Loading Data ----------------------------------
@@ -432,6 +434,7 @@ attr(epic_raw$B31_6, "label")
 #Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
 summary(epic$B31_6[epic$B31_6 != 999999])
 
+#---------------------- 4. Table: Env policy preferences -----------------------
 epic <- epic %>%
   mutate(
     Env_policy_public = case_when(
@@ -455,7 +458,11 @@ Env_policy_summary_df <- epic %>%
   ) %>%
   arrange(Country_name)
 
-#---------------------- Objective summary statistics ---------------------------
+#-------------------------------------------------------------------------------
+#--------------------- 4. Objective summary statistics -------------------------
+#-------------------------------------------------------------------------------
+
+#------------------------------ Data wrangling ---------------------------------
 ##EPS
 EPS_sub <- EPS %>%
   select(REF_AREA, TIME_PERIOD, OBS_VALUE) %>%
@@ -483,7 +490,7 @@ epic_EET <- epic_EET %>%
     # Middle-cost EET adoption (Highly energy-efficient appliances)
     middle_EET = ifelse(C44_1 == 1, 1, 0),
     
-    # High-cost EET adoption (Energy-efficient windows, Thermal insulation, Solar panels, Heat pumps)
+    # High-cost EET adoption (Energy-efficient windows, Thermal insulation, Solar panels, Batter storage, Heat pumps)
     high_EET = ifelse(C44_3 == 1 | C44_4 == 1 | C44_6 == 1 | C44_7 == 1 | C44_8 == 1 | C44_9 == 1, 1, 0),
     
     # Low-cost EET adoption (LEDs) not possible
@@ -524,7 +531,7 @@ epic_EET <- epic_EET %>%
     )
   )
 
-
+#---------------------- Adoption of Appliances per EPS category ----------------
 #middle-cost EETs (Appliances)
 epic_Appl <- epic_EET %>%
   filter(Appl_p != 0) %>% #filter for cases where adoption is possible
@@ -561,11 +568,163 @@ epic_Appl_EPS_wC02 <- epic_Appl_support_prop_long %>%
   left_join(EPS_sub_avg, by = c("Country_name" = "REF_AREA"))
 
 
+summary(epic_Appl_EPS_wC02$avg_EPS)
 
+#Categorize EPS Index for better visualization
+epic_Appl_EPS_wC02 <- epic_Appl_EPS_wC02 %>%
+  mutate(
+    EPS_category = ntile(avg_EPS, 3),  # Tertiles: 1 = low, 2 = medium, 3 = high
+    EPS_category = case_when(
+      EPS_category == 1 ~ "low stringency",
+      EPS_category == 2 ~ "medium stringency",
+      EPS_category == 3 ~ "high stringency"
+    ),
+    EPS_category = factor(EPS_category, levels = c("low stringency", "medium stringency", "high stringency"))
+  )
 
+epic_Appl_EPS_wC02 %>%
+  group_by(EPS_category) %>%
+  summarise(min_EPS = min(avg_EPS), max_EPS = max(avg_EPS))
 
+#Appliance adoption per EPS category
+barchart_Appl_EPS_support_prop <- ggplot(epic_Appl_EPS_wC02, 
+                                     aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
+                                         y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(
+    title = "Adoption of highly energy-efficient Appliances by Environmental Policy Stringency Index",
+    x = "Country",
+    y = "Proportion of Adopters",
+    fill = "Government support"
+  ) +
+  facet_wrap(~ EPS_category, scales = "free_x") +  #Facet by EPS Category!
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 0.5),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
 
+#------------------ Adoption of high-cost EETs per EPS category ----------------
+#high-cost EETs (Windows, Thermal insulation, Solar panels e, Solar water heating, Battery storage, Heat pumps)
+epic_highEET <- epic_EET %>%
+  filter(high_EET_p != 0) %>% #filter for cases where adoption is possible
+  select(Country_code, Country_name, Income, S5, S18, C44_3, C44_4, C44_6, C44_7,
+         C44_8, C44_9, C46_3, C46_4, C46_6, C46_9, C45_3, C45_4, C45_6, C45_7,
+         C45_8, C45_9, high_EET, high_EET_p, high_EET_support)
 
+##calculating the proportion of adopters with support
+epic_highEET_support_prop <- epic_highEET %>%
+  group_by(Country_name) %>%
+  summarise(
+    adopters = sum(high_EET == 1, na.rm = TRUE),
+    total_hh = n(),
+    proportion_adopters = adopters / total_hh,
+    support_received = sum(high_EET_support == 1, na.rm = TRUE),
+    support_not_received = adopters - support_received,
+    proportion_support_received = support_received / adopters,
+    proportion_support_not_received = support_not_received / adopters
+  ) %>%
+  ungroup()
+
+##creating long table for proportions of adopters with support
+epic_highEET_support_prop_long <- epic_highEET_support_prop %>%
+  select(Country_name, proportion_adopters, proportion_support_received, proportion_support_not_received) %>%
+  tidyr::pivot_longer(cols = c(proportion_support_received, proportion_support_not_received), 
+                      names_to = "Support_Status", 
+                      values_to = "Proportion_Support") %>%
+  mutate(Support_Status = recode(Support_Status, 
+                                 "proportion_support_received" = "support",
+                                 "proportion_support_not_received" = "no support"))
+
+# Merge the data on the country name
+epic_highEET_EPS_wC02 <- epic_highEET_support_prop_long %>%
+  left_join(wC02price_sub_avg, by = c("Country_name" = "Code")) %>%
+  left_join(EPS_sub_avg, by = c("Country_name" = "REF_AREA"))
+
+summary(epic_highEET_EPS_wC02$avg_EPS)
+
+#Categorize EPS Index for better visualization
+epic_highEET_EPS_wC02 <- epic_highEET_EPS_wC02 %>%
+  mutate(
+    EPS_category = ntile(avg_EPS, 3),  # Tertiles: 1 = low, 2 = medium, 3 = high
+    EPS_category = case_when(
+      EPS_category == 1 ~ "low stringency",
+      EPS_category == 2 ~ "medium stringency",
+      EPS_category == 3 ~ "high stringency"
+    ),
+    EPS_category = factor(EPS_category, levels = c("low stringency", "medium stringency", "high stringency"))
+  )
+
+epic_highEET_EPS_wC02 %>%
+  group_by(EPS_category) %>%
+  summarise(min_EPS = min(avg_EPS), max_EPS = max(avg_EPS))
+
+#Appliance adoption per EPS category
+barchart_highEET_EPS_support_prop <- ggplot(epic_highEET_EPS_wC02, 
+                                         aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
+                                             y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(
+    title = "Adoption of high-cost EETs by Environmental Policy Stringency Index",
+    x = "Country",
+    y = "Proportion of Adopters",
+    fill = "Government support"
+  ) +
+  facet_wrap(~ EPS_category, scales = "free_x") +  #Facet by EPS Category!
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +
+  theme_minimal() +
+  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 12, face = "bold"),
+    strip.text.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0, hjust = 0.5),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+#------------- 5. Table: Env Policy, Env Preferences, Gov Support --------------
+#create variable with merged info on medium and high-cost EETs government support for adoption
+epic <- epic %>%
+  mutate(
+    #Summary variable on EET gov support (if at least for one adoption)
+    EET_support = case_when(
+      C45_1 == 1 | C45_3 == 1 | C45_4 == 1 | C45_6 == 1 | C45_7 == 1 | C45_8 == 1 | C45_9 == 1 ~ 1,  #support
+      TRUE ~ 0  #else no support
+    )
+  )
+
+#create summary table
+Policy_stats_summary_df <- epic %>%
+  group_by(Country_name) %>%
+  summarise(
+    Avg_Env_policy_public = mean(Env_policy_public, na.rm = TRUE),
+    Avg_EET_support = mean(EET_support, na.rm = TRUE),
+  ) %>%
+  arrange(Country_name)
+
+# Merge the data on the country name
+Policy_stats_summary_df <- Policy_stats_summary_df %>%
+  left_join(wC02price_sub_avg, by = c("Country_name" = "Code")) %>%
+  left_join(EPS_sub_avg, by = c("Country_name" = "REF_AREA"))
+
+#-------------------------------------------------------------------------------
+#---------------------------- 5. Saving Graphs ---------------------------------
+#-------------------------------------------------------------------------------
+ggsave("./output/barchart_Appl_EPS_support_prop.png", plot = barchart_Appl_EPS_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_highEET_EPS_support_prop.png", plot = barchart_highEET_EPS_support_prop, dpi = 300, scale = 1.2)
 
 
 
