@@ -178,8 +178,8 @@ get_summary <- function(country) {
       Possible = total_possible,
       Adopted = adopted,
       Supported = supported,
-      Mean_Adoption_Rate = round(mean_adopt_rate, 3),
-      Mean_Support_Rate = round(mean_support_rate, 3)
+      Mean_Adopted = round(mean_adopt_rate, 2),
+      Mean_Supported = round(mean_support_rate, 2)
     )
   })
 }
@@ -191,12 +191,12 @@ EET_summary_df %>%
   arrange(Technology, Country) %>%
   select(-Technology) %>%
   kbl(
-    caption = "Summary Table 1: Energy-efficient Technology Adoption",
+    caption = "Rates of Technology adoption across countries.",
     format = "latex",
     booktabs = TRUE,
     longtable = TRUE   #THIS enables multi-page support
   ) %>%
-  kable_styling(latex_options = c("striped"),  font_size = 8) %>% # 'hold_position' not needed with longtable
+  kable_styling(latex_options = c("striped"),  font_size = 10) %>% # 'hold_position' not needed with longtable
   pack_rows(index = table(EET_summary_df$Technology) %>% as.list())
 
 #---------------- 2. Table: socioeconomic characteristics ----------------------
@@ -326,18 +326,29 @@ summary(as.factor(epic$Edu_level[epic$Country_name == "SE"]))
 Socioeco_summary_df <- epic %>%
   group_by(Country_name) %>%
   summarise(
-    Avg_Age_cat = mean(Age_cat, na.rm = TRUE),
-    Avg_Edu_level = mean(Edu_level, na.rm = TRUE),
-    Avg_Income = mean(Income, na.rm = TRUE),
-    Avg_Female = mean(Female, na.rm = TRUE),
-    Avg_Env_concern = mean(Env_concern, na.rm = TRUE)
+    Avg_Age_cat = round(mean(Age_cat, na.rm = TRUE),2),
+    Avg_Edu_level = round(mean(Edu_level, na.rm = TRUE),2),
+    Avg_Income = round(mean(Income, na.rm = TRUE),2),
+    Avg_Female = round(mean(Female, na.rm = TRUE),2),
+    Avg_Env_concern = round(mean(Env_concern, na.rm = TRUE),2)
   ) %>%
   arrange(Country_name)
+
+Socioeco_summary_df %>%
+  kbl(
+    caption = "Socio-economic characteristics of households.",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
+  )
 
 #----------------- 3. Table: characteristics of dwellings ----------------------
 
 #Energy costs
-attr(epic_raw$C37_8, "label")
+attr(epic_raw$C37_1, "labels")
 #C37_1: energy costs US
 #C37_2: energy costs FR, NL and BE
 #C37_3: energy costs UK
@@ -426,17 +437,28 @@ epic <- epic %>%
 Dwelling_summary_df <- epic %>%
   group_by(Country_name) %>%
   summarise(
-    Avg_Home_Owned = mean(Home_owned, na.rm = TRUE),
-    Avg_Dwelling_House = mean(Dwelling_house, na.rm = TRUE),
-    Avg_Dwelling_Size = mean(Dwelling_size, na.rm = TRUE),
-    Avg_Rural = mean(Rural, na.rm = TRUE),
-    Avg_Energy_Costs = mean(Energy_costs, na.rm = TRUE)
+    Avg_Home_Owned = round(mean(Home_owned, na.rm = TRUE),2),
+    Avg_Dwelling_House = round(mean(Dwelling_house, na.rm = TRUE),2),
+    Avg_Dwelling_Size = round(mean(Dwelling_size, na.rm = TRUE),2),
+    Avg_Rural = round(mean(Rural, na.rm = TRUE),2),
+    Avg_Energy_Costs = round(mean(Energy_costs, na.rm = TRUE),2)
   ) %>%
   arrange(Country_name)
 
+Dwelling_summary_df %>%
+  kbl(
+    caption = "Characteristics of dwellings.",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
+  )
+
 #------------- Additional Environmental Preference Information -----------------
 #Environmental issues should be resolved mainly through public policies
-attr(epic_raw$B31_5, "labels")
+attr(epic_raw$B31_5, "label")
 #Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
 summary(epic$B31_5[epic_EET$B31_5 != 999999])
 
@@ -464,10 +486,21 @@ epic <- epic %>%
 Env_policy_summary_df <- epic %>%
   group_by(Country_name) %>%
   summarise(
-    Avg_Env_policy_public = mean(Env_policy_public, na.rm = TRUE),
-    Avg_Env_policy_costs = mean(Env_policy_costs, na.rm = TRUE),
+    Avg_Env_policy_public = round(mean(Env_policy_public, na.rm = TRUE),2),
+    Avg_Env_policy_costs = round(mean(Env_policy_costs, na.rm = TRUE),2),
   ) %>%
   arrange(Country_name)
+
+Env_policy_summary_df %>%
+  kbl(
+    caption = "Respondents’ attitudes regarding environmental policy.",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
+  )
 
 #-------------------------------------------------------------------------------
 #--------------------- 4. Objective summary statistics -------------------------
@@ -481,7 +514,7 @@ EPS_sub <- EPS %>%
 ###Average EPS per country
 EPS_sub_avg <- EPS_sub %>%
   group_by(REF_AREA) %>%
-  summarize(avg_EPS = mean(OBS_VALUE, na.rm = TRUE)) #use summarize to collapse data
+  summarize(avg_EPS = round(mean(OBS_VALUE, na.rm = TRUE),2)) #use summarize to collapse data
 
 ##emissions-weighted carbon price - expressed in 2021USD/tCO2
 wC02price_sub <- wC02price %>%
@@ -490,7 +523,7 @@ wC02price_sub <- wC02price %>%
 ###Average Price per country
 wC02price_sub_avg <- wC02price_sub %>%
   group_by(Code) %>%
-  summarize(price_with_tax_weighted_by_share_of_co2_avg = mean(price_with_tax_weighted_by_share_of_co2, na.rm = TRUE)) #use summarize to collapse data
+  summarize(price_with_tax_weighted_by_share_of_co2_avg = round(mean(price_with_tax_weighted_by_share_of_co2, na.rm = TRUE),2)) #use summarize to collapse data
 
 #Merged Info about EETs
 epic_EET <- epic_EET %>%
@@ -721,8 +754,8 @@ epic <- epic %>%
 Policy_stats_summary_df <- epic %>%
   group_by(Country_name) %>%
   summarise(
-    Avg_Env_policy_public = mean(Env_policy_public, na.rm = TRUE),
-    Avg_EET_support = mean(EET_support, na.rm = TRUE),
+    Avg_Env_policy_public = round(mean(Env_policy_public, na.rm = TRUE),2),
+    Avg_EET_support = round(mean(EET_support, na.rm = TRUE),2),
   ) %>%
   arrange(Country_name)
 
@@ -730,6 +763,17 @@ Policy_stats_summary_df <- epic %>%
 Policy_stats_summary_df <- Policy_stats_summary_df %>%
   left_join(wC02price_sub_avg, by = c("Country_name" = "Code")) %>%
   left_join(EPS_sub_avg, by = c("Country_name" = "REF_AREA"))
+
+Policy_stats_summary_df %>%
+  kbl(
+    caption = "Environmental Policy Indicators",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
+  )
 
 #-------------------------------------------------------------------------------
 #---------------------------- 5. Saving Graphs ---------------------------------
