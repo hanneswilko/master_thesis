@@ -60,7 +60,7 @@ summary(EPS_data_sub)
 EPS_boxplot <- ggplot(EPS_data_sub, aes(x = REF_AREA, y = OBS_VALUE)) +
   geom_boxplot(fill = "#8da0cb", outlier.colour = "black", outlier.size = 2) +  # Consistent blue fill
   labs(
-    title = "OECD Environmental Policy Stringency Index (2010-2020)", 
+    title = str_wrap("OECD Environmental Policy Stringency Index (2010-2020)",50), 
     y = "EPS index", 
     x = "Country"
   ) +
@@ -85,7 +85,7 @@ View(EPS_sub_avg)
 EPS_hist <- ggplot(EPS_sub_avg, aes(x = REF_AREA, y = avg_EPS)) +
   geom_bar(stat = "identity", fill = "#8da0cb") +  # Updated fill color
   labs(
-    title = "OECD Environmental Policy Stringency Index (2010-2020)",
+    title = str_wrap("OECD Environmental Policy Stringency Index (2010-2020)",50),
     x = "Country",
     y = "Average EPS index"
   ) +
@@ -141,7 +141,7 @@ View(C02rate_data_sub_PPPavg)
 C02rate_hist <- ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparative_tax_usd_avg)) +
   geom_bar(stat = "identity", fill = "#8da0cb") +  # Updated fill color
   labs(
-    title = "OECD carbon tax burden (2018, 2021, 2023)",
+    title = str_wrap("OECD carbon tax burden (2018, 2021, 2023)",50),
     x = "Country",
     y = "Average carbon tax rate" # (PPP-adjusted in 2023 USD/tCO2)
   ) +
@@ -174,7 +174,7 @@ glimpse(wC02price_data)
 wC02rate_boxplot <- ggplot(wC02price_data_sub, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2)) +
   geom_boxplot(fill = "#8da0cb", outlier.colour = "black", outlier.size = 2) +
   labs(
-    title = "Emissions-weighted carbon price (2010-2020)", 
+    title = str_wrap("Emissions-weighted carbon price (2010-2020)",50), 
     y = "Weighted carbon price", 
     x = "Country"
   ) +
@@ -199,7 +199,7 @@ View(wC02price_data_sub_avg)
 
 wC02rate_hist <- ggplot(wC02price_data_sub_avg, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2_avg)) +
   geom_bar(stat = "identity", fill = "#8da0cb") +  # Matching color scheme
-  labs(title = "Emissions-weighted carbon price (2010-2020)",
+  labs(title = str_wrap("Emissions-weighted carbon price (2010-2020)",50),
        x = "Country",
        y = "Average weighted carbon price") + 
   theme_minimal() +
