@@ -636,7 +636,7 @@ barchart_Appl_EPS_support_prop <- ggplot(epic_Appl_EPS_wC02,
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of highly energy-efficient Appliances by Environmental Policy Stringency Index",
+    title = str_wrap("Adoption of highly energy-efficient Appliances by Environmental Policy Stringency Index", 50),
     x = "Country",
     y = "Proportion of Adopters",
     fill = "Government support"
@@ -718,7 +718,7 @@ barchart_highEET_EPS_support_prop <- ggplot(epic_highEET_EPS_wC02,
                                              y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = "Adoption of high-cost EETs by Environmental Policy Stringency Index",
+    title = str_wrap("Adoption of high-cost EETs by Environmental Policy Stringency Index", 50),
     x = "Country",
     y = "Proportion of Adopters",
     fill = "Government support"
