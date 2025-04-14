@@ -219,13 +219,13 @@ wC02rate_hist <- ggplot(wC02price_data_sub_avg, aes(x = Code, y = price_with_tax
   )
 
 #--------------------------- Saving Graphs -------------------------------------
-ggsave("./output/EPS_boxplot.png", plot = EPS_boxplot, dpi = 300, scale = 1.2)
-ggsave("./output/EPS_hist.png", plot = EPS_hist, dpi = 300, scale = 1.2)
+ggsave("./output/EPS_boxplot.pdf", plot = EPS_boxplot, dpi = 300, scale = 1.2)
+ggsave("./output/EPS_hist.pdf", plot = EPS_hist, dpi = 300, scale = 1.2)
 
-ggsave("./output/C02rate_hist.png", plot = C02rate_hist, dpi = 300, scale = 1.2)
+ggsave("./output/C02rate_hist.pdf", plot = C02rate_hist, dpi = 300, scale = 1.2)
 
-ggsave("./output/wC02rate_boxplot.png", plot = wC02rate_boxplot, dpi = 300, scale = 1.2)
-ggsave("./output/wC02rate_hist.png", plot = wC02rate_hist, dpi = 300, scale = 1.2)
+ggsave("./output/wC02rate_boxplot.pdf", plot = wC02rate_boxplot, dpi = 300, scale = 1.2)
+ggsave("./output/wC02rate_hist.pdf", plot = wC02rate_hist, dpi = 300, scale = 1.2)
 
 
 

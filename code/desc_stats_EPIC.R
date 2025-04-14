@@ -1016,29 +1016,29 @@ barchart_Pump_income_support_prop <- ggplot(epic_Pump_income_support_prop_long, 
 #-------------------------------------------------------------------------------
 #---------------------------- 3. Saving Graphs ---------------------------------
 #-------------------------------------------------------------------------------
-ggsave("./output/barchart_Appl_income_support_prop.png", plot = barchart_Appl_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Appl_support_prop.png", plot = barchart_Appl_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Appl_income_support_prop.pdf", plot = barchart_Appl_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Appl_support_prop.pdf", plot = barchart_Appl_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Battery_income_support_prop.png", plot = barchart_Battery_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Battery_income_support_prop.pdf", plot = barchart_Battery_income_support_prop, dpi = 300, scale = 1.2)
 ggsave("./output/barchart_Battery_support_prop.png", plot = barchart_Battery_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_highEET_income_support_prop.png", plot = barchart_highEET_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_highEET_support_prop.png", plot = barchart_highEET_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_highEET_income_support_prop.pdf", plot = barchart_highEET_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_highEET_support_prop.pdf", plot = barchart_highEET_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Pump_income_support_prop.png", plot = barchart_Pump_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Pump_support_prop.png", plot = barchart_Pump_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Pump_income_support_prop.pdf", plot = barchart_Pump_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Pump_support_prop.pdf", plot = barchart_Pump_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Solare_income_support_prop.png", plot = barchart_Solare_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Solare_support_prop.png", plot = barchart_Solare_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Solare_income_support_prop.pdf", plot = barchart_Solare_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Solare_support_prop.pdf", plot = barchart_Solare_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Solarw_income_support_prop.png", plot = barchart_Solarw_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Solarw_support_prop.png", plot = barchart_Solarw_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Solarw_income_support_prop.pdf", plot = barchart_Solarw_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Solarw_support_prop.pdf", plot = barchart_Solarw_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Thermal_income_support_prop.png", plot = barchart_Thermal_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Thermal_support_prop.png", plot = barchart_Thermal_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Thermal_income_support_prop.pdf", plot = barchart_Thermal_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Thermal_support_prop.pdf", plot = barchart_Thermal_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Windows_income_support_prop.png", plot = barchart_Windows_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Windows_support_prop.png", plot = barchart_Windows_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Windows_income_support_prop.pdf", plot = barchart_Windows_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Windows_support_prop.pdf", plot = barchart_Windows_support_prop, dpi = 300, scale = 1.2)
 
 
 

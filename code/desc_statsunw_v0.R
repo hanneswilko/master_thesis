@@ -778,8 +778,8 @@ Policy_stats_summary_df %>%
 #-------------------------------------------------------------------------------
 #---------------------------- 5. Saving Graphs ---------------------------------
 #-------------------------------------------------------------------------------
-ggsave("./output/barchart_Appl_EPS_support_prop.png", plot = barchart_Appl_EPS_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_highEET_EPS_support_prop.png", plot = barchart_highEET_EPS_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Appl_EPS_support_prop.pdf", plot = barchart_Appl_EPS_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_highEET_EPS_support_prop.pdf", plot = barchart_highEET_EPS_support_prop, dpi = 300, scale = 1.2)
 
 
 
