@@ -41,7 +41,7 @@ epic <- epic %>%
          REGION_US2, REGION_NL2, REGION_CH, REGION_FR2, REGION_CA, REGION_BE, REGION_IL,
          S9_US, S9_UK, S9_FR, S9_SE, S9_CH, S9_NL, S9_CA, S9_BE, S9_IL,
          S18, S19_1, S19_1_1, S20, B23_1, B31_1, B31_3, B31_5, B31_6, B31_7, B31_8, C37_1, C37_2, C37_3, C37_4,
-         C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C44_1, C44_2, C44_3, C44_4, C44_6, C44_7,
+         C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C50, C44_1, C44_2, C44_3, C44_4, C44_6, C44_7,
          C44_8, C44_9, C45_1, C45_3, C45_4, C45_6, C45_7, C45_8, C45_9, C46_1,
          C46_2, C46_3, C46_4, C46_6, C46_7, C46_8, C46_9, C47_2, C47_6)
 
@@ -467,6 +467,26 @@ attr(epic_raw$B31_6, "label")
 #Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
 summary(epic$B31_6[epic$B31_6 != 999999])
 
+#In support of providing subsidies to households for purchasing energy-efficient appliances or investing in renewable energy equipment
+attr(epic_raw$C49_1, "labels")
+#Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
+summary(epic$C49_1)
+
+#In support of Taxing energy use or the purchase of appliances and equipment that use a lot of energy
+attr(epic_raw$C49_2, "labels")
+#Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
+summary(epic$C49_2)
+
+#In support of introducing energy efficiency standards for appliances and buildings that manufacturers have to comply with
+attr(epic_raw$C49_3, "labels")
+#Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
+summary(epic$C49_3)
+
+#In support of low-income households receiving government support to help them pay for energy equipment
+attr(epic_raw$C50, "labels")
+#Yes = 1, No = 2, Don´t know = 3 
+summary(epic$C50[epic$C50 != 3])
+
 #---------------------- 4. Table: Env policy preferences -----------------------
 epic <- epic %>%
   mutate(
@@ -479,7 +499,23 @@ epic <- epic %>%
       B31_6 %in% c(1, 2) ~ 1,  # Strongly disagree or Disagree = willing to pay
       B31_6 %in% c(3, 4, 5) ~ 0,  # neutral or against paying
       B31_6 == 999999 ~ NA_real_
-    )
+    ),
+    Supp_Subsidy = case_when(
+      C49_1 %in% c(4, 5) ~ 1,  
+      C49_1 %in% 1:3 ~ 0  
+    ),
+    Supp_Tax = case_when(
+      C49_2 %in% c(4, 5) ~ 1,  
+      C49_2 %in% 1:3 ~ 0  
+    ),
+    Supp_Standards = case_when(
+      C49_3 %in% c(4, 5) ~ 1,  
+      C49_3 %in% 1:3 ~ 0  
+    ),
+    Supp_liH = case_when(
+      C50 %in% 1 ~ 1,  
+      C50 %in% 2:3 ~ 0  
+    ),
   )
 
 #creating summary table --> table 4
@@ -488,6 +524,10 @@ Env_policy_summary_df <- epic %>%
   summarise(
     Avg_Env_policy_public = round(mean(Env_policy_public, na.rm = TRUE),2),
     Avg_Env_policy_costs = round(mean(Env_policy_costs, na.rm = TRUE),2),
+    Avg_Supp_Subsidy = round(mean(Supp_Subsidy, na.rm = TRUE),2),
+    Avg_Supp_Tax = round(mean(Supp_Tax, na.rm = TRUE),2),
+    Avg_Supp_Standards = round(mean(Supp_Standards, na.rm = TRUE),2),
+    Avg_Supp_liH = round(mean(Supp_liH, na.rm = TRUE),2)
   ) %>%
   arrange(Country_name)
 
@@ -754,7 +794,6 @@ epic <- epic %>%
 Policy_stats_summary_df <- epic %>%
   group_by(Country_name) %>%
   summarise(
-    Avg_Env_policy_public = round(mean(Env_policy_public, na.rm = TRUE),2),
     Avg_EET_support = round(mean(EET_support, na.rm = TRUE),2),
   ) %>%
   arrange(Country_name)
