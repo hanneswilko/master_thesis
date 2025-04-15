@@ -1020,7 +1020,7 @@ ggsave("./output/barchart_Appl_income_support_prop.pdf", plot = barchart_Appl_in
 ggsave("./output/barchart_Appl_support_prop.pdf", plot = barchart_Appl_support_prop, dpi = 300, scale = 1.2)
 
 ggsave("./output/barchart_Battery_income_support_prop.pdf", plot = barchart_Battery_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Battery_support_prop.png", plot = barchart_Battery_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/barchart_Battery_support_prop.pdf", plot = barchart_Battery_support_prop, dpi = 300, scale = 1.2)
 
 ggsave("./output/barchart_highEET_income_support_prop.pdf", plot = barchart_highEET_income_support_prop, dpi = 300, scale = 1.2)
 ggsave("./output/barchart_highEET_support_prop.pdf", plot = barchart_highEET_support_prop, dpi = 300, scale = 1.2)
