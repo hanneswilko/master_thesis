@@ -698,17 +698,15 @@ barchart_Appl_EPS_support_prop <- ggplot(epic_Appl_EPS_wC02,
   )
 
 #Scatterplot: relationship of EPS and appliances adoption rates
-scatter_EPS_adoption_avg <- ggplot(epic_Appl_EPS_wC02, 
+scatter_EPS_adoption_by_appl <- ggplot(epic_Appl_EPS_wC02, 
                                    aes(x = avg_EPS, y = proportion_adopters)) +
-  geom_point(shape = 4, size = 3, color = "black", alpha = 0.8) +  # shape 4 = cross
-  geom_smooth(method = "lm", color = "steelblue", se = FALSE, linewidth = 1) +  # regression line
-  geom_text(aes(label = Country_name), 
-            vjust = -0.8, hjust = 0.5, size = 3, check_overlap = TRUE) +
-  scale_y_continuous(limits = c(0.4, 0.80), breaks = seq(0.4, 0.8, by = 0.1)) +
-  scale_x_continuous(limits = c(0, 5), breaks = seq(0, 5, by = 1)) +
+  geom_text(aes(label = Country_name), size = 4, fontface = "bold", alpha = 0.9, show.legend = FALSE) +  # use country labels
+  geom_smooth(method = "lm", color = "#8da0cb", se = FALSE, linewidth = 1) +  # regression line
+  scale_y_continuous(limits = c(0.4, 0.8), breaks = seq(0.4, 0.8, by = 0.1)) +
+  scale_x_continuous(limits = c(0.8, 4.5), breaks = seq(1, 5, by = 1)) +
   labs(
-    title = "Adoption of Highly Energy-Efficient Appliances by Mean EPS Index",
-    x = "Average Environmental Policy Stringency (EPS) Index",
+    title = "Adoption of highly energy-efficient Appliances by EPS Index",
+    x = "Environmental Policy Stringency (EPS) Index",
     y = "Proportion of Adopters"
   ) +
   theme_minimal() +
@@ -828,15 +826,57 @@ EET_summary_df_EPS_wC02 %>%
 # Scatterplot: EPS vs Adoption Rate, colored by Technology
 scatter_EPS_adoption_by_tech <- ggplot(EET_summary_df_EPS_wC02, 
                                        aes(x = avg_EPS, y = Mean_Adopted, color = Technology)) +
-  geom_point(shape = 4, size = 4, stroke = 1.5, alpha = 0.9) +  # Thicker crosses with vibrant colors
-  geom_smooth(method = "lm", se = FALSE, linewidth = 1, aes(group = Technology, color = Technology)) +
+  geom_text(aes(label = Country), size = 4, fontface = "bold", alpha = 0.9, show.legend = FALSE) +  # use country labels
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.1, aes(group = Technology, color = Technology), na.rm = TRUE) +  # regression by tech
   scale_y_continuous(limits = c(0, 0.80), breaks = seq(0, 0.80, by = 0.20)) +
-  scale_x_continuous(limits = c(0, 5), breaks = seq(0, 5, by = 1)) +
-  scale_color_brewer(palette = "Set1") +  # Distinct, high-contrast colors
+  scale_x_continuous(limits = c(0.8, 4.5), breaks = seq(1, 5, by = 1)) +
+  scale_color_manual(values = c(
+    "Appliances" = "#8da0cb",
+    "Windows" = "#fc8d62",
+    "Thermal insulation" = "#66c2a5",
+    "Solar panels for electricity" = "#e78ac3",
+    "Solar water heating" = "#a6d854",
+    "Battery storage" = "#ffd92f",
+    "Heat pumps" = "#e5c494"
+  )) +
   labs(
     title = "Adoption of Energy-Efficient Technologies by EPS Index",
-    x = "Average Environmental Policy Stringency (EPS) Index",
-    y = "Mean Proportion of Adopters",
+    x = "Environmental Policy Stringency (EPS) Index",
+    y = "Proportion of Adopters",
+    color = "Technology"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 11, face = "bold"),
+    axis.text = element_text(size = 10)
+  )
+
+#Subsample - EETs excluding Solar water heating and battery storage
+EET_summary_df_EPS_wC02_sub <- EET_summary_df_EPS_wC02 %>%
+  filter(Technology %in% c("Appliances", "Windows", "Thermal insulation",
+                           "Solar panels for electricity", "Heat pumps"))
+
+# Scatterplot: EPS vs Adoption Rate, colored by Technology
+scatter_EPS_adoption_by_tech_sub <- ggplot(EET_summary_df_EPS_wC02_sub, 
+                                       aes(x = avg_EPS, y = Mean_Adopted, color = Technology)) +
+  geom_text(aes(label = Country), size = 4, fontface = "bold", alpha = 0.9, show.legend = FALSE) +  # use country labels
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.1, aes(group = Technology, color = Technology), na.rm = TRUE) +  # regression by tech
+  scale_y_continuous(limits = c(0, 0.80), breaks = seq(0, 0.80, by = 0.20)) +
+  scale_x_continuous(limits = c(0.8, 4.5), breaks = seq(1, 5, by = 1)) +
+  scale_color_manual(values = c(
+    "Appliances" = "#8da0cb",
+    "Windows" = "#fc8d62",
+    "Thermal insulation" = "#66c2a5",
+    "Solar panels for electricity" = "#e78ac3",
+    "Heat pumps" = "#a6d854"
+  )) +
+  labs(
+    title = "Adoption of Energy-Efficient Technologies by EPS Index",
+    x = "Environmental Policy Stringency (EPS) Index",
+    y = "Proportion of Adopters",
     color = "Technology"
   ) +
   theme_minimal() +
@@ -888,6 +928,10 @@ Policy_stats_summary_df %>%
 #-------------------------------------------------------------------------------
 ggsave("./output/barchart_Appl_EPS_support_prop.pdf", plot = barchart_Appl_EPS_support_prop, dpi = 300, scale = 1.2)
 ggsave("./output/barchart_highEET_EPS_support_prop.pdf", plot = barchart_highEET_EPS_support_prop, dpi = 300, scale = 1.2)
+
+ggsave("./output/scatter_EPS_adoption_by_appl.pdf", plot = scatter_EPS_adoption_by_appl, dpi = 300, scale = 1.2)
+ggsave("./output/scatter_EPS_adoption_by_tech.pdf", plot = scatter_EPS_adoption_by_tech, dpi = 300, scale = 1.2)
+ggsave("./output/scatter_EPS_adoption_by_tech_sub.pdf", plot = scatter_EPS_adoption_by_tech_sub, dpi = 300, scale = 1.2)
 
 
 
