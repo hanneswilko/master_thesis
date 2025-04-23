@@ -923,6 +923,24 @@ Policy_stats_summary_df %>%
     font_size = 10
   )
 
+#---------------------- 6. Table: HH per country -------------------------------
+# Aggregate data to count number of households per country
+households_per_country_df <- epic %>%
+  group_by(Country_name) %>%
+  summarise(Households = n()) %>%
+  arrange(Country_name)
+
+households_per_country_df %>%
+  kbl(
+    caption = "Number of Households per Country",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
+  )
+
 #-------------------------------------------------------------------------------
 #---------------------------- 5. Saving Graphs ---------------------------------
 #-------------------------------------------------------------------------------
