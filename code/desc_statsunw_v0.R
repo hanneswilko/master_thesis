@@ -930,6 +930,15 @@ households_per_country_df <- epic %>%
   summarise(Households = n()) %>%
   arrange(Country_name)
 
+# Add total row
+households_per_country_df <- households_per_country_df %>%
+  bind_rows(
+    tibble(
+      Country_name = "Total",
+      Households = sum(households_per_country_df$Households)
+    )
+  )
+
 households_per_country_df %>%
   kbl(
     caption = "Number of Households per Country",
