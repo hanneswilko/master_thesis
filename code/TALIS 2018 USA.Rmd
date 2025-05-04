@@ -1,0 +1,1548 @@
+---
+title: "TALIS 2018 - USA"
+author: "Kjorte Harra"
+output: html_document
+---
+
+```{r, echo = T, message= F, warning = F}
+library(dplyr)
+library(mice)
+library(rstanarm)
+library(bayesplot)
+library(ggplot2)
+library(readr)
+library(haven)
+
+options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
+```
+
+# Cleaning Data
+
+```{r, include = T, message = F}
+teacher <- read_dta("/Users/hannes/Documents/Studium/Master/Master_Thesis/Input_project/Other_data/kaplan_2023/BTGUSAT3.dta")
+princ <- read_dta("/Users/hannes/Documents/Studium/Master/Master_Thesis/Input_project/Other_data/kaplan_2023/BCGUSAT3.dta")
+
+raw_teacher <- teacher
+raw_princ <- princ
+```
+
+```{r}
+teacher$tt3g19a2[teacher$tt3g19a2 == 2] <- 0
+teacher$tt3g19b2[teacher$tt3g19b2 == 2] <- 0
+teacher$tt3g19a2 <- as.numeric(teacher$tt3g19a2)
+teacher$tt3g19b2 <- as.numeric(teacher$tt3g19b2)
+teacher$induction <- teacher$tt3g19a2 + teacher$tt3g19b2
+teacher$induction[teacher$induction == 2] <- 1
+
+
+II.1.7.USA <- data.frame(teacher$idteach, teacher$idschool, teacher$tchwgt, 
+                         teacher$tt3g01, teacher$tt3g08, teacher$tt3g10a, 
+                         teacher$tt3g11b, teacher$tt3g19a2, teacher$tt3g19b2, 
+                         teacher$tt3g20g, teacher$tt3g25, teacher$tt3g30, 
+                         teacher$tt3g49e, teacher$tt3g53h, teacher$t3wels, 
+                         teacher$t3coles, teacher$t3satat, teacher$t3self, 
+                         teacher$tt3g35b, teacher$tt3g35d, teacher$tt3g35e, 
+                         teacher$tt3g48e, teacher$tchagegr, teacher$tt3g38, 
+                         teacher$t3jobsa, teacher$induction)
+
+colnames(II.1.7.USA) <- c("idteach", "idschool", "tchwgt", 
+                          "tt3g01",  "tt3g08", "tt3g10a",
+                          "tt3g11b", "tt3g19a2", "tt3g19b2", 
+                          "tt3g20g", "tt3g25", "tt3g30", 
+                          "tt3g49e", "tt3g53h", "t3wels", 
+                          "t3coles", "t3satat",  "t3self", 
+                          "tt3g35b",  "tt3g35d", "tt3g35e", 
+                          "tt3g48e",  "tchagegr", "tt3g38", 
+                          "t3jobsa", "induction")
+
+II.1.8.USA <- data.frame(teacher$idteach, teacher$idschool, teacher$tchwgt, 
+                      teacher$tt3g01, teacher$tt3g09, teacher$tt3g10a, 
+                      teacher$tt3g11b, teacher$tt3g19a2, teacher$tt3g19b2,
+                      teacher$tt3g20g, teacher$tt3g25, teacher$tchagegr, 
+                      teacher$tt3g48e, teacher$tt3g49e, teacher$t3disc, 
+                      teacher$t3wels, teacher$t3coles, teacher$t3satat,
+                      teacher$tt3g35g, teacher$tt3g35a, teacher$tt3g35h, 
+                      teacher$tt3g35f, teacher$tt3g35b, teacher$tt3g35c, 
+                      teacher$t3self, teacher$tt3g38, teacher$tt3g35d,
+                      teacher$tt3g35e, teacher$induction) 
+
+colnames(II.1.8.USA) <- c("idteach", "idschool", "tchwgt", 
+                       "tt3g01", "tt3g09", "tt3g10a", 
+                       "tt3g11b", "tt3g19a2", "tt3g19b2", 
+                       "tt3g20g", "tt3g25", "tchagegr", 
+                       "tt3g48e", "tt3g49e", "t3disc", 
+                       "t3wels", "t3coles", "t3satat", 
+                       "tt3g35g", "tt3g35a", "tt3g35h", 
+                       "tt3g35f", "tt3g35b", "tt3g35c",
+                       "t3self", "tt3g38", "tt3g35d", 
+                       "tt3g35e", "induction")
+
+princ.USA <- data.frame(princ$idschool, princ$idcntry, princ$nenrstud,
+                         princ$schloc, princ$tc3g12, princ$tc3g10)
+
+colnames(princ.USA) <- c("idschool", "idcntry", "nenrstud",
+                          "schloc", "tc3g12", "tc3g10")
+
+princ.USA <- as.data.frame(apply(princ.USA, 2, as.numeric))
+
+II.1.8.USA <- merge(princ.USA, II.1.8.USA, by = "idschool")
+
+```
+
+```{r}
+#write.csv(II.1.7.USA, "C:/Users/kjort/Downloads/II.1.7.USA.csv")
+#write.csv(II.1.8.USA, "C:/Users/kjort/Downloads/II.1.8.USA.csv")
+#write.csv(princ.USA,"C:/Users/kjort/Downloads/princ.USA.csv")
+```
+
+
+# Imputations
+
+```{r}
+II.1.7.USA$tt3g20g[is_tagged_na(II.1.7.USA$tt3g20g) & na_tag(II.1.7.USA$tt3g20g) == "b"] <- 0
+II.1.7.USA$tt3g25[is_tagged_na(II.1.7.USA$tt3g25) & na_tag(II.1.7.USA$tt3g25) == "b"] <- 0
+
+sub7b <- subset(II.1.7.USA, 
+                !is_tagged_na(tt3g08) & !is_tagged_na(tt3g10a) & 
+                !is_tagged_na(tt3g11b) & !is_tagged_na(tt3g19a2) & 
+                !is_tagged_na(tt3g19b2) & !is_tagged_na(tt3g30) & 
+                !is_tagged_na(tt3g49e) & !is_tagged_na(tt3g53h) & 
+                !is_tagged_na(t3wels) & !is_tagged_na(t3coles) & 
+                !is_tagged_na(t3satat) & !is_tagged_na(t3self) & 
+                !is_tagged_na(tt3g35b) & !is_tagged_na(tt3g35d) & 
+                !is_tagged_na(tt3g35e) & !is_tagged_na(tt3g48e) & 
+                !is_tagged_na(tchagegr) & !is_tagged_na(tt3g38) & 
+                !is_tagged_na(t3jobsa))
+
+sub7ba <- sub7b
+
+sub7ba_num <- as.data.frame(apply(sub7ba, 2, as.numeric))
+sub7ba_num$tt3g01[sub7ba_num$tt3g01 == 2] <- 0
+sub7ba_num$tt3g08[sub7ba_num$tt3g08 == 2] <- 0 
+sub7ba_num$tt3g20g[sub7ba_num$tt3g20g == 2] <- 0
+sub7ba_num$tt3g25[sub7ba_num$tt3g25 == 2] <- 0
+sub7ba_num$tt3g30[sub7ba_num$tt3g30 == 2] <- 0
+
+talis7 <- sub7ba_num
+
+II.1.8.USA$tt3g20g[is_tagged_na(II.1.8.USA$tt3g20g) & na_tag(II.1.8.USA$tt3g20g) == "b"] <- 0
+II.1.8.USA$tt3g25[is_tagged_na(II.1.8.USA$tt3g25) & na_tag(II.1.8.USA$tt3g25) == "b"] <- 0
+
+II.1.8.USA <- II.1.8.USA %>%
+  select(-c("tt3g35g"))
+
+sub8b <- subset(II.1.8.USA,
+                !is_tagged_na(tt3g09)   & !is_tagged_na(tt3g10a)  &
+                !is_tagged_na(tt3g11b)  & !is_tagged_na(tt3g19a2) &
+                !is_tagged_na(tt3g19b2) & !is_tagged_na(tt3g20g)  &
+                !is_tagged_na(tt3g25)   & !is_tagged_na(tchagegr) &
+                !is_tagged_na(tt3g48e)  & !is_tagged_na(tt3g49e)  &
+                !is_tagged_na(t3disc)   & !is_tagged_na(t3wels)   &
+                !is_tagged_na(t3coles)  & !is_tagged_na(t3satat)  &
+                !is_tagged_na(tt3g35e)  & !is_tagged_na(tt3g35a)  &
+                !is_tagged_na(tt3g35h)  & !is_tagged_na(tt3g35f)  &
+                !is_tagged_na(tt3g35b)  & !is_tagged_na(tt3g35c)  &
+                !is_tagged_na(t3self))
+
+# sub8ba not needed as all tagged missings are already handled above
+sub8ba <- sub8b
+
+sub8ba_num <- as.data.frame(apply(sub8ba, 2, as.numeric)) 
+sub8ba_num$tt3g01[sub8ba_num$tt3g01 == 2] <- 0
+sub8ba_num$tc3g12[sub8ba_num$tc3g12 == 1] <- 0
+sub8ba_num$tc3g12[sub8ba_num$tc3g12 == 2] <- 1 
+sub8ba_num$tt3g20g[sub8ba_num$tt3g20g == 2] <- 0
+
+talis8 <- sub8ba_num
+```
+
+```{r}
+#talis7 <- subset(talis7, select = -c(...1))
+#talis8 <- subset(talis8, select = -c(...1))
+#write.csv(talis7, "C:/Users/kjort/Downloads/talis7.USA.csv")
+#write.csv(talis8, "C:/Users/kjort/Downloads/talis8.USA.csv")
+```
+
+### Figure II.1.7 
+```{r, , results = "hide", warning = F}
+talis7pmm <- mice(talis7, m = 10, method ="pmm") #10 imputations
+```
+
+### Figure II.1.8 
+```{r,, warning = F, results = "hide"}
+talis8pmm <- mice(talis8, m = 10, method = "pmm")
+```
+
+# Bayesian Linear Regressions
+
+## II.1.7
+
+```{r include, results = "hide"}
+talis7all.USA <- complete(talis7pmm,"long")
+talis7all.USA <- as.data.frame(talis7all.USA)
+talis8all.USA <- complete(talis8pmm,"long")
+talis8all.USA <- as.data.frame(talis8all.USA)
+
+talis7imp1.USA <- subset(talis7all.USA, talis7all.USA$.imp == 1)
+talis8imp1.USA <- subset(talis8all.USA, talis8all.USA$.imp == 1)
+
+talis7all.USA <- subset(talis7all.USA, select = -c(.imp, .id))
+talis8all.USA <- subset(talis8all.USA, select = -c(.imp, .id))
+
+TALIS7 <- talis7all.USA
+TALIS7w <- talis7imp1.USA
+
+TALIS8 <- talis8all.USA
+TALIS8w <- talis8imp1.USA
+```
+
+### Normalized sampling weights
+
+```{r}
+totalPop = sum(TALIS7w$tchwgt)
+totalSamp = nrow(TALIS7w)
+normWgt = totalSamp/totalPop * TALIS7w$tchwgt
+totalNormWgt = sum(normWgt)
+totalNormWgt
+TALIS7w <-cbind(TALIS7w,normWgt)
+```
+
+```{r}
+#talis7all.USA <- subset(talis7all.USA, select = -c(.imp, .id, ...1))
+#talis8all.USA <- subset(talis8all.USA, select = -c(.imp, .id, ...1))
+
+#talis7allimp1 <- subset(talis7allimp1, select = -c(.imp, .id, ...1))
+#talis8allimp1 <- subset(talis8allimp1, select = -c(.imp, .id, ...1))
+
+#write.csv(talis7all.USA, "C:/Users/kjort/Downloads/talis7all.USA.csv")
+#write.csv(talis8all.USA, "C:/Users/kjort/Downloads/talis8all.USA.csv")
+
+#write.csv(talis7imp1.USA, "C:/Users/kjort/Downloads/talis7imp1.USA.csv")
+#write.csv(talis8imp1.USA, "C:/Users/kjort/Downloads/talis8imp1.USA.csv")
+```
+
+### Teaching as a first career choice
+
+#### Unweighted
+```{r}
+fitJOBSA <- stan_glm(
+  t3jobsa ~ tt3g08 + tt3g01 + tt3g11b + t3self,  
+  iter=5000,family=gaussian(), thin=2,
+  data = TALIS7
+ ) 
+```
+
+##### Diagnostic plots 
+```{r}
+bayesplot::mcmc_trace(fitJOBSA)
+bayesplot::mcmc_acf_bar(fitJOBSA)
+bayesplot::mcmc_hist(fitJOBSA)
+```
+
+
+##### Summary of results with 95% posterior intervals
+```{r}
+summary(fitJOBSA)
+posterior_interval(fitJOBSA,prob=0.95)
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pval <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pval
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA$stan_summary)
+m <- mat["tt3g08","mean"]
+s <- mat["tt3g08", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+#### Weighted
+```{r}
+fitJOBSAw <- stan_lmer(
+  t3jobsa ~ tt3g08 + tt3g01 + tt3g11b + t3self + (1+tt3g08|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSAw, 
+          pars=c("(Intercept)","tt3g08","tt3g01",
+          "tt3g11b","t3self","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g08,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSAw, 
+          pars=c("(Intercept)","tt3g08","tt3g01",
+          "tt3g11b","t3self","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g08,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSAw, 
+          pars=c("(Intercept)","tt3g08","tt3g01",
+          "tt3g11b","t3self","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g08,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSAw, pars=c("(Intercept)","tt3g08","tt3g01",
+          "tt3g11b","t3self","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g08,(Intercept)]"))
+
+posterior_interval(fitJOBSAw,prob=0.95,
+           pars=c("(Intercept)","tt3g08","tt3g01",
+          "tt3g11b","t3self","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g08,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSAw,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pvalw <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pvalw
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSAw$stan_summary)
+m <- mat["tt3g08","mean"]
+s <- mat["tt3g08", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Took part in induction activites at current school predicting job satisfaction 
+```{r}
+fitJOBSA2w <- stan_lmer(
+  t3jobsa ~ induction + tt3g01 + tt3g11b + (1+induction|idschool),  
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_acf_bar(fitJOBSA2w, 
+          pars=c("(Intercept)","induction", "tt3g01",
+          "tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSA2w, 
+          pars=c("(Intercept)","induction","tt3g01",
+          "tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSA2w, pars=c("(Intercept)","induction", "tt3g01",
+          "tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+
+posterior_interval(fitJOBSA2w,prob=0.95,
+           pars=c("(Intercept)","induction", "tt3g01",
+          "tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA2w,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pvalw2 <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pvalw2
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA2w$stan_summary)
+m <- mat["induction","mean"]
+s <- mat["induction", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Induction at current school included team teaching with experienced teachers
+```{r}
+fitJOBSA3w <- stan_lmer(
+  t3jobsa ~ tt3g20g + tt3g01 + tt3g11b  + (1+tt3g20g|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSA3w, 
+          pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSA3w, 
+          pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSA3w, 
+          pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSA3w,  pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+
+posterior_interval(fitJOBSA3w,prob=0.95,
+          pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA3w,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pval3w <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pval3w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA3w$stan_summary)
+m <- mat["tt3g20g","mean"]
+s <- mat["tt3g20g", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Professional development activites had a postive impact on teaching practice
+
+```{r}
+fitJOBSA4w <- stan_lmer(
+  t3jobsa ~ tt3g25 + tt3g01 + tt3g11b + tt3g10a + tt3g35b + tt3g35d + tt3g38 + (1+tt3g25|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSA4w, 
+          pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d",
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSA4w, 
+          pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d",
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSA4w, 
+          pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d",
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSA4w, pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d",
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+
+posterior_interval(fitJOBSA4w, prob=0.95,
+           pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d",
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA4w,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pval4w <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pval4w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA4w$stan_summary)
+m <- mat["tt3g25","mean"]
+s <- mat["tt3g25", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Teaching profession is valued in society
+
+```{r}
+fitJOBSA5w <- stan_lmer(
+  t3jobsa ~ tt3g53h + tt3g01 + tchagegr + tt3g11b + tt3g10a + tt3g35b + tt3g35d + tt3g35e + (1+tt3g53h|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSA5w, 
+          pars=c("(Intercept)","tt3g53h","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g53h,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSA5w, 
+          pars=c("(Intercept)","tt3g53h","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g53h,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSA5w, 
+          pars=c("(Intercept)","tt3g53h","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g53h,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSA5w, pars=c("(Intercept)","tt3g53h","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g53h,(Intercept)]"))
+
+posterior_interval(fitJOBSA5w,prob=0.95,
+           pars=c("(Intercept)","tt3g53h","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g53h,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA5w,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pval5w <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pval5w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA5w$stan_summary)
+m <- mat["tt3g53h","mean"]
+s <- mat["tt3g53h", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Index of workplace well-being and stress
+
+```{r}
+fitJOBSA6w <- stan_lmer(
+  t3jobsa ~ t3wels + tt3g01 + tchagegr + tt3g11b + tt3g10a + tt3g35b + tt3g35d + tt3g35e + (1+t3wels|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10 ,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSA6w, 
+          pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b",
+          "tt3g35d","tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSA6w, 
+          pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b",
+          "tt3g35d","tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSA6w, 
+          pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b",
+          "tt3g35d","tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSA6w, pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b",
+          "tt3g35d","tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+
+posterior_interval(fitJOBSA6w,prob=0.95,
+           pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g35b",
+          "tt3g35d","tt3g35e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA6w,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pval6w <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pval6w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA6w$stan_summary)
+m <- mat["t3wels","mean"]
+s <- mat["t3wels", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+##### Index of professional collaboration
+```{r}
+fitJOBSA7w <- stan_lmer(
+  t3jobsa ~ t3coles + tt3g01 + tchagegr + tt3g11b + tt3g10a + tt3g48e + tt3g49e + (1+t3coles|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSA7w, 
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g48e",
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSA7w, 
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g48e",
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSA7w, 
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g48e",
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSA7w, pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g48e",
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+
+posterior_interval(fitJOBSA7w, prob=0.95,
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b","tt3g10a", "tt3g48e",
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA7w,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pval7w <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pval7w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA7w$stan_summary)
+m <- mat["t3coles","mean"]
+s <- mat["t3coles", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Recieving impactful feedback
+
+```{r}
+fitJOBSA8w <- stan_lmer(
+  t3jobsa ~ tt3g30 + tt3g01 + tchagegr + tt3g11b + tt3g10a + tt3g48e + tt3g49e + (1+tt3g30|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSA8w, 
+          pars=c("(Intercept)","tt3g30","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e",
+          "tt3g49e","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g30,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSA8w, 
+          pars=c("(Intercept)","tt3g30","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e",
+          "tt3g49e","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g30,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSA8w, 
+          pars=c("(Intercept)","tt3g30","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e",
+          "tt3g49e","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g30,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSA8w, pars=c("(Intercept)","tt3g30","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e",
+          "tt3g49e","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g30,(Intercept)]"))
+
+posterior_interval(fitJOBSA8w, prob=0.95,
+          pars=c("(Intercept)","tt3g30","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e",
+          "tt3g49e","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g30,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA8w,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pval8w <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pval8w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA8w$stan_summary)
+m <- mat["tt3g30","mean"]
+s <- mat["tt3g30", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Index of target class autonomy
+
+```{r}
+fitJOBSA9w <- stan_lmer(
+  t3jobsa ~ t3satat + tt3g01 + tchagegr + tt3g11b + (1+t3satat|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS7w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSA9w, 
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSA9w, 
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSA9w, 
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSA9w, pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+
+posterior_interval(fitJOBSA9w, prob=0.95,
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b","sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r, }
+t3jobsa <- TALIS7w$t3jobsa
+t3jobsa_rep <- posterior_predict(fitJOBSA9w,draws=1000)
+ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
+pval9w <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
+pval9w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSA9w$stan_summary)
+m <- mat["t3satat","mean"]
+s <- mat["t3satat", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+
+## II.1.8
+
+### Normalized sampling weights
+
+```{r}
+totalPop = sum(TALIS8w$tchwgt)
+totalSamp = nrow(TALIS8w)
+normWgt = totalSamp/totalPop * TALIS8w$tchwgt
+totalNormWgt = sum(normWgt)
+totalNormWgt
+TALIS8w <-cbind(TALIS8w,normWgt)
+```
+
+### Teacher Characterisitics: years of experience as a teacher
+
+#### Unweighted
+```{r}
+fitJOBSE <- stan_glm(
+  t3self ~ tt3g11b + tt3g38 + tt3g35f + tt3g35b + tt3g35c + tt3g01 + tt3g10a,  
+  iter=5000,family=gaussian(), thin=2,
+  data = TALIS8
+ ) 
+```
+
+##### Diagnostic plots 
+```{r}
+bayesplot::mcmc_trace(fitJOBSE)
+bayesplot::mcmc_acf_bar(fitJOBSE)
+bayesplot::mcmc_hist(fitJOBSE)
+```
+
+
+##### Summary of results with 95% posterior intervals
+```{r}
+summary(fitJOBSE)
+posterior_interval(fitJOBSE,prob=0.95)
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8$t3self
+t3self_rep <- posterior_predict(fitJOBSE,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE$stan_summary)
+m <- mat["tt3g11b","mean"]
+s <- mat["tt3g11b", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+#### Unweighted
+```{r}
+fitJOBSEw <- stan_lmer(
+  t3self ~ tt3g11b + tt3g38 + tt3g35f + tt3g35b + tt3g35c + tt3g01 + tt3g10a + (1+tt3g11b|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSEw, 
+          pars=c("(Intercept)","tt3g11b","tt3g38",
+          "tt3g35f","tt3g35b", "tt3g35c", "tt3g01", 
+          "tt3g10a", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g11b,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSEw, 
+          pars=c("(Intercept)","tt3g11b","tt3g38",
+          "tt3g35f","tt3g35b", "tt3g35c", "tt3g01", 
+          "tt3g10a", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g11b,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSEw, 
+          pars=c("(Intercept)","tt3g11b","tt3g38",
+          "tt3g35f","tt3g35b", "tt3g35c", "tt3g01", 
+          "tt3g10a", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g11b,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSEw, pars=c("(Intercept)","tt3g11b","tt3g38",
+          "tt3g35f","tt3g35b", "tt3g35c", "tt3g01", 
+          "tt3g10a", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g11b,(Intercept)]"))
+
+posterior_interval(fitJOBSEw, prob=0.95,
+           pars=c("(Intercept)","tt3g11b","tt3g38",
+          "tt3g35f","tt3g35b", "tt3g35c", "tt3g01", 
+          "tt3g10a", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g11b,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSEw,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pvalw <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pvalw
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSEw$stan_summary)
+m <- mat["tt3g11b","mean"]
+s <- mat["tt3g11b", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Index of classroom disciplinary climate
+
+```{r}
+fitJOBSE2w <- stan_lmer(
+  t3self ~  t3disc + tt3g01 +  tt3g11b + tt3g10a +  tt3g35h + (1+t3disc|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSE2w, 
+          pars=c("(Intercept)","t3disc", "tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35h", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3disc,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSE2w, 
+          pars=c("(Intercept)","t3disc", "tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35h", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3disc,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSE2w, 
+          pars=c("(Intercept)","t3disc", "tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35h", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3disc,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSE2w, 
+          pars=c("(Intercept)","t3disc", "tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35h", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3disc,(Intercept)]"))
+
+posterior_interval(fitJOBSE2w, prob=0.95, 
+          pars=c("(Intercept)","t3disc", "tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35h", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3disc,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSE2w,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval2w <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval2w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE2w$stan_summary)
+m <- mat["t3disc","mean"]
+s <- mat["t3disc", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Took part in any induction activites at current school
+```{r}
+fitJOBSE3w <- stan_lmer(
+  t3self ~ induction + tt3g01 + tt3g11b + (1+induction|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSE3w, 
+          pars=c("(Intercept)","induction",
+          "tt3g01","tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSE3w, 
+          pars=c("(Intercept)","induction",
+          "tt3g01","tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSE3w, 
+          pars=c("(Intercept)","induction",
+          "tt3g01","tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSE3w, 
+          pars=c("(Intercept)","induction",
+          "tt3g01","tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+
+posterior_interval(fitJOBSE3w, prob=0.95,
+           pars=c("(Intercept)","induction",
+          "tt3g01","tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:induction,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSE3w,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval3w <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval3w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE3w$stan_summary)
+m <- mat["induction","mean"]
+s <- mat["induction", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Induction at current school included team teaching with experienced teachers
+```{r}
+fitJOBSE4w <- stan_lmer(
+  t3self ~ tt3g20g + tt3g01 + tt3g11b + (1+tt3g20g|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSE4w, 
+          pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSE4w, 
+          pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSE4w, 
+          pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSE4w, 
+          pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+
+posterior_interval(fitJOBSE4w, prob=0.95,
+           pars=c("(Intercept)","tt3g20g","tt3g01",
+          "tt3g11b", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g20g,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSE4w,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval4w <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval4w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE4w$stan_summary)
+m <- mat["tt3g20g","mean"]
+s <- mat["tt3g20g", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Professional development in last 12 months had positive impact on teaching practice
+
+```{r}
+fitJOBSE5w <- stan_lmer(
+  t3self ~ tt3g25 + tt3g01 + tt3g11b + tt3g10a + tt3g35b + tt3g35d + tt3g38 + (1+tt3g25|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSE5w, 
+          pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d", 
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSE5w, 
+          pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d", 
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSE5w, 
+          pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d", 
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSE5w, pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d", 
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+
+posterior_interval(fitJOBSE5w, prob=0.95,
+           pars=c("(Intercept)","tt3g25","tt3g01",
+          "tt3g11b","tt3g10a", "tt3g35b", "tt3g35d", 
+          "tt3g38", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g25,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSE5w,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval5w <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval5w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE5w$stan_summary)
+m <- mat["tt3g25","mean"]
+s <- mat["tt3g25", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Index of workplace well-being and stress
+```{r}
+fitJOBSE6w <- stan_lmer(
+  t3self ~ t3wels + tt3g01 + tchagegr + tt3g11b + tt3g10a + tt3g35b + tt3g35d + tt3g35e + (1+t3wels|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSE6w, 
+          pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSE6w, 
+          pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSE6w, 
+          pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSE6w, 
+          pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+
+posterior_interval(fitJOBSE6w, prob=0.95,
+          pars=c("(Intercept)","t3wels","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35b", 
+          "tt3g35d", "tt3g35e" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3wels,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSE6w,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval6w <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval6w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE6w$stan_summary)
+m <- mat["t3wels","mean"]
+s <- mat["t3wels", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Fixed-term contract: less than one school year
+```{r}
+fitJOBSE7w <- stan_lmer(
+  t3self ~ tt3g09 + tt3g01 + tchagegr + tt3g11b + tt3g10a + tt3g35e + tc3g12 + nenrstud + tc3g10 + (1+tt3g09|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSE7w, 
+          pars=c("(Intercept)","tt3g09","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35e", 
+          "tc3g12", "nenrstud", "tc3g10" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g09,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSE7w, 
+          pars=c("(Intercept)","tt3g09","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35e", 
+          "tc3g12", "nenrstud", "tc3g10" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g09,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSE7w, 
+          pars=c("(Intercept)","tt3g09","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35e", 
+          "tc3g12", "nenrstud", "tc3g10" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g09,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSE7w, 
+          pars=c("(Intercept)","tt3g09","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35e", 
+          "tc3g12", "nenrstud", "tc3g10" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g09,(Intercept)]"))
+
+posterior_interval(fitJOBSE7w, prob=0.95,
+          pars=c("(Intercept)","tt3g09","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g35e", 
+          "tc3g12", "nenrstud", "tc3g10" , "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:tt3g09,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSE7w,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval7w <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval7w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE7w$stan_summary)
+m <- mat["tt3g09","mean"]
+s <- mat["tt3g09", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Index of professional collaboration
+```{r}
+fitJOBSE8w <- stan_lmer(
+  t3self ~  t3coles + tt3g01 + tchagegr + tt3g11b + tt3g10a + tt3g48e + tt3g49e + (1+t3coles|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSE8w, 
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSE8w, 
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSE8w, 
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSE8w, 
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+
+posterior_interval(fitJOBSE8w, prob=0.95,
+          pars=c("(Intercept)","t3coles","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3coles,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSE8w,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval8w <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval8w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE8w$stan_summary)
+m <- mat["t3coles","mean"]
+s <- mat["t3coles", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
+
+### Index of target class autonomy
+
+```{r}
+fitJOBSE9w <- stan_lmer(
+  t3self ~  t3satat + tt3g01 + tchagegr + tt3g11b + tt3g10a + tt3g48e + tt3g49e + (1+t3satat|idschool),
+  prior_covariance = decov(regularization=3),
+  iter=5000, thin=10,
+  weights=normWgt,
+  data = TALIS8w
+ ) 
+```
+
+##### Diagnostic plots
+```{r}
+bayesplot::mcmc_trace(fitJOBSE9w, 
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+
+bayesplot::mcmc_acf_bar(fitJOBSE9w, 
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+
+bayesplot::mcmc_dens(fitJOBSE9w, 
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+```
+
+##### Summary Results
+```{r}
+summary(fitJOBSE9w, 
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+
+posterior_interval(fitJOBSE9w, prob=0.95,
+          pars=c("(Intercept)","t3satat","tt3g01",
+          "tchagegr","tt3g11b", "tt3g10a", "tt3g48e", 
+          "tt3g49e", "sigma",
+          "Sigma[idschool:(Intercept),(Intercept)]",
+          "Sigma[idschool:t3satat,(Intercept)]"))
+
+```
+
+##### Posterior predictive plot and Bayesian p-value
+```{r}
+t3self <- TALIS8w$t3self
+t3self_rep <- posterior_predict(fitJOBSE9w,draws=1000)
+ppc_stat(t3self, t3self_rep, stat = "mean")
+pval9w <- mean(apply(t3self_rep, 1, mean) > mean(t3self))
+pval9w
+```
+
+##### Probability estimate is non-zero
+```{r}
+mat <- as.matrix(fitJOBSE9w$stan_summary)
+m <- mat["t3satat","mean"]
+s <- mat["t3satat", "sd"]
+
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+```
