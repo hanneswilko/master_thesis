@@ -19,8 +19,8 @@ options(mc.cores = 4) #for speeding up computation when working with models or i
 # Cleaning Data
 
 ```{r, include = T, message = F}
-teacher <- read_dta("/Users/hannes/Documents/Studium/Master/Master_Thesis/Input_project/Other_data/kaplan_2023/BTGUSAT3.dta")
-princ <- read_dta("/Users/hannes/Documents/Studium/Master/Master_Thesis/Input_project/Other_data/kaplan_2023/BCGUSAT3.dta")
+teacher <- read_dta("./raw_data/BTGUSAT3.dta")
+princ <- read_dta("./raw_data/BCGUSAT3.dta")
 
 raw_teacher <- teacher
 raw_princ <- princ
