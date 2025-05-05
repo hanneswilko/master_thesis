@@ -48,14 +48,6 @@ EPS <- read.csv("./processed_data/OECD_EPS_data.csv")
 #C49_3: In support of introducing energy efficiency standards for appliances and buildings that manufacturers have to comply with
 #C50: In support of low-income households receiving government support to help them pay for energy equipment
 
-
-totalPop = sum(epic$weight_2)
-totalSamp = nrow(epic)
-normWgt = totalSamp/totalPop * epic$weight_2
-totalNormWgt = sum(normWgt)
-totalNormWgt
-
-
 #--------------------------- 3.1 EPIC Data -------------------------------------
 epic <- epic %>%
   mutate(Country_name = case_when(

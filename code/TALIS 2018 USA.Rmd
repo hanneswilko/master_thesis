@@ -12,6 +12,7 @@ library(bayesplot)
 library(ggplot2)
 library(readr)
 library(haven)
+library(here)
 
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
 ```
@@ -19,8 +20,8 @@ options(mc.cores = 4) #for speeding up computation when working with models or i
 # Cleaning Data
 
 ```{r, include = T, message = F}
-teacher <- read_dta("./raw_data/BTGUSAT3.dta")
-princ <- read_dta("./raw_data/BCGUSAT3.dta")
+teacher <- read_dta(here("raw_data", "BTGUSAT3.dta"))
+princ <- read_dta(here("raw_data", "BCGUSAT3.dta"))
 
 raw_teacher <- teacher
 raw_princ <- princ
