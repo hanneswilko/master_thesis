@@ -4,7 +4,8 @@
 # 1. Loading Packages
 # 2. Loading Data
 # 3. Cleaning Data
-# 4. Saving Data
+# 4. Merging Data
+# 5. Saving Data
 
 #-------------------------------------------------------------------------------
 #------------------------ 1. Loading Packages ----------------------------------
@@ -82,13 +83,21 @@ epic_Appliances <- epic %>%
     )
   )
 
+epic_Appliances <- epic_Appliances %>%
+  mutate(
+    Gov_support = case_when(
+      C45_1 == 1 ~ 1, #support
+      TRUE ~ 0 #else no support
+    )
+  )
+
 #filter for cases where adoption is possible
 epic_Appliances <- epic_Appliances %>%
   filter(install_pos != 0) %>% #filter for cases where adoption is possible
   select(ID, weight, weight_2, Country_code, Country_name, Age_cat, Gender, Income,
          S9_US, S9_UK, S9_FR, S9_SE, S9_CH, S9_NL, S9_CA, S9_BE, S9_IL, S5, S18, S19_1, S19_1_1,
          S20, B23_1, B31_5, B31_6, C37_1, C37_2, C37_3, C37_4,
-         C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C50, C44_1, C45_1, C46_1)
+         C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C50, C44_1, Gov_support, C46_1)
 
 #------------------------- Socioeconomic Variables -----------------------------
 #Age_cat
@@ -308,10 +317,36 @@ epic_Appliances <- epic_Appliances %>%
   )
 
 #---------------------------- Selected Data Set  -------------------------------
+epic_Appliances_selected <- epic_Appliances %>%
+  select(ID, weight, weight_2, Country_code, Country_name, Age_cat, Gender, Income,
+         Higher_edu, Home_ownership, Dwelling_house, Dwelling_size, Energy_costs, Rural,
+         Env_concern, Env_policy_public, Env_policy_costs, Env_policy_subsidy,
+         Env_policy_tax, Env_policy_standards, Env_policy_liH,
+         C44_1, Gov_support) %>%
+  rename(
+    Adoption = C44_1
+  )
 
 #---------------------------- 3.2 EPS Data -------------------------------------
+EPS_sub <- EPS %>%
+  select(REF_AREA, TIME_PERIOD, OBS_VALUE) %>%
+  filter(TIME_PERIOD %in% 2010:2020)
 
+#Average EPS per country
+EPS_sub_avg <- EPS_sub %>%
+  group_by(REF_AREA) %>%
+  summarize(EPS = round(mean(OBS_VALUE, na.rm = TRUE),2)) #use summarize to collapse data
 
+#-------------------------------------------------------------------------------
+#-------------------------- 4. Merging Data ------------------------------------
+#-------------------------------------------------------------------------------
+Appliances <- epic_Appliances_selected %>%
+  left_join(EPS_sub_avg, by = c("Country_name" = "REF_AREA"))
+
+#-------------------------------------------------------------------------------
+#--------------------------- 5. Saving Data ------------------------------------
+#-------------------------------------------------------------------------------
+write.csv(Appliances, "./processed_data/appliances.csv", row.names = FALSE)
 
 
 
