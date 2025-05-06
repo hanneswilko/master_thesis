@@ -29,18 +29,20 @@ EPS <- read.csv("./processed_data/OECD_EPS_data.csv")
 #C45_1: Government support for Appliances
 #C46_1: Why not Appliances
 
-#Age_cat: Age categorical
-#Income: Income categorical
-#Gender: Gender 1/2
+#Age_cat: 18-24 = 1, 25-34 = 2, 35-44 = 3, 45-54 = 4, 55+ = 5
+#Gender: Male = 1, Female = 2
+#Income: Income categorical (quintiles)
 #S9_X: Education
 
-#S5: Homeownership
-#S18: Dwelling characteristics
-#S19_X: Dwelling size
-#S20: Area - Rural vs Urban
-#C37_X: Energy costs
+#S5: Homeownership - Living in a residence owned = 1, Living in a residence rented = 2, Living in another type of accommodation no owned = 3
+#S18: Dwelling characteristics - #apartment in a building with less than 12 apartments = 1, apartment in a building with 12 or more apartments = 2
+#     a detached house = 3, A semi-detached/terraced house  = 4, Other = 89
+#S19_X: Dwelling size - Less than 25m2 = 1, 25m2-50m2 = 2, 51m2-75m2 = 3, 76m2-100m2 = 4, 101m2-150m2 = 5, 151m2-200m2 = 6,
+#       More than 200m2 = 7 Don’t know = 888888
+#S20: Area - major town/city = 1, suburban = 2, small town/village = 3, isolated dwelling = 4, Other = 89
+#C37_X: Energy costs - categorical
 
-#B23_1: Environmental concern
+#B23_1: 1 = Not at all important, 2 = Not important, 3 = Somewhat important, 4 = Important, 5 = Very important, 999999 = Prefer not to say 
 #B31_5: Environmental issues should be resolved mainly through public policies
 #B31_6: Environmental policies introduced by the government should not cost me extra money
 #C49_1: In support of providing subsidies to households for purchasing energy-efficient appliances or investing in renewable energy equipment
@@ -69,65 +71,29 @@ epic <- epic %>%
          S20, B23_1, B31_5, B31_6, C37_1, C37_2, C37_3, C37_4,
          C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C50, C44_1, C45_1, C46_1)
 
-#create flagging for HHs where respective EET adoption wasn't possible
-epic_EET <- epic %>%
+#create flag for HHs where respective EET adoption wasn't possible
+epic_Appliances <- epic %>%
   mutate(
     # Highly energy-efficient appliances
-    Appl_p = case_when(
+    install_pos = case_when(
       C44_1 == 1 ~ 1, #if adopted = possible
       C46_1 == 4 ~ 0, #no possible
-      TRUE ~ 1 #else possible
-    ),
-    # Energy-efficient windows
-    Window_p = case_when(
-      C44_3 == 1 ~ 1, #if adopted = possible
-      C46_3 == 4 ~ 0, #no possible
-      TRUE ~ 1 #else possible
-    ),
-    # Thermal insulation
-    Thermal_p = case_when(
-      C44_4 == 1 ~ 1, #if adopted = possible
-      C46_4 == 4 ~ 0, #no possible
-      TRUE ~ 1 #else possible
-    ),
-    # Solar panels for electricity
-    Solare_p = case_when(
-      C44_6 == 1 ~ 1, #if adopted = possible
-      C46_6 == 4 ~ 0, #no possible
-      TRUE ~ 1 #else possible
-    ),
-    # Solar panels for water
-    Solarw_p = case_when(
-      C44_7 == 1 ~ 1, #if adopted = possible
-      C46_7 == 4 ~ 0, #no possible
-      TRUE ~ 1 #else possible
-    ),
-    # Battery storage
-    Battery_p = case_when(
-      C44_8 == 1 ~ 1, #if adopted = possible
-      C46_8 == 4 ~ 0, #no possible
-      TRUE ~ 1 #else possible
-    ),
-    # Heat pumps
-    Pump_p = case_when(
-      C44_9 == 1 ~ 1, #if adopted = possible
-      C46_9 == 4 ~ 0, #no possible
       TRUE ~ 1 #else possible
     )
   )
 
+#filter for cases where adoption is possible
+epic_Appliances <- epic_Appliances %>%
+  filter(install_pos != 0) %>% #filter for cases where adoption is possible
+  select(ID, weight, weight_2, Country_code, Country_name, Age_cat, Gender, Income,
+         S9_US, S9_UK, S9_FR, S9_SE, S9_CH, S9_NL, S9_CA, S9_BE, S9_IL, S5, S18, S19_1, S19_1_1,
+         S20, B23_1, B31_5, B31_6, C37_1, C37_2, C37_3, C37_4,
+         C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C50, C44_1, C45_1, C46_1)
+
 #------------------------- Socioeconomic Variables -----------------------------
-#Age
-attr(epic_raw$Age_cat, "labels")
-#Age_cat: 18-24 = 1, 25-34 = 2, 35-44 = 3, 45-54 = 4, 55+ = 5
-summary(epic$Age_cat)
-
-#Sex
-attr(epic_raw$Gender, "labels")
-#Gender: Male = 1, Female = 2
-summary(epic$Gender)
-
-epic <- epic %>%
+#Age_cat
+#Gender
+epic_Appliances <- epic_Appliances %>%
   mutate(
     Female = case_when(
       Gender == 2 ~ 1,
@@ -136,92 +102,82 @@ epic <- epic %>%
     )
   )
 
-#Income quintile
-attr(epic_raw$Income, "labels")
-attr(epic_raw$S12_1, "labels")
-#Age_cat: 18-24 = 1, 25-34 = 2, 35-44 = 3, 45-54 = 4, 55+ = 5
-summary(epic$Income)
-
-#Education
-attr(epic_raw$S9_CH, "labels")
-#S9_X
-summary(as.factor(epic$S9_SE))
-
-epic <- epic %>%
+#Income quintiles
+#S9_X: Education
+epic_Appliances <- epic_Appliances %>%
   mutate(
     # US
-    Education_US = case_when(
+    Higher_edu_US = case_when(
       S9_US %in% 1:9 ~ 0,  # lower education
       S9_US %in% 10:13 ~ 1, # higher education (Bachelor's, Master's, PhD)
       TRUE ~ NA_real_
     ),
     
     # UK
-    Education_UK = case_when(
+    Higher_edu_UK = case_when(
       S9_UK %in% 1:5 ~ 0,  # up to secondary education
       S9_UK %in% 6:7 ~ 1,  # Bachelor's degree (NVQ4, HNC/HND), Post-graduate diploma
       TRUE ~ NA_real_
     ),
     
     # FR
-    Education_FR = case_when(
+    Higher_edu_FR = case_when(
       S9_FR %in% 1:5 ~ 0,  # Primary, Lower Secondary, or Vocational Upper Secondary education
       S9_FR %in% 6:7 ~ 1,  # Higher education (Bachelor's and Master's)
       TRUE ~ NA_real_
     ),
     
     # SE
-    Education_SE = case_when(
+    Higher_edu_SE = case_when(
       S9_SE %in% 1:3 ~ 0,   # Compulsory or General Upper Secondary education
       S9_SE %in% 4 ~ 1,     # Technical/practical/occupational/research higher education
       TRUE ~ NA_real_
     ),
     
     # CH
-    Education_CH = case_when(
+    Higher_edu_CH = case_when(
       S9_CH %in% 1:5 ~ 0,  # Primary to Vocational Secondary education
       S9_CH %in% 6:8 ~ 1,  # University degree, Master's, or Doctorate
       TRUE ~ NA_real_
     ),
     
     # NL
-    Education_NL = case_when(
+    Higher_edu_NL = case_when(
       S9_NL %in% 1:2 ~ 1,  # HBO, University degree (Bachelor's, Master's, PhD)
       S9_NL %in% 3:7 ~ 0,  
       TRUE ~ NA_real_
     ),
     
     # CA
-    Education_CA = case_when(
+    Higher_edu_CA = case_when(
       S9_CA %in% 1:6 ~ 0,  # Primary, some high school, or graduated high school
       S9_CA %in% 7:8 ~ 1,  # University undergraduate degree or higher
       TRUE ~ NA_real_
     ),
     
     # BE
-    Education_BE = case_when(
+    Higher_edu_BE = case_when(
       S9_BE %in% 1:6 ~ 0,  # Primary, lower secondary, or professional upper secondary education
       S9_BE %in% 7:10 ~ 1, # Bachelor's, Master's, or Doctorate
       TRUE ~ NA_real_
     ),
     
     # IL
-    Education_IL = case_when(
+    Higher_edu_IL = case_when(
       S9_IL %in% 1:3 ~ 0,  # No formal education or High school diploma
       S9_IL %in% 4:5 ~ 1,  # Bachelor's degree or above
       TRUE ~ NA_real_
     ),
     
     # Merge into one variable
-    Edu_level = coalesce(
-      Education_US, Education_UK, Education_FR, Education_SE,
-      Education_CH, Education_NL, Education_CA, Education_BE, Education_IL
+    Higher_edu = coalesce(
+      Higher_edu_US, Higher_edu_UK, Higher_edu_FR, Higher_edu_SE,
+      Higher_edu_CH, Higher_edu_NL, Higher_edu_CA, Higher_edu_BE, Higher_edu_IL
     )
   )
 
 #------------------ Dwelling Characteristics Variables -------------------------
 #Energy costs
-attr(epic_raw$C37_1, "labels")
 #C37_1: energy costs US
 #C37_2: energy costs FR, NL and BE
 #C37_3: energy costs UK
@@ -230,7 +186,7 @@ attr(epic_raw$C37_1, "labels")
 #C37_6: energy costs IL
 #C37_8: energy costs CA
 #creating new variable with merged info on average monthly cost
-epic <- epic %>%
+epic_Appliances <- epic_Appliances %>%
   mutate(
     Energy_costs = case_when(
       Country_name == "US" ~ C37_1,
@@ -246,13 +202,11 @@ epic <- epic %>%
   )
 
 #Home ownership
-attr(epic_raw$S5, "labels")
 #S5
-#Living in a residence owned = 1, Living in a residence rented = 2, Living in another type of accommodation no owned = 3
 #creating new variable of home ownership with only two categories owned/not owned
-epic <- epic %>%
+epic_Appliances <- epic_Appliances %>%
   mutate(
-    Home_owned = case_when(
+    Home_ownership = case_when(
       S5 == 1 ~ 1,           # Owned
       S5 %in% c(2, 3) ~ 0,   # Not owned
       TRUE ~ NA_real_        # Preserve NAs
@@ -260,15 +214,12 @@ epic <- epic %>%
   )
 
 #Dwelling
-attr(epic_raw$S18, "labels")
 #S18
-#apartment in a building with less than 12 apartments = 1, apartment in a building with 12 or more apartments = 2
-#A detached house = 3, A semi-detached/terraced house  = 4, Other = 89
 #creating new variable of home ownership with only two categories owned/not owned
-epic <- epic %>%
+epic_Appliances <- epic_Appliances %>%
   mutate(
     Dwelling_house = case_when(
-      S18 == 3 ~ 1, #detached house
+      S18 == 3 ~ 1, #house
       S18 == 4 ~ 1, #house
       S18 %in% c(1, 2, 89) ~ 0,   #apartment/other
       TRUE ~ NA_real_ #NAs
@@ -276,14 +227,9 @@ epic <- epic %>%
   )
 
 #Dwelling size
-attr(epic_raw$S19_1, "labels")
-attr(epic_raw$S19_1_1, "labels")
-summary(epic$S19_1)
-summary(epic$S19_1_1)
-#S19_1: Rest & S19_1_1: US & CA
-#Less than 25m2 = 1, 25m2-50m2 = 2, 51m2-75m2 = 3, 76m2-100m2 = 4, 101m2-150m2 = 5, 151m2-200m2 = 6, More than 200m2 = 7 Don’t know = 888888
+#S19_X
 #creating new variable for mergerd info auf dwelling size (m2 and ft2)
-epic <- epic %>%
+epic_Appliances <- epic_Appliances %>%
   mutate(
     Dwelling_size = case_when(
       !is.na(S19_1) & S19_1 != 888888 ~ S19_1,
@@ -293,11 +239,9 @@ epic <- epic %>%
   )
 
 #Rural
-attr(epic_raw$S20, "labels")
 #S20 - area
-#major town/city = 1, suburban = 2, small town/village = 3, isolated dwelling = 4, Other = 89
 #creating new variable of home ownership with only two categories owned/not owned
-epic <- epic %>%
+epic_Appliances <- epic_Appliances %>%
   mutate(
     Rural = case_when(
       S20 %in% c(3, 4, 89) ~ 1,
@@ -308,11 +252,9 @@ epic <- epic %>%
 
 #------------------------- Environmental Preference  ---------------------------
 #Environmental concern
-attr(epic_raw$B23_1, "label")
-#B23_1: Not at all important        Not important   Somewhat important            Important       Very important    Prefer not to say 
-summary(epic$B23_1)
+#B23_1
 #create new variable with binary level for low and high environmental concern
-epic <- epic %>%
+epic_Appliances <- epic_Appliances %>%
   mutate(
     Env_concern = ifelse(B23_1 == 999999, NA, B23_1),
     Env_concern = case_when(
@@ -322,38 +264,20 @@ epic <- epic %>%
     )
   )
 
-summary(epic$Env_concern)
 #Environmental issues should be resolved mainly through public policies
-attr(epic_raw$B31_5, "label")
-#Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
-summary(epic$B31_5[epic_EET$B31_5 != 999999])
-
+##Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
 #Environmental policies introduced by the government should not cost me extra money
-attr(epic_raw$B31_6, "label")
-#Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
-summary(epic$B31_6[epic$B31_6 != 999999])
-
+##Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
 #In support of providing subsidies to households for purchasing energy-efficient appliances or investing in renewable energy equipment
-attr(epic_raw$C49_1, "labels")
-#Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
-summary(epic$C49_1)
-
+##Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
 #In support of Taxing energy use or the purchase of appliances and equipment that use a lot of energy
-attr(epic_raw$C49_2, "labels")
-#Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
-summary(epic$C49_2)
-
+##Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
 #In support of introducing energy efficiency standards for appliances and buildings that manufacturers have to comply with
-attr(epic_raw$C49_3, "labels")
-#Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
-summary(epic$C49_3)
-
+##Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
 #In support of low-income households receiving government support to help them pay for energy equipment
-attr(epic_raw$C50, "labels")
-#Yes = 1, No = 2, Don´t know = 3 
-summary(epic$C50[epic$C50 != 3])
+##Yes = 1, No = 2, Don´t know = 3 
 
-epic <- epic %>%
+epic_Appliances <- epic_Appliances %>%
   mutate(
     Env_policy_public = case_when(
       B31_5 %in% c(4, 5) ~ 1,  # Agree or Strongly agree
@@ -365,23 +289,25 @@ epic <- epic %>%
       B31_6 %in% c(3, 4, 5) ~ 0,  # neutral or against paying
       B31_6 == 999999 ~ NA_real_
     ),
-    Supp_Subsidy = case_when(
+    Env_policy_subsidy = case_when(
       C49_1 %in% c(4, 5) ~ 1,  
       C49_1 %in% 1:3 ~ 0  
     ),
-    Supp_Tax = case_when(
+    Env_policy_tax = case_when(
       C49_2 %in% c(4, 5) ~ 1,  
       C49_2 %in% 1:3 ~ 0  
     ),
-    Supp_Standards = case_when(
+    Env_policy_standards = case_when(
       C49_3 %in% c(4, 5) ~ 1,  
       C49_3 %in% 1:3 ~ 0  
     ),
-    Supp_liH = case_when(
+    Env_policy_liH = case_when(
       C50 %in% 1 ~ 1,  
       C50 %in% 2:3 ~ 0  
     ),
   )
+
+#---------------------------- Selected Data Set  -------------------------------
 
 #---------------------------- 3.2 EPS Data -------------------------------------
 
