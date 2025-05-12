@@ -88,7 +88,8 @@ epic_Appliances <- epic_Appliances %>%
     Gov_support = case_when(
       C45_1 == 1 ~ 1, #support
       TRUE ~ 0 #else no support
-    )
+    ),
+    Adoption = ifelse(C44_1 == 1, 1, 0)
   )
 
 #filter for cases where adoption is possible
@@ -97,7 +98,7 @@ epic_Appliances <- epic_Appliances %>%
   select(ID, weight, weight_2, Country_code, Country_name, Age_cat, Gender, Income,
          S9_US, S9_UK, S9_FR, S9_SE, S9_CH, S9_NL, S9_CA, S9_BE, S9_IL, S5, S18, S19_1, S19_1_1,
          S20, B23_1, B31_5, B31_6, C37_1, C37_2, C37_3, C37_4,
-         C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C50, C44_1, Gov_support, C46_1)
+         C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C50, Adoption, Gov_support)
 
 #------------------------- Socioeconomic Variables -----------------------------
 #Age_cat
@@ -243,7 +244,7 @@ epic_Appliances <- epic_Appliances %>%
     Dwelling_size = case_when(
       !is.na(S19_1) & S19_1 != 888888 ~ S19_1,
       !is.na(S19_1_1) & S19_1_1 != 888888 ~ S19_1_1,
-      TRUE ~ NA_integer_
+      TRUE ~ 888888L  # Explicitly assign 'Don't know' code
     )
   )
 
@@ -265,11 +266,9 @@ epic_Appliances <- epic_Appliances %>%
 #create new variable with binary level for low and high environmental concern
 epic_Appliances <- epic_Appliances %>%
   mutate(
-    Env_concern = ifelse(B23_1 == 999999, NA, B23_1),
     Env_concern = case_when(
-      Env_concern %in% c(4, 5) ~ 1, #high
-      Env_concern %in% c(1, 2, 3) ~ 0, #low
-      TRUE ~ NA_real_
+      B23_1 %in% c(4, 5) ~ 1, #high
+      B23_1 %in% c(1, 2, 3, 999999) ~ 0 #low
     )
   )
 
@@ -290,13 +289,11 @@ epic_Appliances <- epic_Appliances %>%
   mutate(
     Env_policy_public = case_when(
       B31_5 %in% c(4, 5) ~ 1,  # Agree or Strongly agree
-      B31_5 %in% c(1, 2, 3) ~ 0,
-      B31_5 == 999999 ~ NA_real_
+      B31_5 %in% c(1, 2, 3, 999999) ~ 0 #neutral or against paying
     ),
     Env_policy_costs = case_when(
       B31_6 %in% c(1, 2) ~ 1,  # Strongly disagree or Disagree = willing to pay
-      B31_6 %in% c(3, 4, 5) ~ 0,  # neutral or against paying
-      B31_6 == 999999 ~ NA_real_
+      B31_6 %in% c(3, 4, 5, 999999) ~ 0  # neutral or against paying
     ),
     Env_policy_subsidy = case_when(
       C49_1 %in% c(4, 5) ~ 1,  
@@ -318,14 +315,11 @@ epic_Appliances <- epic_Appliances %>%
 
 #---------------------------- Selected Data Set  -------------------------------
 epic_Appliances_selected <- epic_Appliances %>%
-  select(ID, weight, weight_2, Country_code, Country_name, Age_cat, Gender, Income,
-         Higher_edu, Home_ownership, Dwelling_house, Dwelling_size, Energy_costs, Rural,
+  select(ID, weight, weight_2, Country_code, Country_name, Age_cat, Female, Income,
+         Higher_edu, Home_ownership, Dwelling_house, Dwelling_size, Rural,
          Env_concern, Env_policy_public, Env_policy_costs, Env_policy_subsidy,
          Env_policy_tax, Env_policy_standards, Env_policy_liH,
-         C44_1, Gov_support) %>%
-  rename(
-    Adoption = C44_1
-  )
+         Adoption, Gov_support)
 
 #---------------------------- 3.2 EPS Data -------------------------------------
 EPS_sub <- EPS %>%
@@ -342,6 +336,26 @@ EPS_sub_avg <- EPS_sub %>%
 #-------------------------------------------------------------------------------
 Appliances <- epic_Appliances_selected %>%
   left_join(EPS_sub_avg, by = c("Country_name" = "REF_AREA"))
+
+#---------------------------- 4.1 Check Data -----------------------------------
+glimpse(Appliances)
+unique(Appliances$Adoption)
+unique(Appliances$Income)
+unique(Appliances$Dwelling_size)
+
+summary(as.factor(Appliances$Dwelling_size)) #coded such that don't know is separate category (since relatively large number)
+
+summary(as.factor(Appliances$Env_concern)) #no NAs
+summary(as.factor(Appliances$Env_policy_public)) #no NAs
+summary(as.factor(Appliances$Env_policy_costs)) #no NAs
+summary(as.factor(Appliances$Env_policy_subsidy)) #no NAs
+summary(as.factor(Appliances$Env_policy_tax)) #no NAs
+summary(as.factor(Appliances$Env_policy_standards)) #no NAs
+summary(as.factor(Appliances$Env_policy_liH)) #no NAs
+#recoded NAs with environmental policy preferences since relatively small number only ~1%
+
+#---------------------------- 4.2 Factoring Data -------------------------------
+
 
 #-------------------------------------------------------------------------------
 #--------------------------- 5. Saving Data ------------------------------------

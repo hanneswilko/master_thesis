@@ -3,13 +3,14 @@
 #-------------------------------------------------------------------------------
 # 1. Loading Packages
 # 2. Loading Data
-# 3. Bayesian Linear Regressions
-## 3.1 Weights and Normalized Weights
-## 3.2 Model Setup
-## 3.3 Diagnostic Plots
-## 3.4 Summary Results
-## 3.5 Posterior predictive plot and Bayesian p-value
-## 3.6 Probability estimate is non-zero
+# 3. Data wrangling
+# 4. Bayesian Linear Regressions
+## 4.1 Weights and Normalized Weights
+## 4.2 Model Setup
+## 4.3 Diagnostic Plots
+## 4.4 Summary Results
+## 4.5 Posterior predictive plot and Bayesian p-value
+## 4.6 Probability estimate is non-zero
 
 #-------------------------------------------------------------------------------
 #------------------------ 1. Loading Packages ----------------------------------
@@ -27,7 +28,14 @@ appliances <- read.csv("./processed_data/appliances.csv")
 View(appliances)
 
 #-------------------------------------------------------------------------------
-#------------------- 3. Bayesian Linear Regressions ----------------------------
+#-------------------------- 3. Data Wrangling ----------------------------------
+#-------------------------------------------------------------------------------
+
+
+
+
+#-------------------------------------------------------------------------------
+#------------------- 4. Bayesian Linear Regressions ----------------------------
 #-------------------------------------------------------------------------------
 
 
