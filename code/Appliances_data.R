@@ -114,6 +114,10 @@ epic_Appliances <- epic_Appliances %>%
 
 #Income quintiles
 #S9_X: Education
+summary(as.factor(epic_Appliances$S9_IL))
+summary(as.factor(epic_Appliances$S9_NL))
+
+
 epic_Appliances <- epic_Appliances %>%
   mutate(
     # US
@@ -154,7 +158,7 @@ epic_Appliances <- epic_Appliances %>%
     # NL
     Higher_edu_NL = case_when(
       S9_NL %in% 1:2 ~ 1,  # HBO, University degree (Bachelor's, Master's, PhD)
-      S9_NL %in% 3:7 ~ 0,  
+      S9_NL %in% c(3:7, 97) ~ 0,  
       TRUE ~ NA_real_
     ),
     
@@ -174,7 +178,7 @@ epic_Appliances <- epic_Appliances %>%
     
     # IL
     Higher_edu_IL = case_when(
-      S9_IL %in% 1:3 ~ 0,  # No formal education or High school diploma
+      S9_IL %in% c(1:3, 89) ~ 0,  # No formal education or High school diploma
       S9_IL %in% 4:5 ~ 1,  # Bachelor's degree or above
       TRUE ~ NA_real_
     ),
@@ -355,7 +359,55 @@ summary(as.factor(Appliances$Env_policy_liH)) #no NAs
 #recoded NAs with environmental policy preferences since relatively small number only ~1%
 
 #---------------------------- 4.2 Factoring Data -------------------------------
+#Dwelling size
+Appliances$Dwelling_size = factor(Appliances$Dwelling_size,
+                           levels = c(1, 2, 3, 4, 5, 6, 7, 888888),
+                           labels = c(
+                             "Less than 25 m²", "26–50 m²", "51–75 m²",
+                             "76–100 m²", "101–150 m²", "151–200 m²",
+                             "More than 200 m²", "Don't know"
+                           ))
 
+Appliances$Dwelling_size <- relevel(Appliances$Dwelling_size, ref = "Less than 25 m²")
+
+
+# Age category
+Appliances$Age_cat <- factor(Appliances$Age_cat,
+                             levels = 1:5,
+                             labels = c("18-24", "25-34", "35-44", "45-54", "55+"))
+
+Appliances$Age_cat <- relevel(Appliances$Age_cat, ref = "18-24")
+
+
+# Income quintile
+Appliances$Income <- factor(Appliances$Income,
+                            levels = 1:5,
+                            labels = c("quintile 1", "quintile 2", "quintile 3", "quintile 4", "quintile 5"))
+
+Appliances$Income <- relevel(Appliances$Income, ref = "quintile 1")
+
+#Country_name
+Appliances <- Appliances %>%
+  mutate(Country_name = factor(Country_name))
+
+glimpse(Appliances)
+
+#------------------------- 4.3 Final Data Check --------------------------------
+#number of observations
+table(Appliances$Country_name)
+
+#distribution of key variables per country
+Appliances %>% group_by(Country_name) %>% summarise(across(c(Income, Age_cat, Dwelling_size), ~n_distinct(.)))
+
+#checking NAs
+missing_data <- colSums(is.na(Appliances))
+print(missing_data)
+
+# Cross-tabulation of Dwelling_size by Country_name
+dwelling_distribution <- table(Appliances$Country_name, Appliances$Dwelling_size)
+print(dwelling_distribution)
+
+glimpse(Appliances)
 
 #-------------------------------------------------------------------------------
 #--------------------------- 5. Saving Data ------------------------------------
