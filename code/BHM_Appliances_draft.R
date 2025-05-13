@@ -43,7 +43,7 @@ fitAppliances <- stan_glmer(
 
 ##### Diagnostic plots 
 bayesplot::mcmc_trace(fitAppliances)
-bayesplot::mcmc_acf_bar(fitAppliances)
+bayesplot::mcmc_acf_bar(fitAppliances) #error --> lookup
 bayesplot::mcmc_hist(fitAppliances)
 
 ##### Summary of results with 95% posterior intervals
@@ -59,10 +59,11 @@ pval
 
 ##### Probability estimate is non-zero
 mat <- as.matrix(fitAppliances$stan_summary)
-m <- mat["Income","mean"]
-s <- mat["Income", "sd"]
+m <- mat["Incomequintile 2","mean"]
+s <- mat["Incomequintile 2", "sd"]
 
-pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T) #not good
+pnorm(0, mean = m, sd = s) #better
 
 ############################## Next steps ######################################
 
