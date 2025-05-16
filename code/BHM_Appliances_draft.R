@@ -87,49 +87,42 @@ fitAppliancesw <- stan_glmer(
 )
 
 ## 3.3 Diagnostic Plots --------------------------------------------------------
-bayesplot::mcmc_trace(fitJOBSAw, 
-                      pars=c("(Intercept)","tt3g08","tt3g01",
-                             "tt3g11b","t3self","sigma",
-                             "Sigma[idschool:(Intercept),(Intercept)]",
-                             "Sigma[idschool:tt3g08,(Intercept)]"))
-
-bayesplot::mcmc_acf_bar(fitJOBSAw, 
-                        pars=c("(Intercept)","tt3g08","tt3g01",
-                               "tt3g11b","t3self","sigma",
-                               "Sigma[idschool:(Intercept),(Intercept)]",
-                               "Sigma[idschool:tt3g08,(Intercept)]"))
-
-bayesplot::mcmc_dens(fitJOBSAw, 
-                     pars=c("(Intercept)","tt3g08","tt3g01",
-                            "tt3g11b","t3self","sigma",
-                            "Sigma[idschool:(Intercept),(Intercept)]",
-                            "Sigma[idschool:tt3g08,(Intercept)]"))
+bayesplot::mcmc_trace(fitAppliancesw)
+bayesplot::mcmc_acf_bar(
+  as.array(fitAppliancesw), 
+  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5"),
+  lags = 10
+) #check per variable or group of variables to increase visibility
+bayesplot::mcmc_hist(fitAppliancesw)
 
 ## 3.4 Summary Results ---------------------------------------------------------
-summary(fitJOBSAw, pars=c("(Intercept)","tt3g08","tt3g01",
-                          "tt3g11b","t3self","sigma",
-                          "Sigma[idschool:(Intercept),(Intercept)]",
-                          "Sigma[idschool:tt3g08,(Intercept)]"))
-
-posterior_interval(fitJOBSAw,prob=0.95,
-                   pars=c("(Intercept)","tt3g08","tt3g01",
-                          "tt3g11b","t3self","sigma",
-                          "Sigma[idschool:(Intercept),(Intercept)]",
-                          "Sigma[idschool:tt3g08,(Intercept)]"))
+summary(fitAppliancesw)
+posterior_interval(fitAppliancesw,prob=0.95)
 
 ## 3.5 Posterior predictive plot and Bayesian p-value --------------------------
-t3jobsa <- TALIS7w$t3jobsa
-t3jobsa_rep <- posterior_predict(fitJOBSAw,draws=1000)
-ppc_stat(t3jobsa, t3jobsa_rep, stat = "mean")
-pvalw <- mean(apply(t3jobsa_rep, 1, mean) > mean(t3jobsa))
-pvalw
+Adoption <- appliances$Adoption
+Adoption_rep <- posterior_predict(fitAppliancesw,draws=1000)
+ppc_stat(Adoption, Adoption_rep, stat = "mean")
+pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
+pval
 
 ## 3.6 Probability estimate is non-zero ----------------------------------------
-mat <- as.matrix(fitJOBSAw$stan_summary)
-m <- mat["tt3g08","mean"]
-s <- mat["tt3g08", "sd"]
+#income
+mat <- as.matrix(fitAppliancesw$stan_summary)
+m <- mat["Incomequintile 2","mean"]
+s <- mat["Incomequintile 2", "sd"]
+pnorm(0, mean = m, sd = s)
 
-pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T)
+#government support
+mat <- as.matrix(fitAppliancesw$stan_summary)
+m <- mat["Gov_support","mean"]
+s <- mat["Gov_support", "sd"]
+
+#prob <0
+pnorm(0, mean = m, sd = s)
+
+#prob >0
+pnorm(0, mean = m, sd = s, lower.tail = FALSE)
 
 
 
