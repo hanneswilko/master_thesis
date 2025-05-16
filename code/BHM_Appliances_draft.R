@@ -17,8 +17,6 @@
 pacman::p_load("dplyr","tidyr","haven", "readr",
                "mice", "rstanarm", "bayesplot", "ggplot2")
 
-options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
-
 #-------------------------------------------------------------------------------
 #-------------------------- 2. Loading Data ------------------------------------
 #-------------------------------------------------------------------------------
@@ -40,10 +38,13 @@ fitAppliances <- stan_glmer(
   data = appliances
 )
 
-
 ##### Diagnostic plots 
 bayesplot::mcmc_trace(fitAppliances)
-bayesplot::mcmc_acf_bar(fitAppliances) #error --> lookup
+bayesplot::mcmc_acf_bar(
+  as.array(fitAppliances), 
+  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5"),
+  lags = 10
+) #check per variable or group of variables to increase visibility
 bayesplot::mcmc_hist(fitAppliances)
 
 ##### Summary of results with 95% posterior intervals
@@ -61,28 +62,29 @@ pval
 mat <- as.matrix(fitAppliances$stan_summary)
 m <- mat["Incomequintile 2","mean"]
 s <- mat["Incomequintile 2", "sd"]
-
-pnorm(m, mean = 0 , sd = s , lower.tail = T) - pnorm(0, mean = 0, sd = s, lower.tail = T) #not good
-pnorm(0, mean = m, sd = s) #better
+pnorm(0, mean = m, sd = s)
 
 ############################## Next steps ######################################
 
 ## 3.1 Weights and Normalized Weights ------------------------------------------
-totalPop = sum(TALIS7w$tchwgt)
-totalSamp = nrow(TALIS7w)
-normWgt = totalSamp/totalPop * TALIS7w$tchwgt
-totalNormWgt = sum(normWgt)
-totalNormWgt
-TALIS7w <-cbind(TALIS7w,normWgt)
+#weights are already normalized
+sum(appliances$weight_2)
+nrow(appliances)
+summary(appliances$weight_2)
 
 ## 3.2 Model Setup -------------------------------------------------------------
-fitJOBSAw <- stan_lmer(
-  t3jobsa ~ tt3g08 + tt3g01 + tt3g11b + t3self + (1+tt3g08|idschool),
-  prior_covariance = decov(regularization=3),
-  iter=5000, thin=10,
-  weights=normWgt,
-  data = TALIS7w
-) 
+options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
+
+fitAppliancesw <- stan_glmer(
+  Adoption ~ Age_cat + Female + Income + Higher_edu + Home_ownership + 
+    Dwelling_house + Dwelling_size + Rural + Env_concern + Gov_support + 
+    (1 | Country_name),
+  family = binomial(link = "logit"),
+  prior_covariance = decov(regularization = 3),
+  iter = 2000, warm = 1000, thin = 1,
+  weights = weight_2,
+  data = appliances
+)
 
 ## 3.3 Diagnostic Plots --------------------------------------------------------
 bayesplot::mcmc_trace(fitJOBSAw, 
