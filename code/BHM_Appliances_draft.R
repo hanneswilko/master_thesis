@@ -250,6 +250,70 @@ pnorm(0, mean = m, sd = s)
 #prob >0
 pnorm(0, mean = m, sd = s, lower.tail = FALSE)
 
+## 3.6 model5 weighted, level-2 predictor: varying intercept and slopes + interaction term --------
+options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
+
+fitAppliances_m5 <- stan_glmer(
+  Adoption ~ Age_cat + Female + Higher_edu + Home_ownership + 
+    Dwelling_house + Dwelling_size + Rural + Env_concern + Gov_support +
+    EPS*Income + (1 + EPS | Country_name),
+  family = binomial(link = "logit"),
+  prior_covariance = decov(regularization = 3),
+  iter = 2000, warm = 1000, thin = 1,
+  weights = weight_2,
+  data = appliances
+)
+
+prior_summary(fitAppliances_m4)
+
+## Diagnostic Plots 
+bayesplot::mcmc_trace(fitAppliances_m4)
+bayesplot::mcmc_acf_bar(
+  as.array(fitAppliances_m4), 
+  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5"),
+  lags = 10
+) #check per variable or group of variables to increase visibility
+bayesplot::mcmc_hist(fitAppliances_m4)
+
+## Summary Results
+summary(fitAppliances_m4)
+posterior_interval(fitAppliances_m4,prob=0.95)
+
+## Posterior predictive plot and Bayesian p-value 
+Adoption <- appliances$Adoption
+Adoption_rep <- posterior_predict(fitAppliances_m4,draws=1000)
+ppc_stat(Adoption, Adoption_rep, stat = "mean")
+pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
+pval
+
+## Probability estimate is non-zero
+
+#income
+mat <- as.matrix(fitAppliances_m4$stan_summary)
+m <- mat["Incomequintile 2","mean"]
+s <- mat["Incomequintile 2", "sd"]
+#prob <0
+pnorm(0, mean = m, sd = s)
+#prob >0
+pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+
+#government support
+mat <- as.matrix(fitAppliances_m4$stan_summary)
+m <- mat["Gov_support","mean"]
+s <- mat["Gov_support", "sd"]
+#prob <0
+pnorm(0, mean = m, sd = s)
+#prob >0
+pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+
+#EPS
+mat <- as.matrix(fitAppliances_m4$stan_summary)
+m <- mat["EPS","mean"]
+s <- mat["EPS", "sd"]
+#prob <0
+pnorm(0, mean = m, sd = s)
+#prob >0
+pnorm(0, mean = m, sd = s, lower.tail = FALSE)
 
 
 
