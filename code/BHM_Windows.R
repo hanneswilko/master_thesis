@@ -232,7 +232,7 @@ prior_summary(fitWindows_m4)
 bayesplot::mcmc_trace(fitWindows_m4)
 bayesplot::mcmc_acf_bar(
   as.array(fitWindows_m4), 
-  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5"),
+  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5","Rural"),
   lags = 10
 ) #check per variable or group of variables to increase visibility
 bayesplot::mcmc_hist(fitWindows_m4)
@@ -287,6 +287,8 @@ saveRDS(fitWindows_m3, "./output/fitWindows_m3.rds")
 saveRDS(fitWindows_m4, "./output/fitWindows_m4.rds")
 
 ############################### Next Steps #####################################
+#interaction government support:EPS model 5
+
 #interpreting results
 library(ggeffects)
 plot(ggpredict(fitAppliances_m5, terms = c("EPS", "Income")))
