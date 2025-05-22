@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 #------------------------ 1. Loading Packages ----------------------------------
 #-------------------------------------------------------------------------------
-pacman::p_load("dplyr","tidyr","haven", "readr",
+pacman::p_load("dplyr","haven", "readr", "bayesrules", "tidyverse", "broom.mixed",
                "mice", "rstanarm", "bayesplot", "ggplot2")
 
 #-------------------------------------------------------------------------------
@@ -175,6 +175,8 @@ bayesplot::mcmc_hist(fitWindows_m3)
 ## Summary Results
 summary(fitWindows_m3)
 posterior_interval(fitWindows_m3,prob=0.95)
+tidy(fitWindows_m3, effects = "ran_pars") #standard deviations random effects
+tidy(fitWindows_m3, effects = "fixed", conf.int = T, conf.level = 0.95)
 
 ## Posterior predictive plot and Bayesian p-value 
 Adoption <- windows$Adoption
