@@ -14,7 +14,7 @@ pacman::p_load("dplyr","haven", "readr", "bayesrules", "tidyverse", "broom.mixed
 #-------------------------------------------------------------------------------
 #-------------------------- 2. Loading Data ------------------------------------
 #-------------------------------------------------------------------------------
-#Appliances
+#windows
 windows <- read.csv("./processed_data/windows.csv")
 View(windows)
 
