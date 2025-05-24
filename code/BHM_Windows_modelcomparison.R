@@ -289,6 +289,8 @@ loo_compare(waic_m1, waic_m2, waic_m3, waic_m3.1, waic_m4, waic_m4.1)
 #--------------------------- 5. BHM results ------------------------------------
 #-------------------------------------------------------------------------------
 
+##results for m3, m3.1, m4, m4.1
+
 posterior_interval(fitWindows_m3.1,prob=0.95)
 tidy(fitWindows_m3.1, effects = "ran_pars") #standard deviations random effects
 tidy(fitWindows_m3.1, effects = "fixed", conf.int = T, conf.level = 0.95)
