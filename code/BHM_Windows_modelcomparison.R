@@ -288,12 +288,21 @@ loo_compare(waic_m1, waic_m2, waic_m3, waic_m3.1, waic_m4, waic_m4.1)
 #-------------------------------------------------------------------------------
 #--------------------------- 5. BHM results ------------------------------------
 #-------------------------------------------------------------------------------
-
 ##results for m3, m3.1, m4, m4.1
 
-posterior_interval(fitWindows_m3.1,prob=0.95)
-tidy(fitWindows_m3.1, effects = "ran_pars") #standard deviations random effects
-tidy(fitWindows_m3.1, effects = "fixed", conf.int = T, conf.level = 0.95)
+#-------------------------- Posterior analysis ---------------------------------
+tidy_rounded <- function(model, effect) {
+  tidy(model, effects = effect, conf.int = TRUE, conf.level = 0.95) %>%
+    mutate(across(where(is.numeric), ~ round(.x, 2)))
+}
+
+#model 3------------------------------------------------------------------------
+m3_fixed <- tidy_rounded(m3, "fixed")
+m3_ran_vals <- tidy_rounded(m3, "ran_vals")
+m3_ran_pars <- tidy_rounded(m3, "ran_pars")
+m3_auxiliary <- tidy_rounded(m3, "auxiliary")
+posterior_interval(m3, prob=0.95)
+
 
 ## Probability estimate is non-zero
 
