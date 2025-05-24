@@ -359,31 +359,31 @@ fitWindows_m4.1 <- stan_glmer(
   data = windows
 )
 
-prior_summary(fitWindows_m4)
+prior_summary(fitWindows_m4.1)
 
 ## Diagnostic Plots 
-bayesplot::mcmc_trace(fitWindows_m4)
+bayesplot::mcmc_trace(fitWindows_m4.1)
 bayesplot::mcmc_acf_bar(
-  as.array(fitWindows_m4), 
+  as.array(fitWindows_m4.1), 
   pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5","Rural"),
   lags = 10
 ) #check per variable or group of variables to increase visibility
-bayesplot::mcmc_hist(fitWindows_m4)
+bayesplot::mcmc_hist(fitWindows_m4.1)
 
 ## Summary Results
-summary(fitWindows_m4)
-posterior_interval(fitWindows_m4,prob=0.95)
+summary(fitWindows_m4.1)
+posterior_interval(fitWindows_m4.1,prob=0.95)
 
 ## Posterior predictive plot and Bayesian p-value 
 Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(fitWindows_m4,draws=1000)
+Adoption_rep <- posterior_predict(fitWindows_m4.1,draws=1000)
 ppc_stat(Adoption, Adoption_rep, stat = "mean")
 pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
 pval
 
 ## Probability estimate is non-zero
 #income
-mat <- as.matrix(fitWindows_m4$stan_summary)
+mat <- as.matrix(fitWindows_m4.1$stan_summary)
 m <- mat["Incomequintile 2","mean"]
 s <- mat["Incomequintile 2", "sd"]
 #prob <0
@@ -392,7 +392,7 @@ pnorm(0, mean = m, sd = s)
 pnorm(0, mean = m, sd = s, lower.tail = FALSE)
 
 #government support
-mat <- as.matrix(fitWindows_m4$stan_summary)
+mat <- as.matrix(fitWindows_m4.1$stan_summary)
 m <- mat["Gov_support","mean"]
 s <- mat["Gov_support", "sd"]
 #prob <0
@@ -401,7 +401,7 @@ pnorm(0, mean = m, sd = s)
 pnorm(0, mean = m, sd = s, lower.tail = FALSE)
 
 #EPS
-mat <- as.matrix(fitWindows_m4$stan_summary)
+mat <- as.matrix(fitWindows_m4.1$stan_summary)
 m <- mat["EPS","mean"]
 s <- mat["EPS", "sd"]
 #prob <0
@@ -418,8 +418,10 @@ saveRDS(fitWindows_m2, "./output/fitWindows_m2.rds")
 saveRDS(fitWindows_m3, "./output/fitWindows_m3.rds")
 #m3.1 - weighted, randowm and fixed effects, varying slope and intercept (EPS|Country)
 saveRDS(fitWindows_m3.1, "./output/fitWindows_m3.1.rds")
-#m4 - weighted, randowm and fixed effects, varying slope and intercept + interactionterm
+#m4 - weighted, randowm and fixed effects, varying slope and intercept + EPS*Income
 saveRDS(fitWindows_m4, "./output/fitWindows_m4.rds")
+#m4.1 - weighted, randowm and fixed effects, varying slope and intercept + EPS*Gov_support
+saveRDS(fitWindows_m4.1, "./output/fitWindows_m4.1.rds")
 
 ############################### Next Steps #####################################
 #interaction government support:EPS model 5
