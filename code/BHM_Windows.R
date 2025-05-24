@@ -43,44 +43,12 @@ fitWindows_m1 <- stan_glmer(
 )
 
 ## Diagnostic Plots 
-bayesplot::mcmc_trace(fitWindows_m1)
-bayesplot::mcmc_acf_bar(
-  as.array(fitWindows_m1), 
-  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5"),
+mcmc_trace(fitWindows_m1)
+mcmc_acf_bar(
+  as.array(fitWindows_m1),
   lags = 10
-) #check per variable or group of variables to increase visibility
-bayesplot::mcmc_hist(fitWindows_m1)
-
-## Summary Results
-summary(fitWindows_m1)
-posterior_interval(fitWindows_m1,prob=0.95)
-
-## Posterior predictive plot and Bayesian p-value 
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(fitWindows_m1,draws=1000)
-ppc_stat(Adoption, Adoption_rep, stat = "mean")
-pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-pval
-
-## Probability estimate is non-zero
-
-#income
-mat <- as.matrix(fitWindows_m1$stan_summary)
-m <- mat["Incomequintile 2","mean"]
-s <- mat["Incomequintile 2", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#government support
-mat <- as.matrix(fitWindows_m1$stan_summary)
-m <- mat["Gov_support","mean"]
-s <- mat["Gov_support", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+)
+mcmc_dens_overlay(fitWindows_m1)
 
 ## 3.3 model2 weighted, level-2 predictor: varying intercept -------------------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
@@ -96,56 +64,13 @@ fitWindows_m2 <- stan_glmer(
   data = windows
 )
 
-prior_summary(fitWindows_m2)
-
 ## Diagnostic Plots 
-bayesplot::mcmc_trace(fitWindows_m2)
-bayesplot::mcmc_acf_bar(
-  as.array(fitWindows_m2), 
-  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5"),
+mcmc_trace(fitWindows_m2)
+mcmc_acf_bar(
+  as.array(fitWindows_m2),
   lags = 10
-) #check per variable or group of variables to increase visibility
-bayesplot::mcmc_hist(fitWindows_m2)
-
-## Summary Results
-summary(fitWindows_m2)
-posterior_interval(fitWindows_m2,prob=0.95)
-
-## Posterior predictive plot and Bayesian p-value 
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(fitWindows_m2,draws=1000)
-ppc_stat(Adoption, Adoption_rep, stat = "mean")
-pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-pval
-
-## Probability estimate is non-zero
-
-#income
-mat <- as.matrix(fitWindows_m2$stan_summary)
-m <- mat["Incomequintile 2","mean"]
-s <- mat["Incomequintile 2", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#government support
-mat <- as.matrix(fitWindows_m2$stan_summary)
-m <- mat["Gov_support","mean"]
-s <- mat["Gov_support", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#EPS
-mat <- as.matrix(fitWindows_m2$stan_summary)
-m <- mat["EPS","mean"]
-s <- mat["EPS", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+)
+mcmc_dens_overlay(fitWindows_m2)
 
 ## 3.4 model3 weighted, level-2 predictor: varying intercept and slopes --------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
@@ -161,58 +86,13 @@ fitWindows_m3 <- stan_glmer(
   data = windows
 )
 
-prior_summary(fitWindows_m3)
-
 ## Diagnostic Plots 
-bayesplot::mcmc_trace(fitWindows_m3)
-bayesplot::mcmc_acf_bar(
-  as.array(fitWindows_m3), 
-  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5"),
+mcmc_trace(fitWindows_m3)
+mcmc_acf_bar(
+  as.array(fitWindows_m3),
   lags = 10
-) #check per variable or group of variables to increase visibility
-bayesplot::mcmc_hist(fitWindows_m3)
-
-## Summary Results
-summary(fitWindows_m3)
-posterior_interval(fitWindows_m3,prob=0.95)
-tidy(fitWindows_m3, effects = "ran_pars") #standard deviations random effects
-tidy(fitWindows_m3, effects = "fixed", conf.int = T, conf.level = 0.95)
-
-## Posterior predictive plot and Bayesian p-value 
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(fitWindows_m3,draws=1000)
-ppc_stat(Adoption, Adoption_rep, stat = "mean")
-pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-pval
-
-## Probability estimate is non-zero
-
-#income
-mat <- as.matrix(fitWindows_m3$stan_summary)
-m <- mat["Incomequintile 2","mean"]
-s <- mat["Incomequintile 2", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#government support
-mat <- as.matrix(fitWindows_m3$stan_summary)
-m <- mat["Gov_support","mean"]
-s <- mat["Gov_support", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#EPS
-mat <- as.matrix(fitWindows_m3$stan_summary)
-m <- mat["EPS","mean"]
-s <- mat["EPS", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+)
+mcmc_dens_overlay(fitWindows_m3)
 
 ## 3.5 model3.1 weighted, level-2 predictor: varying intercept and slopes --------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
@@ -228,58 +108,13 @@ fitWindows_m3.1 <- stan_glmer(
   data = windows
 )
 
-prior_summary(fitWindows_m3.1)
-
 ## Diagnostic Plots 
-bayesplot::mcmc_trace(fitWindows_m3.1)
-bayesplot::mcmc_acf_bar(
-  as.array(fitWindows_m3.1), 
-  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5"),
+mcmc_trace(fitWindows_m3.1)
+mcmc_acf_bar(
+  as.array(fitWindows_m3.1),
   lags = 10
-) #check per variable or group of variables to increase visibility
-bayesplot::mcmc_hist(fitWindows_m3.1)
-
-## Summary Results
-summary(fitWindows_m3.1)
-posterior_interval(fitWindows_m3.1,prob=0.95)
-tidy(fitWindows_m3.1, effects = "ran_pars") #standard deviations random effects
-tidy(fitWindows_m3.1, effects = "fixed", conf.int = T, conf.level = 0.95)
-
-## Posterior predictive plot and Bayesian p-value 
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(fitWindows_m3.1,draws=1000)
-ppc_stat(Adoption, Adoption_rep, stat = "mean")
-pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-pval
-
-## Probability estimate is non-zero
-
-#income
-mat <- as.matrix(fitWindows_m3.1$stan_summary)
-m <- mat["Incomequintile 2","mean"]
-s <- mat["Incomequintile 2", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#government support
-mat <- as.matrix(fitWindows_m3.1$stan_summary)
-m <- mat["Gov_support","mean"]
-s <- mat["Gov_support", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#EPS
-mat <- as.matrix(fitWindows_m3.1$stan_summary)
-m <- mat["EPS","mean"]
-s <- mat["EPS", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+)
+mcmc_dens_overlay(fitWindows_m3.1)
 
 ## 3.6 model4 weighted, level-2 predictor: varying intercept and slopes + interaction term --------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
@@ -295,55 +130,13 @@ fitWindows_m4 <- stan_glmer(
   data = windows
 )
 
-prior_summary(fitWindows_m4)
-
 ## Diagnostic Plots 
-bayesplot::mcmc_trace(fitWindows_m4)
-bayesplot::mcmc_acf_bar(
-  as.array(fitWindows_m4), 
-  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5","Rural"),
+mcmc_trace(fitWindows_m4)
+mcmc_acf_bar(
+  as.array(fitWindows_m4),
   lags = 10
-) #check per variable or group of variables to increase visibility
-bayesplot::mcmc_hist(fitWindows_m4)
-
-## Summary Results
-summary(fitWindows_m4)
-posterior_interval(fitWindows_m4,prob=0.95)
-
-## Posterior predictive plot and Bayesian p-value 
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(fitWindows_m4,draws=1000)
-ppc_stat(Adoption, Adoption_rep, stat = "mean")
-pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-pval
-
-## Probability estimate is non-zero
-#income
-mat <- as.matrix(fitWindows_m4$stan_summary)
-m <- mat["Incomequintile 2","mean"]
-s <- mat["Incomequintile 2", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#government support
-mat <- as.matrix(fitWindows_m4$stan_summary)
-m <- mat["Gov_support","mean"]
-s <- mat["Gov_support", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#EPS
-mat <- as.matrix(fitWindows_m4$stan_summary)
-m <- mat["EPS","mean"]
-s <- mat["EPS", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+)
+mcmc_dens_overlay(fitWindows_m4)
 
 ## 3.7 model4.1 weighted, level-2 predictor: varying intercept and slopes + interaction term --------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
@@ -359,57 +152,15 @@ fitWindows_m4.1 <- stan_glmer(
   data = windows
 )
 
-prior_summary(fitWindows_m4.1)
-
 ## Diagnostic Plots 
-bayesplot::mcmc_trace(fitWindows_m4.1)
-bayesplot::mcmc_acf_bar(
-  as.array(fitWindows_m4.1), 
-  pars = c("Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5","Rural"),
+mcmc_trace(fitWindows_m4.1)
+mcmc_acf_bar(
+  as.array(fitWindows_m4.1),
   lags = 10
-) #check per variable or group of variables to increase visibility
-bayesplot::mcmc_hist(fitWindows_m4.1)
+)
+mcmc_dens_overlay(fitWindows_m4.1)
 
-## Summary Results
-summary(fitWindows_m4.1)
-posterior_interval(fitWindows_m4.1,prob=0.95)
-
-## Posterior predictive plot and Bayesian p-value 
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(fitWindows_m4.1,draws=1000)
-ppc_stat(Adoption, Adoption_rep, stat = "mean")
-pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-pval
-
-## Probability estimate is non-zero
-#income
-mat <- as.matrix(fitWindows_m4.1$stan_summary)
-m <- mat["Incomequintile 2","mean"]
-s <- mat["Incomequintile 2", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#government support
-mat <- as.matrix(fitWindows_m4.1$stan_summary)
-m <- mat["Gov_support","mean"]
-s <- mat["Gov_support", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#EPS
-mat <- as.matrix(fitWindows_m4.1$stan_summary)
-m <- mat["EPS","mean"]
-s <- mat["EPS", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
-
-#SAVING RESULTS
+############################ SAVING RESULTS ####################################
 #m1 - weighted, random effects
 saveRDS(fitWindows_m1, "./output/fitWindows_m1.rds")
 #m2 - weighted, random and fixed effects
@@ -423,12 +174,6 @@ saveRDS(fitWindows_m4, "./output/fitWindows_m4.rds")
 #m4.1 - weighted, randowm and fixed effects, varying slope and intercept + EPS*Gov_support
 saveRDS(fitWindows_m4.1, "./output/fitWindows_m4.1.rds")
 
-############################### Next Steps #####################################
-#interaction government support:EPS model 5
-
-#interpreting results
-library(ggeffects)
-plot(ggpredict(fitAppliances_m5, terms = c("EPS", "Income")))
 
 
 
