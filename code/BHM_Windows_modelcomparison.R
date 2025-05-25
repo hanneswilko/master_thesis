@@ -275,7 +275,7 @@ pval
 #------------------------- 4. BHM comparison -----------------------------------
 #-------------------------------------------------------------------------------
 
-#----------------- Watanabe-Akaike Information Criterion -----------------------
+#----------------- Watanabe-Akaike Information Criterion (ELPD) ----------------
 waic_m1 <- waic(m1)
 waic_m2 <- waic(m2)
 waic_m3 <- waic(m3)
@@ -283,7 +283,34 @@ waic_m3.1 <- waic(m3.1)
 waic_m4 <- waic(m4)
 waic_m4.1 <- waic(m4.1)
 
-loo_compare(waic_m1, waic_m2, waic_m3, waic_m3.1, waic_m4, waic_m4.1)
+WAIC <- loo_compare(waic_m1, waic_m2, waic_m3, waic_m3.1, waic_m4, waic_m4.1)
+
+WAIC_df <- as.data.frame(WAIC)
+colnames(WAIC_df) <- c("elpd_diff", "se_diff", "elpd_waic", "se_elpd_waic", 
+                       "p_waic", "se_p_waic", "waic", "se_waic")
+WAIC_summary <- cbind(Model = rownames(WAIC_df), round(WAIC_df, 2))
+rownames(WAIC_summary) <- NULL
+print(WAIC_summary)
+
+#--------------------- Posterior Prediction Summaries --------------------------
+set.seed(84735)
+m1_predictive_summary <- bayesrules::prediction_summary(model = m1, data = windows)
+
+?prediction_summary()
+packageVersion("Matrix")
+sessionInfo()
+ls("package:bayesrules")
+?prediction_summary_cv
+
+windows$Country_name <- as.factor(windows$Country_name)
+
+'prediction_summary_cv(
+  model = m1,
+  data = windows,
+  group = "Country_name",
+  k = 2
+)
+'
 
 #-------------------------------------------------------------------------------
 #--------------------------- 5. BHM results ------------------------------------
@@ -297,37 +324,130 @@ tidy_rounded <- function(model, effect) {
 }
 
 #model 3------------------------------------------------------------------------
+##Output
 m3_fixed <- tidy_rounded(m3, "fixed")
 m3_ran_vals <- tidy_rounded(m3, "ran_vals")
 m3_ran_pars <- tidy_rounded(m3, "ran_pars")
-m3_auxiliary <- tidy_rounded(m3, "auxiliary")
+m3_ran_auxiliary <- tidy_rounded(m3, "auxiliary")
 posterior_interval(m3, prob=0.95)
 
+View(m3_ran_vals)
 
-## Probability estimate is non-zero
+##Probability estimate is non-zero
+get_probabilities <- function(stan_summary, variables) {
+  mat <- as.matrix(stan_summary)
+  
+  results <- lapply(variables, function(var) {
+    m <- mat[var, "mean"]
+    s <- mat[var, "sd"]
+    prob_lt_0 <- pnorm(0, mean = m, sd = s)
+    prob_gt_0 <- pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+    
+    data.frame(
+      Variable = var,
+      Mean = m,
+      SD = s,
+      Prob_LT_0 = prob_lt_0,
+      Prob_GT_0 = prob_gt_0,
+      Prob_Direction = ifelse(prob_gt_0 > 0.95 | prob_lt_0 > 0.95, TRUE, FALSE)
+    )
+  })
+  
+  do.call(rbind, results)
+}
 
-#income
-mat <- as.matrix(fitWindows_m3.1$stan_summary)
-m <- mat["Incomequintile 2","mean"]
-s <- mat["Incomequintile 2", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Incomequintile 2",
+                           "Incomequintile 4", "Incomequintile 5", "Higher_edu",
+                           "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
+                           "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
+                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:SE]",
+                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:NL]",
+                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:BE]",
+                           "b[EPS Country_name:BE]")
+fixed_random_df <- get_probabilities(m3$stan_summary, variables_of_interest)
+# Round only numeric columns
+fixed_random_df[, sapply(summary_df, is.numeric)] <- round(summary_df[, sapply(summary_df, is.numeric)], 2)
 
-#government support
-mat <- as.matrix(fitWindows_m3.1$stan_summary)
-m <- mat["Gov_support","mean"]
-s <- mat["Gov_support", "sd"]
-#prob <0
-pnorm(0, mean = m, sd = s)
-#prob >0
-pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+print(fixed_random_df)
 
-#EPS
-mat <- as.matrix(fitWindows_m3.1$stan_summary)
-m <- mat["EPS","mean"]
-s <- mat["EPS", "sd"]
+ran_pars_df <- as.data.frame(m3_ran_pars)
+colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
+ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
+print(ran_pars_df)
+
+auxiliary_df <- as.data.frame(m3_ran_auxiliary)
+colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
+auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
+print(auxiliary_df)
+
+#model 3.1----------------------------------------------------------------------
+##Output
+m3.1_fixed <- tidy_rounded(m3.1, "fixed")
+m3.1_ran_vals <- tidy_rounded(m3.1, "ran_vals")
+m3.1_ran_pars <- tidy_rounded(m3.1, "ran_pars")
+m3.1_ran_auxiliary <- tidy_rounded(m3.1, "auxiliary")
+posterior_interval(m3.1, prob=0.95)
+
+View(m3.1_ran_pars)
+
+##Probability estimate is non-zero
+get_probabilities <- function(stan_summary, variables) {
+  mat <- as.matrix(stan_summary)
+  
+  results <- lapply(variables, function(var) {
+    m <- mat[var, "mean"]
+    s <- mat[var, "sd"]
+    prob_lt_0 <- pnorm(0, mean = m, sd = s)
+    prob_gt_0 <- pnorm(0, mean = m, sd = s, lower.tail = FALSE)
+    
+    data.frame(
+      Variable = var,
+      Mean = m,
+      SD = s,
+      Prob_LT_0 = prob_lt_0,
+      Prob_GT_0 = prob_gt_0,
+      Prob_Direction = ifelse(prob_gt_0 > 0.95 | prob_lt_0 > 0.95, TRUE, FALSE)
+    )
+  })
+  
+  do.call(rbind, results)
+}
+
+variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Incomequintile 2",
+                           "Incomequintile 4", "Incomequintile 5", "Higher_edu",
+                           "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
+                           "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
+                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:SE]",
+                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:NL]",
+                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:BE]",
+                           "b[EPS Country_name:BE]")
+fixed_random_df <- get_probabilities(m3.1$stan_summary, variables_of_interest)
+# Round only numeric columns
+fixed_random_df[, sapply(summary_df, is.numeric)] <- round(summary_df[, sapply(summary_df, is.numeric)], 2)
+
+print(fixed_random_df)
+
+ran_pars_df <- as.data.frame(m3.1_ran_pars)
+colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
+ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
+print(ran_pars_df)
+
+auxiliary_df <- as.data.frame(m3.1_ran_auxiliary)
+colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
+auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
+print(auxiliary_df)
+
+#Comparison of varying intercepts and slope models -----------------------------
+#?? --> WAIC m3 vs m3.1
+
+
+
+
+
+################################################################################
+mat <- as.matrix(m3$stan_summary)
+m <- mat["b[(Intercept) Country_name:US]","mean"]
+s <- mat["b[(Intercept) Country_name:US]", "sd"]
 #prob <0
 pnorm(0, mean = m, sd = s)
 #prob >0
@@ -335,7 +455,7 @@ pnorm(0, mean = m, sd = s, lower.tail = FALSE)
 
 #interpreting results
 library(ggeffects)
-plot(ggpredict(fitAppliances_m5, terms = c("EPS", "Income")))
+plot(ggpredict(m3, terms = c("EPS", "Income")))
 
 
 
