@@ -470,7 +470,6 @@ colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upp
 auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
 print(auxiliary_df)
 
-
 #model 4.1 ---------------------------------------------------------------------
 ##Output
 m4.1_fixed <- tidy_rounded(m4.1, "fixed")
