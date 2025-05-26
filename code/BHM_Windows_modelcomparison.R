@@ -333,7 +333,7 @@ print(WAIC_all_summary)
 #-------------------------------------------------------------------------------
 #--------------------------- 5. BHM results ------------------------------------
 #-------------------------------------------------------------------------------
-##results for m3, m3.1, m4, m4.1
+##results for m2, m3.1, m4, m4.1
 
 #-------------------------- Posterior analysis ---------------------------------
 tidy_rounded <- function(model, effect) {
@@ -363,25 +363,24 @@ get_probabilities <- function(stan_summary, variables) {
   do.call(rbind, results)
 }
 
-#model 3------------------------------------------------------------------------
+#model 2------------------------------------------------------------------------
 ##Output
-m3_fixed <- tidy_rounded(m3, "fixed")
-m3_ran_vals <- tidy_rounded(m3, "ran_vals")
-m3_ran_pars <- tidy_rounded(m3, "ran_pars")
-m3_ran_auxiliary <- tidy_rounded(m3, "auxiliary")
-posterior_interval(m3, prob=0.95)
+m2_fixed <- tidy_rounded(m2, "fixed")
+m2_ran_vals <- tidy_rounded(m2, "ran_vals")
+m2_ran_pars <- tidy_rounded(m2, "ran_pars")
+m2_ran_auxiliary <- tidy_rounded(m2, "auxiliary")
+posterior_interval(m2, prob=0.95)
 
-View(m3_ran_vals)
+View(m2_ran_vals)
 
 ##Probability estimate is non-zero
 variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Incomequintile 2",
                            "Incomequintile 4", "Incomequintile 5", "Higher_edu",
                            "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
-                           "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
-                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:SE]",
-                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:NL]",
-                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:BE]",
-                           "b[EPS Country_name:BE]")
+                           "b[(Intercept) Country_name:IL]", "b[(Intercept) Country_name:BE]",
+                           "b[(Intercept) Country_name:NL]", "b[(Intercept) Country_name:UK]",
+                           "b[(Intercept) Country_name:CA]", "b[(Intercept) Country_name:CH]",
+                           "b[(Intercept) Country_name:FR]", "b[(Intercept) Country_name:SE]")
 fixed_random_df <- get_probabilities(m3$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
@@ -413,17 +412,21 @@ variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Income
                            "Incomequintile 4", "Incomequintile 5", "Higher_edu",
                            "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
-                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:SE]",
-                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:NL]",
-                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:BE]",
-                           "b[EPS Country_name:BE]")
+                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
+                           "b[EPS Country_name:BE]", "b[(Intercept) Country_name:NL]",
+                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:UK]",
+                           "b[EPS Country_name:UK]", "b[(Intercept) Country_name:CA]",
+                           "b[EPS Country_name:CA]", "b[(Intercept) Country_name:SE]",
+                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:CH]",
+                           "b[EPS Country_name:CH]", "b[(Intercept) Country_name:FR]",
+                           "b[EPS Country_name:FR]")
 fixed_random_df <- get_probabilities(m3.1$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 
 print(fixed_random_df)
 
-ran_pars_df <- as.data.frame(m3.1_ran_pars)
+ran_pars_df <- as.data.frame(m2_ran_pars)
 colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
 ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
 print(ran_pars_df)
@@ -450,10 +453,14 @@ variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Higher
                            "EPS:Incomequintile 4", "EPS:Incomequintile 5",
                            "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
-                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:SE]",
-                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:NL]",
-                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:BE]",
-                           "b[EPS Country_name:BE]")
+                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
+                           "b[EPS Country_name:BE]", "b[(Intercept) Country_name:NL]",
+                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:UK]",
+                           "b[EPS Country_name:UK]", "b[(Intercept) Country_name:CA]",
+                           "b[EPS Country_name:CA]", "b[(Intercept) Country_name:SE]",
+                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:CH]",
+                           "b[EPS Country_name:CH]", "b[(Intercept) Country_name:FR]",
+                           "b[EPS Country_name:FR]")
 fixed_random_df <- get_probabilities(m4$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
@@ -486,10 +493,14 @@ variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Higher
                            "Incomequintile 4", "Incomequintile 5", "EPS:Gov_support",
                            "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
-                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:SE]",
-                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:NL]",
-                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:BE]",
-                           "b[EPS Country_name:BE]")
+                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
+                           "b[EPS Country_name:BE]", "b[(Intercept) Country_name:NL]",
+                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:UK]",
+                           "b[EPS Country_name:UK]", "b[(Intercept) Country_name:CA]",
+                           "b[EPS Country_name:CA]", "b[(Intercept) Country_name:SE]",
+                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:CH]",
+                           "b[EPS Country_name:CH]", "b[(Intercept) Country_name:FR]",
+                           "b[EPS Country_name:FR]")
 fixed_random_df <- get_probabilities(m4.1$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
@@ -507,8 +518,87 @@ auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(
 print(auxiliary_df)
 
 #--------------------------------- Summary -------------------------------------
-#next steps
+#all following summaries and comparisons based on model m3.1, m4 and m2
+#m3.1: varying intercepts and slopes with EPS as group-predictor
+#m4: varying intercepts and slopes with EPS, and interaction term between group- & HH-level predictors EPS:Income
+#m2: varying intercepts with EPS as group-predictor
 
+#MCMC diagnostics --------------------------------------------------------------
+##Plots
+m3.1_mcmc_trace
+m3.1_mcmc_acf_fixed
+m3.1_mcmc_acf_random
+m3.1_mcmc_dens_overlay
+
+m4_mcmc_trace
+m4_mcmc_acf_fixed
+m4_mcmc_acf_random
+m4_mcmc_dens_overlay
+
+m2_mcmc_trace
+m2_mcmc_acf_fixed
+m2_mcmc_acf_random
+m2_mcmc_dens_overlay
+
+##neff-ratio
+m2_neff_df <- data.frame(Parameter = names(m2_neff), Neff = m2_neff, Model = "m2")
+m3.1_neff_df <- data.frame(Parameter = names(m3.1_neff), Neff = m3.1_neff, Model = "m3.1")
+m4_neff_df <- data.frame(Parameter = names(m4_neff), Neff = m4_neff, Model = "m4")
+neff_summary <- rbind(m3.1_neff_df, m4_neff_df, m2_neff_df)
+
+neff_summary_df <- neff_summary %>%
+  group_by(Model) %>%
+  summarize(
+    Min = min(Neff),
+    Q1 = quantile(Neff, 0.25),
+    Median = median(Neff),
+    Mean = mean(Neff),
+    Q3 = quantile(Neff, 0.75),
+    Max = max(Neff),
+    .groups = "drop"
+  )
+
+##Rhat
+m2_rhat_df <- data.frame(Parameter = names(m2_rhat), Rhat = m2_rhat, Model = "m2")
+m3.1_rhat_df <- data.frame(Parameter = names(m3.1_rhat), Rhat = m3.1_rhat, Model = "m3.1")
+m4_rhat_df <- data.frame(Parameter = names(m4_rhat), Rhat = m4_rhat, Model = "m4")
+rhat_summary <- rbind(m3.1_rhat_df, m4_rhat_df, m2_rhat_df)
+
+rhat_summary_df <- rhat_summary %>%
+  group_by(Model) %>%
+  summarize(
+    Min = min(Rhat),
+    Q1 = quantile(Rhat, 0.25),
+    Median = median(Rhat),
+    Mean = mean(Rhat),
+    Q3 = quantile(Rhat, 0.75),
+    Max = max(Rhat),
+    .groups = "drop"
+  )
+
+#Posterior predictive check ----------------------------------------------------
+##plots
+m3.1_ppc
+m2_ppc
+m4_ppc
+
+##posterior predictive p-value
+ppc_pval_df <- data.frame(
+  Model = c("m3.1", "m4", "m2"),
+  pppval = c(m3.1_pval, m4_pval, m2_pval)
+)
+
+# Round to 3 decimal points
+ppc_pval_df$pppval <- round(ppc_pval_df$Posterior_Predictive_p, 3)
+
+# View the table
+ppc_pval_df
+
+#Posterior analysis ------------------------------------------------------------
+##fixed effects
+glimpse(m3.1_fixed)
+glimpse(m4_fixed)
+glimpse(m2_fixed)
 
 
 
