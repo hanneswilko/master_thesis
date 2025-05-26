@@ -16,6 +16,7 @@ pacman::p_load("dplyr","haven", "readr", "bayesrules", "tidyverse", "broom.mixed
 #-------------------------------------------------------------------------------
 #windows
 windows <- read.csv("./processed_data/windows.csv")
+glimpse(windows)
 View(windows)
 
 #-------------------------------------------------------------------------------
@@ -122,7 +123,7 @@ options(mc.cores = 4) #for speeding up computation when working with models or i
 fitWindows_m4 <- stan_glmer(
   Adoption ~ Age_cat + Female + Higher_edu + Home_ownership + 
     Dwelling_house + Dwelling_size + Rural + Env_concern + Gov_support +
-    EPS*Income + (1 + EPS | Country_name),
+    EPS*Income + (EPS | Country_name),
   family = binomial(link = "logit"),
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
@@ -144,7 +145,7 @@ options(mc.cores = 4) #for speeding up computation when working with models or i
 fitWindows_m4.1 <- stan_glmer(
   Adoption ~ Age_cat + Female + Higher_edu + Home_ownership + 
     Dwelling_house + Dwelling_size + Rural + Env_concern + Income +
-    EPS*Gov_support + (1 + EPS | Country_name),
+    EPS*Gov_support + (EPS | Country_name),
   family = binomial(link = "logit"),
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
