@@ -157,6 +157,7 @@ fitWindows_m4.1 <- stan_glmer(
 mcmc_trace(fitWindows_m4.1)
 mcmc_acf_bar(
   as.array(fitWindows_m4.1),
+  pars = c("EPS", "Gov_support", "EPS:Gov_support"),
   lags = 10
 )
 mcmc_dens_overlay(fitWindows_m4.1)
