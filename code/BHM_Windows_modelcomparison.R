@@ -381,21 +381,20 @@ variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Income
                            "b[(Intercept) Country_name:NL]", "b[(Intercept) Country_name:UK]",
                            "b[(Intercept) Country_name:CA]", "b[(Intercept) Country_name:CH]",
                            "b[(Intercept) Country_name:FR]", "b[(Intercept) Country_name:SE]")
-fixed_random_df <- get_probabilities(m3$stan_summary, variables_of_interest)
+fixed_random_df <- get_probabilities(m2$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
+m2_fixed_random <- fixed_random_df
 
-print(fixed_random_df)
-
-ran_pars_df <- as.data.frame(m3_ran_pars)
+ran_pars_df <- as.data.frame(m2_ran_pars)
 colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
 ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
-print(ran_pars_df)
+m2_ran_pars <- ran_pars_df
 
-auxiliary_df <- as.data.frame(m3_ran_auxiliary)
+auxiliary_df <- as.data.frame(m2_ran_auxiliary)
 colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
 auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
-print(auxiliary_df)
+m2_auxiliary <- auxiliary_df
 
 #model 3.1----------------------------------------------------------------------
 ##Output
@@ -423,18 +422,17 @@ variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Income
 fixed_random_df <- get_probabilities(m3.1$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
+m3.1_fixed_random <- fixed_random_df
 
-print(fixed_random_df)
-
-ran_pars_df <- as.data.frame(m2_ran_pars)
+ran_pars_df <- as.data.frame(m3.1_ran_pars)
 colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
 ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
-print(ran_pars_df)
+m3.1_ran_pars <- ran_pars_df
 
 auxiliary_df <- as.data.frame(m3.1_ran_auxiliary)
 colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
 auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
-print(auxiliary_df)
+m3.1_auxiliary <- auxiliary_df
 
 #model 4------------------------------------------------------------------------
 ##Output
@@ -464,18 +462,17 @@ variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Higher
 fixed_random_df <- get_probabilities(m4$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
-
-print(fixed_random_df)
+m4_fixed_random <- fixed_random_df
 
 ran_pars_df <- as.data.frame(m4_ran_pars)
 colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
 ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
-print(ran_pars_df)
+m4_ran_pars <- ran_pars_df
 
 auxiliary_df <- as.data.frame(m4_ran_auxiliary)
 colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
 auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
-print(auxiliary_df)
+m4_auxiliary <- auxiliary_df
 
 #model 4.1 ---------------------------------------------------------------------
 ##Output
@@ -504,18 +501,17 @@ variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Higher
 fixed_random_df <- get_probabilities(m4.1$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
-
-print(fixed_random_df)
+m4.1_fixed_random <- fixed_random_df
 
 ran_pars_df <- as.data.frame(m4.1_ran_pars)
 colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
 ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
-print(ran_pars_df)
+m4.1_ran_pars <- ran_pars_df
 
 auxiliary_df <- as.data.frame(m4.1_ran_auxiliary)
 colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
 auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
-print(auxiliary_df)
+m4.1_auxiliary <- auxiliary_df
 
 #--------------------------------- Summary -------------------------------------
 #all following summaries and comparisons based on model m3.1, m4 and m2
@@ -588,18 +584,67 @@ ppc_pval_df <- data.frame(
   pppval = c(m3.1_pval, m4_pval, m2_pval)
 )
 
-# Round to 3 decimal points
-ppc_pval_df$pppval <- round(ppc_pval_df$Posterior_Predictive_p, 3)
-
 # View the table
 ppc_pval_df
 
 #Posterior analysis ------------------------------------------------------------
 ##fixed effects
-glimpse(m3.1_fixed)
-glimpse(m4_fixed)
-glimpse(m2_fixed)
+m2_fixed$Model <- "m2"
+m3.1_fixed$Model <- "m3.1"
+m4_fixed$Model <- "m4"
 
+models_fixed <- bind_rows(m2_fixed, m3.1_fixed, m4_fixed)
 
+model_order <- c("m2", "m3.1", "m4")
+col_types <- c("estimate", "std.error", "conf.low", "conf.high")
+
+# Pivot and reorder
+fixed_wide <- models_fixed %>%
+  select(Model, term, all_of(col_types)) %>%
+  pivot_wider(
+    names_from = Model,
+    values_from = all_of(col_types),
+    names_glue = "{Model}_{.value}"
+  ) %>%
+  select(term, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
+
+##fixed effects
+m2_fixed$Model <- "m2"
+m3.1_fixed$Model <- "m3.1"
+m4_fixed$Model <- "m4"
+
+models_fixed <- bind_rows(m2_fixed, m3.1_fixed, m4_fixed)
+
+model_order <- c("m2", "m3.1", "m4")
+col_types <- c("estimate", "std.error", "conf.low", "conf.high")
+
+models_fixed <- models_fixed %>%
+  select(Model, term, all_of(col_types)) %>%
+  pivot_wider(
+    names_from = Model,
+    values_from = all_of(col_types),
+    names_glue = "{Model}_{.value}"
+  ) %>%
+  select(term, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
+
+##random parameter
+m2_ran_pars$Model <- "m2"
+m3.1_ran_pars$Model <- "m3.1"
+m4_ran_pars$Model <- "m4"
+
+models_ran_pars <- bind_rows(m2_ran_pars, m3.1_ran_pars, m4_ran_pars) %>%
+  mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
+  arrange(Model) %>%
+  select(Model, everything())
+
+##auxiliary parameter
+m2_auxiliary$Model <- "m2"
+m3.1_auxiliary$Model <- "m3.1"
+m4_auxiliary$Model <- "m4"
+
+models_auxiliary <- bind_rows(m2_auxiliary, m3.1_auxiliary, m4_auxiliary) %>%
+  mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
+  arrange(Model) %>%
+  select(Model, everything())
 
 
