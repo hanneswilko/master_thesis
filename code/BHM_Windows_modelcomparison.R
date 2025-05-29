@@ -369,7 +369,10 @@ m2_fixed <- tidy_rounded(m2, "fixed")
 m2_ran_vals <- tidy_rounded(m2, "ran_vals")
 m2_ran_pars <- tidy_rounded(m2, "ran_pars")
 m2_ran_auxiliary <- tidy_rounded(m2, "auxiliary")
-posterior_interval(m2, prob=0.95)
+m2_CI <- as.data.frame(posterior_interval(m2, prob=0.95))
+m2_CI <-  m2_CI %>%
+  tibble::rownames_to_column(var = "Parameters") %>%
+  select(Parameters, everything())
 
 View(m2_ran_vals)
 
@@ -402,7 +405,10 @@ m3.1_fixed <- tidy_rounded(m3.1, "fixed")
 m3.1_ran_vals <- tidy_rounded(m3.1, "ran_vals")
 m3.1_ran_pars <- tidy_rounded(m3.1, "ran_pars")
 m3.1_ran_auxiliary <- tidy_rounded(m3.1, "auxiliary")
-posterior_interval(m3.1, prob=0.95)
+m3.1_CI <- as.data.frame(posterior_interval(m3.1, prob=0.95))
+m3.1_CI <-  m3.1_CI %>%
+  tibble::rownames_to_column(var = "Parameters") %>%
+  select(Parameters, everything())
 
 View(m3.1_ran_pars)
 
@@ -439,8 +445,10 @@ m3.1_auxiliary <- auxiliary_df
 m4_fixed <- tidy_rounded(m4, "fixed")
 m4_ran_vals <- tidy_rounded(m4, "ran_vals")
 m4_ran_pars <- tidy_rounded(m4, "ran_pars")
-m4_ran_auxiliary <- tidy_rounded(m4, "auxiliary")
-posterior_interval(m4, prob=0.95)
+m4_CI <- as.data.frame(posterior_interval(m4, prob=0.95))
+m4_CI <- m4_CI %>%
+  tibble::rownames_to_column(var = "Parameters") %>%
+  select(Parameters, everything())
 
 View(m4_ran_vals)
 
@@ -480,7 +488,10 @@ m4.1_fixed <- tidy_rounded(m4.1, "fixed")
 m4.1_ran_vals <- tidy_rounded(m4.1, "ran_vals")
 m4.1_ran_pars <- tidy_rounded(m4.1, "ran_pars")
 m4.1_ran_auxiliary <- tidy_rounded(m4.1, "auxiliary")
-posterior_interval(m4.1, prob=0.95)
+m4.1_CI <- as.data.frame(posterior_interval(m4.1, prob=0.95))
+m4.1_CI <- m4.1_CI %>%
+  tibble::rownames_to_column(var = "Parameters") %>%
+  select(Parameters, everything())
 
 View(m4.1_fixed)
 
@@ -598,7 +609,6 @@ models_fixed <- bind_rows(m2_fixed, m3.1_fixed, m4_fixed)
 model_order <- c("m2", "m3.1", "m4")
 col_types <- c("estimate", "std.error", "conf.low", "conf.high")
 
-# Pivot and reorder
 fixed_wide <- models_fixed %>%
   select(Model, term, all_of(col_types)) %>%
   pivot_wider(
@@ -646,5 +656,33 @@ models_auxiliary <- bind_rows(m2_auxiliary, m3.1_auxiliary, m4_auxiliary) %>%
   mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
   arrange(Model) %>%
   select(Model, everything())
+
+##posterior CI
+m2_CI
+m3.1_CI
+m4_CI
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
