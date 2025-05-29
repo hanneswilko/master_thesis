@@ -658,17 +658,31 @@ models_auxiliary <- bind_rows(m2_auxiliary, m3.1_auxiliary, m4_auxiliary) %>%
   select(Model, everything())
 
 ##posterior CI
-m2_CI
-m3.1_CI
-m4_CI
+m2_CI$Model <- "m2"
+m3.1_CI$Model <- "m3.1"
+m4_CI$Model <- "m4"
 
+models_CI <- bind_rows(m2_CI, m3.1_CI, m4_CI)
 
+model_order <- c("m2", "m3.1", "m4")
+col_types <- c("2.5%", "97.5%")
 
+models_CI <- models_CI %>%
+  select(Model, Parameters, all_of(col_types)) %>%
+  pivot_wider(
+    names_from = Model,
+    values_from = all_of(col_types),
+    names_glue = "{Model}_{.value}"
+  ) %>%
+  select(Parameters, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
 
+View(models_fixed)
 
+models_fixed %>%
+  filter(term %in% c("EPS", "EPS:Incomequintile 2", "EPS:Incomequintile 3", "EPS:Incomequintile 4", "EPS:Incomequintile 5"))
 
-
-
+models_fixed %>%
+  filter(term %in% c("Gov_support"))
 
 
 
