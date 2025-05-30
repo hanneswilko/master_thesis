@@ -10,8 +10,15 @@
 #-------------------------------------------------------------------------------
 #------------------------ 1. Loading Packages ----------------------------------
 #-------------------------------------------------------------------------------
-pacman::p_load("dplyr","haven", "readr", "bayesrules", "tidyverse", "broom.mixed",
-               "mice", "rstanarm", "bayesplot", "ggplot2", "loo")
+
+#install.packages(c("bayesrules", "tidyverse", "janitor", "rstanarm",
+#                   "bayesplot", "tidybayes", "broom.mixed", "modelr",
+#                   "e1071", "forcats"), 
+#                 dependencies = TRUE)
+
+pacman::p_load("bayesrules", "tidyverse", "janitor", "rstanarm",
+               "bayesplot", "tidybayes", "broom.mixed", "modelr",
+               "e1071", "forcats", "dplyr", "ggplot2", "loo", "readr")
 
 #-------------------------------------------------------------------------------
 #-------------------------- 2. Loading Data ------------------------------------
@@ -684,14 +691,17 @@ models_fixed %>%
 models_fixed %>%
   filter(term %in% c("Gov_support"))
 
+#m4.1
+m4.1_fixed %>%
+  filter(term %in% c("EPS", "Gov_support", "EPS:Gov_support"))
 
+m4.1_ran_pars
 
-
-
-
-
-
-
+#m4
+set.seed(84735)
+classification_summary(model = m4, data = windows, cutoff = 0.65)
+exp(.17)
+exp(1.64)
 
 
 
