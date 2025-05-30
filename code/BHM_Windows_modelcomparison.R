@@ -699,7 +699,7 @@ m4.1_ran_pars
 
 #m4
 set.seed(84735)
-classification_summary(model = m4, data = windows, cutoff = 0.65)
+classification_summary(model = m4, data = windows, cutoff = 0.7)
 exp(.17)
 exp(1.64)
 
