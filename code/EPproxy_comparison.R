@@ -4,13 +4,28 @@ pacman::p_load(tidyr, dplyr, oenbr, stringr, openxlsx, zoo, reshape2, data.table
                ggplot2, forcats, tidytext, tidyverse, corrplot)
 
 #------------------------------- Data ------------------------------------------
-EPS <- read.csv("G:/FINMA/01_Mitarbeiter/temporäre Mitarbeiter/FH- Praktikanten/WilkovitsHannes/Training/R_Scripts/EPS.csv")
-CAPFM <- read.csv("G:/FINMA/01_Mitarbeiter/temporäre Mitarbeiter/FH- Praktikanten/WilkovitsHannes/Training/R_Scripts/CAPFM.csv")
+EPS <- read.csv("./processed_data/OECD_EPS_data.csv")
+CAPFM <- read.csv("./raw_data/CAPFM.csv")
 
 View(EPS)
 View(CAPFM)
+unique(CAPFM$Climate.actions.and.policies)
 glimpse(EPS)
 glimpse(CAPFM)
+
+epic <- epic %>%
+  mutate(REF_AREA = case_when(
+    REF_AREA == "USA" ~ "US",
+    REF_AREA == "GBR" ~ "UK",
+    REF_AREA == "FRA" ~ "FR",
+    REF_AREA == "NLD" ~ "NL",
+    REF_AREA == "SWE" ~ "SE",
+    REF_AREA == "CH" ~ "CH",
+    REF_AREA == "ISR" ~ "IL",
+    REF_AREA == "CAN" ~ "CA",
+    REF_AREA == "BEL" ~ "BE",
+    TRUE ~ NA_character_  # Assign NA if no match
+  )) 
 
 #-------------------------------- EPS ------------------------------------------
 EPS_sub <- EPS %>%
