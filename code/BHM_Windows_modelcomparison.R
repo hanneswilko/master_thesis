@@ -605,6 +605,14 @@ ppc_pval_df <- data.frame(
 # View the table
 ppc_pval_df
 
+#Posterior classification ------------------------------------------------------
+print(WAIC_all_summary)
+
+set.seed(84735)
+m2_postclass <- classification_summary(model = m2, data = windows, cutoff = 0.7)
+m3.1_postclass <- classification_summary(model = m3.1, data = windows, cutoff = 0.7)
+m4_postclass <- classification_summary(model = m4, data = windows, cutoff = 0.7)
+
 #Posterior analysis ------------------------------------------------------------
 ##fixed effects
 m2_fixed$Model <- "m2"
@@ -683,25 +691,6 @@ models_CI <- models_CI %>%
   ) %>%
   select(Parameters, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
 
-View(models_fixed)
-
-models_fixed %>%
-  filter(term %in% c("EPS", "EPS:Incomequintile 2", "EPS:Incomequintile 3", "EPS:Incomequintile 4", "EPS:Incomequintile 5"))
-
-models_fixed %>%
-  filter(term %in% c("Gov_support"))
-
-#m4.1
-m4.1_fixed %>%
-  filter(term %in% c("EPS", "Gov_support", "EPS:Gov_support"))
-
-m4.1_ran_pars
-
-#m4
-set.seed(84735)
-classification_summary(model = m4, data = windows, cutoff = 0.7)
-exp(.17)
-exp(1.64)
 
 
 

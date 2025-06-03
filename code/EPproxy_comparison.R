@@ -1,7 +1,7 @@
 #---------------------------- Libraries ----------------------------------------
 # Load libraries
 pacman::p_load(tidyr, dplyr, oenbr, stringr, openxlsx, zoo, reshape2, data.table,
-               ggplot2, forcats, tidytext, tidyverse, corrplot)
+               ggplot2, forcats, tidytext, tidyverse, corrplot, kableExtra)
 
 #------------------------------- Data ------------------------------------------
 EPS <- read.csv("./processed_data/OECD_EPS_data.csv")
@@ -9,18 +9,18 @@ CAPFM <- read.csv("./raw_data/CAPFM.csv")
 
 View(EPS)
 View(CAPFM)
-unique(CAPFM$Climate.actions.and.policies)
+unique(CAPFM$REF_AREA)
 glimpse(EPS)
 glimpse(CAPFM)
 
-epic <- epic %>%
+CAPFM <- CAPFM %>%
   mutate(REF_AREA = case_when(
     REF_AREA == "USA" ~ "US",
     REF_AREA == "GBR" ~ "UK",
     REF_AREA == "FRA" ~ "FR",
     REF_AREA == "NLD" ~ "NL",
     REF_AREA == "SWE" ~ "SE",
-    REF_AREA == "CH" ~ "CH",
+    REF_AREA == "CHE" ~ "CH",
     REF_AREA == "ISR" ~ "IL",
     REF_AREA == "CAN" ~ "CA",
     REF_AREA == "BEL" ~ "BE",
@@ -40,25 +40,25 @@ EPS_avg <- EPS_sub %>%
 #------------------------------ CAPFM ------------------------------------------
 CAPFM_sub <- CAPFM %>%
   filter(TIME_PERIOD %in% 2010:2020) %>%
-  select(REF_AREA, Climate.actions.and.policies, TIME_PERIOD, OBS_VALUE) %>%
+  select(REF_AREA, CLIM_ACT_POL, TIME_PERIOD, OBS_VALUE) %>%
   arrange(REF_AREA, TIME_PERIOD)
 
 glimpse(CAPFM_sub)
-unique(CAPFM_sub$Climate.actions.and.policies)
+unique(CAPFM_sub$CLIM_ACT_POL)
 
 CAPFM_wide <- CAPFM_sub %>%
   pivot_wider(
-    names_from = Climate.actions.and.policies,
+    names_from = CLIM_ACT_POL,
     values_from = OBS_VALUE
   )
 
 CAPFM_avg <- CAPFM_wide %>%
   group_by(REF_AREA) %>% 
   summarize(
-    avg_Buildings_MbI = mean(`Buildings - Market-based instruments`, na.rm = TRUE),
-    avg_Buildings_NMbI = mean(`Buildings - Non market-based instruments`, na.rm = TRUE),
-    avg_Sectoral_policies = mean(`Sectoral policies`, na.rm = TRUE),
-    avg_CrossSectoral_policies = mean(`Cross-sectoral policies`, na.rm = TRUE)
+    avg_Buildings_MbI = mean(LEV2_SEC_B_MBI, na.rm = TRUE),
+    avg_Buildings_NMbI = mean(LEV2_SEC_B_NMBI, na.rm = TRUE),
+    avg_Sectoral_policies = mean(LEV1_SEC, na.rm = TRUE),
+    avg_CrossSectoral_policies = mean(LEV1_CROSS_SEC, na.rm = TRUE)
   )
 
 #------------------------------ Comparison -------------------------------------
@@ -90,40 +90,43 @@ Policy_indicators <- CAPFM_avg_norm %>%
 View(Policy_indicators)
 glimpse(Policy_indicators)
 
+Policy_indicators <- Policy_indicators %>%
+  rename(Country = REF_AREA) %>%
+  rename_with(~ sub("^avg_", "", .x), .cols = starts_with("avg_"))
+
+##table
+Policy_indicators_ranked <- Policy_indicators %>%
+  rowwise() %>%
+  mutate(
+    Overall = mean(c_across(c(Buildings_MbI, Buildings_NMbI, Sectoral_policies, CrossSectoral_policies, EPS)), na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  mutate(
+    Rank = rank(-Overall, ties.method = "min")
+  ) %>%
+  arrange(Rank)
+
+Policy_indicators_ranked <- Policy_indicators_ranked %>%
+  mutate(across(where(is.numeric), ~ round(.x, 2)))
+
 #Visual analysis ---------------------------------------------------------------
 Policy_indicators_long <- Policy_indicators %>% #data in long format for ggplot
   pivot_longer(
-    cols = -REF_AREA,
+    cols = -Country,
     names_to = "Indicator",
     values_to = "Value"
   )
 
-##Policy indicators per country
-ggplot(Policy_indicators_long, aes(x = Indicator, y = Value, fill = Indicator)) +
-  geom_col() +
-  facet_wrap(~ REF_AREA, ncol = 4) +
-  labs(
-    title = "Normalized Indicators per Country",
-    x = NULL,
-    y = "Normalized Value (0-1)",
-    fill = "Indicator"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    strip.text = element_text(face = "bold", size = 10),
-    legend.position = "right"    # legend on the right side
-  )
-
 ##Countries per Policy indicator
-Policy_indicators_long2 <- Policy_indicators_long %>%
-  mutate(REF_AREA = reorder_within(REF_AREA, Value, Indicator, FUN = mean, order_by = -Value))
+Policy_indicators_long <- Policy_indicators_long %>%
+  filter(!(Country == "US" & is.na(Value))) %>%
+  mutate(Country = reorder_within(Country, Value, Indicator, FUN = mean, order_by = -Value))
 
-ggplot(Policy_indicators_long2, aes(x = REF_AREA, y = Value, fill = Indicator)) +
-  geom_col(show.legend = FALSE) +
+# Plot
+barchart_Policy_indicators_comparison <- ggplot(Policy_indicators_long, aes(x = Country, y = Value)) +
+  geom_col(fill = "#8da0cb", show.legend = FALSE) +
   facet_wrap(~ Indicator, scales = "free_x", ncol = 2) +
-  scale_x_reordered() +  # important to handle reordered factors inside facets
+  scale_x_reordered() +
   labs(
     title = "Normalized Indicator Values by Country",
     x = "Country",
@@ -131,46 +134,87 @@ ggplot(Policy_indicators_long2, aes(x = REF_AREA, y = Value, fill = Indicator)) 
   ) +
   theme_minimal() +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    strip.text = element_text(face = "bold", size = 11)
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.y = element_text(color = "black", size = 12),
+    axis.text.x = element_text(color = "black", size = 12, angle = 0, hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    panel.grid.major.y = element_line(color = "gray", size = 0.3),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
   )
 
-#Statistical analysis ----------------------------------------------------------
 
+#Statistical analysis ----------------------------------------------------------
 ##Simple correlation matrix
-# Select only the numeric columns for correlation
 num_data <- Policy_indicators %>%
-  select(-REF_AREA) %>%
+  select(-Country) %>%
   na.omit()  # remove rows with NaN
 
 # Calculate correlation matrix
-cor_mat <- cor(num_data)
+cor_mat <- cor(num_data, use = "complete.obs", method = "pearson")
+cor_mat_spearman <- cor(num_data, use = "complete.obs", method = "spearman")
 
-# Plot correlation matrix
-corrplot(cor_mat, method = "color", addCoef.col = "black", tl.col = "black", 
-         number.cex = 0.7, title = "Correlation Between Policy Indicators", mar = c(0,0,1,0))
+# Plot Pearson correlation matrix
+png("./output/corrplot_policy_indicators.pdf", width = 800, height = 600)
+
+corrplot_policy_indicators <- corrplot(
+  cor_mat, method = "color", addCoef.col = "black", tl.col = "black", 
+  number.cex = 0.7, title = "Correlation between Policy Indicators", mar = c(0,0,1,0)
+)
+
+dev.off()
+
+# Plot Spearman correlation matrix
+corrplot_spearman_policy_indicators <- corrplot(
+  cor_mat_spearman, method = "color", addCoef.col = "black", tl.col = "black", 
+  number.cex = 0.7, title = "Spearman Correlation Between Policy Indicators", mar = c(0,0,1,0)
+)
 
 ##Correlations between EPS and rest
-# Select relevant columns, drop rows with NaNs for simplicity
 df <- Policy_indicators %>%
-  select(REF_AREA, avg_EPS, avg_Buildings_MbI, avg_Buildings_NMbI, avg_Sectoral_policies, avg_CrossSectoral_policies) %>%
+  select(Country, EPS, Buildings_MbI, Buildings_NMbI, Sectoral_policies, CrossSectoral_policies) %>%
   na.omit()
 
 # Calculate correlations of avg_EPS with all others
 correlations <- df %>%
   summarise(
-    cor_Buildings_MbI = cor(avg_EPS, avg_Buildings_MbI),
-    cor_Buildings_NMbI = cor(avg_EPS, avg_Buildings_NMbI),
-    cor_Sectoral_policies = cor(avg_EPS, avg_Sectoral_policies),
-    cor_CrossSectoral_policies = cor(avg_EPS, avg_CrossSectoral_policies)
+    cor_Buildings_MbI = cor(EPS, Buildings_MbI),
+    cor_Buildings_NMbI = cor(EPS, Buildings_NMbI),
+    cor_Sectoral_policies = cor(EPS, Sectoral_policies),
+    cor_CrossSectoral_policies = cor(EPS, CrossSectoral_policies)
+  ) %>%
+  mutate(Indicator = "EPS", .before = 1)
+
+correlations <- correlations %>%
+  mutate(across(where(is.numeric), ~ round(.x, 2)))
+
+#--------------------------- Saving Graphs -------------------------------------
+ggsave("./output/barchart_Policy_indicators_comparison.pdf", plot = barchart_Policy_indicators_comparison, dpi = 300, scale = 1.2)
+
+#--------------------------- Ouput Tables --------------------------------------
+
+Policy_indicators_ranked %>%
+  kbl(
+    caption = "Normalized Policy Indicators ranked",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
   )
 
-print(correlations)
-
-
-
-
-
+correlations %>%
+  kbl(
+    caption = "EPS Correlation with other Policy Indicators",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
+  )
 
 
 
