@@ -251,14 +251,44 @@ m4.1_fixed_pars <- m4.1_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m4.1_all_pars
 m4.1_random_pars <- m4.1_all_pars[grepl("^(b\\[|Sigma|cor_)", m4.1_all_pars)]
 
 #Diagnostic Plots 
-m4.1_mcmc_trace <- mcmc_trace(m4.1)
+m4.1_mcmc_trace <- mcmc_trace(m4.1) +
+  ggtitle("MCMC trace plots for model m4.1") + 
+  theme(
+    strip.text = element_text(size = 6), # Adjust facet label text size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)         
+  )
 
-m4.1_mcmc_dens_overlay <- mcmc_dens_overlay(m4.1)
+m4.1_mcmc_dens_overlay <- mcmc_dens_overlay(m4.1) +
+  ggtitle("MCMC density plots for model m4.1") + 
+  theme(
+    strip.text = element_text(size = 6), # Adjust facet label text size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)         
+  )
 
 # ACF for fixed effects
-m4.1_mcmc_acf_fixed <- mcmc_acf_bar(m4.1_array, pars = m4.1_fixed_pars, lags = 10)
+m4.1_mcmc_acf_fixed <- mcmc_acf_bar(m4.1_array, pars = m4.1_fixed_pars, lags = 10) +
+  ggtitle("Autocorrelation plots for model m4.1 - fixed effects") +
+  theme(
+    strip.text = element_text(size = 5),               # Shrink variable headers
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 6),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.spacing = unit(0.2, "lines"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
 # ACF for random effects
-m4.1_mcmc_acf_random <- mcmc_acf_bar(m4.1_array, pars = m4.1_random_pars, lags = 10)
+m4.1_mcmc_acf_random <- mcmc_acf_bar(m4.1_array, pars = m4.1_random_pars, lags = 10) +
+  ggtitle("Autocorrelation plots for model m4.1 - random effects") +
+  theme(
+    strip.text = element_text(size = 5),               # Shrink variable headers
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 6),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.spacing = unit(0.2, "lines"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
 
 #Summary
 m4.1_neff <- neff_ratio(m4.1)
@@ -736,27 +766,10 @@ write_tables_to_tex <- function(tables, outdir) {
 # Run the function
 write_tables_to_tex(tables_list, output_dir)
 
-
-str(m2_postclass)
-m2_postclass
-m3.1_postclass
-m4_postclass
-
-
-
-rhat_summary_df %>%
-  kbl(
-    caption = "Normalized Policy Indicators ranked",
-    format = "latex",
-    booktabs = TRUE
-  ) %>%
-  kable_styling(
-    latex_options = c("striped"),
-    font_size = 10
-  )
-
-
 #--------------------------- Output Plots ---------------------------------------
+ggsave("./output/scatter_EPS_adoption_by_tech_sub.pdf", plot = scatter_EPS_adoption_by_tech_sub, dpi = 300, scale = 1.2)
+
+
 
 m3.1_mcmc_trace
 m3.1_mcmc_acf_fixed
