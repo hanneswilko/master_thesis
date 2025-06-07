@@ -28,12 +28,12 @@ pacman::p_load("bayesrules", "tidyverse", "janitor", "rstanarm",
 windows <- read.csv("./processed_data/windows.csv")
 
 #BHM windows models
-m1 <- read_rds("./output/fitWindows_m1.rds") # varying intercept
-m2 <- read_rds("./output/fitWindows_m2.rds") # varying intercept + group level predictor
-m3 <- read_rds("./output/fitWindows_m3.rds") # varying intercept & slope (1+EPS|country)
-m3.1 <- read_rds("./output/fitWindows_m3.1.rds") # varying intercept & slope (EPS|country)
-m4 <- read_rds("./output/fitWindows_m4.rds") # varying intercept & slope (1+EPS|country) + interaction EPS*Income
-m4.1 <- read_rds("./output/fitWindows_m4.1.rds") # varying intercept & slope (1+EPS|country) + interaction EPS*Gov_support
+m1 <- read_rds("./output/models_rds/fitWindows_m1.rds") # varying intercept
+m2 <- read_rds("./output/models_rds/fitWindows_m2.rds") # varying intercept + group level predictor
+m3 <- read_rds("./output/models_rds/fitWindows_m3.rds") # varying intercept & slope (1+EPS|country)
+m3.1 <- read_rds("./output/models_rds/fitWindows_m3.1.rds") # varying intercept & slope (EPS|country)
+m4 <- read_rds("./output/models_rds/fitWindows_m4.rds") # varying intercept & slope (1+EPS|country) + interaction EPS*Income
+m4.1 <- read_rds("./output/models_rds/fitWindows_m4.1.rds") # varying intercept & slope (1+EPS|country) + interaction EPS*Gov_support
 
 #-------------------------------------------------------------------------------
 #------------------------- 3. BHM evaluation -----------------------------------
@@ -95,14 +95,44 @@ m2_fixed_pars <- m2_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m2_all_pars)]
 m2_random_pars <- m2_all_pars[grepl("^(b\\[|Sigma|cor_)", m2_all_pars)]
 
 #Diagnostic Plots 
-m2_mcmc_trace <- mcmc_trace(m2)
+m2_mcmc_trace <- mcmc_trace(m2) +
+  ggtitle("MCMC trace plots for model m2") + 
+  theme(
+    strip.text = element_text(size = 6), # Adjust facet label text size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)         
+  )
 
-m2_mcmc_dens_overlay <- mcmc_dens_overlay(m2)
+m2_mcmc_dens_overlay <- mcmc_dens_overlay(m2) +
+  ggtitle("MCMC density plots for model m2") + 
+  theme(
+    strip.text = element_text(size = 6), # Adjust facet label text size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)         
+  )
 
 # ACF for fixed effects
-m2_mcmc_acf_fixed <- mcmc_acf_bar(m2_array, pars = m2_fixed_pars, lags = 10)
+m2_mcmc_acf_fixed <- mcmc_acf_bar(m2_array, pars = m2_fixed_pars, lags = 10) +
+  ggtitle("Autocorrelation plots for model m2 - fixed effects") +
+  theme(
+    strip.text = element_text(size = 5),            
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 6),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.spacing = unit(0.2, "lines"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
 # ACF for random effects
-m2_mcmc_acf_random <- mcmc_acf_bar(m2_array, pars = m2_random_pars, lags = 10)
+m2_mcmc_acf_random <- mcmc_acf_bar(m2_array, pars = m2_random_pars, lags = 10) +
+  ggtitle("Autocorrelation plots for model m2 - random effects") +
+  theme(
+    strip.text = element_text(size = 5),            
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 6),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.spacing = unit(0.2, "lines"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
 
 #Summary
 m2_neff <- neff_ratio(m2)
@@ -112,7 +142,13 @@ summary(m2)
 #Posterior predictive checks
 Adoption <- windows$Adoption
 Adoption_rep <- posterior_predict(m2,draws=1000)
-m2_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean")
+m2_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
+  ggtitle("Posterior predictive check for model m2") + 
+  labs(x = "Adoption rate") +
+  theme(
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)   
+  )
 
 #Bayesian p-value
 m2_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
@@ -173,14 +209,44 @@ m3.1_fixed_pars <- m3.1_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m3.1_all_pars
 m3.1_random_pars <- m3.1_all_pars[grepl("^(b\\[|Sigma|cor_)", m3.1_all_pars)]
 
 #Diagnostic Plots 
-m3.1_mcmc_trace <- mcmc_trace(m3.1)
+m3.1_mcmc_trace <- mcmc_trace(m3.1) +
+  ggtitle("MCMC trace plots for model m3.1") + 
+  theme(
+    strip.text = element_text(size = 6), # Adjust facet label text size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)         
+  )
 
-m3.1_mcmc_dens_overlay <- mcmc_dens_overlay(m3.1)
+m3.1_mcmc_dens_overlay <- mcmc_dens_overlay(m3.1)+
+  ggtitle("MCMC trace plots for model m3.1") + 
+  theme(
+    strip.text = element_text(size = 6), # Adjust facet label text size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)         
+  )
 
 # ACF for fixed effects
-m3.1_mcmc_acf_fixed <- mcmc_acf_bar(m3.1_array, pars = m3.1_fixed_pars, lags = 10)
+m3.1_mcmc_acf_fixed <- mcmc_acf_bar(m3.1_array, pars = m3.1_fixed_pars, lags = 10) +
+  ggtitle("Autocorrelation plots for model m3.1 - fixed effects") +
+  theme(
+    strip.text = element_text(size = 5),            
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 6),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.spacing = unit(0.2, "lines"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
 # ACF for random effects
-m3.1_mcmc_acf_random <- mcmc_acf_bar(m3.1_array, pars = m3.1_random_pars, lags = 10)
+m3.1_mcmc_acf_random <- mcmc_acf_bar(m3.1_array, pars = m3.1_random_pars, lags = 10) +
+  ggtitle("Autocorrelation plots for model m3.1 - random effects") +
+  theme(
+    strip.text = element_text(size = 5),            
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 6),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.spacing = unit(0.2, "lines"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
 
 #Summary
 m3.1_neff <- neff_ratio(m3.1)
@@ -190,7 +256,13 @@ summary(m3.1)
 #Posterior predictive checks
 Adoption <- windows$Adoption
 Adoption_rep <- posterior_predict(m3.1,draws=1000)
-m3.1_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean")
+m3.1_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
+  ggtitle("Posterior predictive check for model m3.1") + 
+  labs(x = "Adoption rate") +
+  theme(
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)   
+  )
 
 #Bayesian p-value
 m3.1_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
@@ -212,14 +284,45 @@ m4_fixed_pars <- m4_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m4_all_pars)]
 m4_random_pars <- m4_all_pars[grepl("^(b\\[|Sigma|cor_)", m4_all_pars)]
 
 #Diagnostic Plots 
-m4_mcmc_trace <- mcmc_trace(m4)
+m4_mcmc_trace <- mcmc_trace(m4) +
+  ggtitle("MCMC trace plots for model m4") + 
+  theme(
+    strip.text = element_text(size = 6), # Adjust facet label text size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)         
+  )
 
-m4_mcmc_dens_overlay <- mcmc_dens_overlay(m4)
+m4_mcmc_dens_overlay <- mcmc_dens_overlay(m4) +
+  ggtitle("MCMC density plots for model m4") + 
+  theme(
+    strip.text = element_text(size = 6), # Adjust facet label text size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)         
+  )
 
 # ACF for fixed effects
-m4_mcmc_acf_fixed <- mcmc_acf_bar(m4_array, pars = m4_fixed_pars, lags = 10)
+m4_mcmc_acf_fixed <- mcmc_acf_bar(m4_array, pars = m4_fixed_pars, lags = 10) +
+  ggtitle("Autocorrelation plots for model m4 - fixed effects") +
+  theme(
+    strip.text = element_text(size = 5),            
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 6),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.spacing = unit(0.2, "lines"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
+
 # ACF for random effects
-m4_mcmc_acf_random <- mcmc_acf_bar(m4_array, pars = m4_random_pars, lags = 10)
+m4_mcmc_acf_random <- mcmc_acf_bar(m4_array, pars = m4_random_pars, lags = 10) +
+  ggtitle("Autocorrelation plots for model m4 - random effects") +
+  theme(
+    strip.text = element_text(size = 5),            
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 6),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.spacing = unit(0.2, "lines"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
 
 #Summary
 m4_neff <- neff_ratio(m4)
@@ -251,44 +354,13 @@ m4.1_fixed_pars <- m4.1_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m4.1_all_pars
 m4.1_random_pars <- m4.1_all_pars[grepl("^(b\\[|Sigma|cor_)", m4.1_all_pars)]
 
 #Diagnostic Plots 
-m4.1_mcmc_trace <- mcmc_trace(m4.1) +
-  ggtitle("MCMC trace plots for model m4.1") + 
-  theme(
-    strip.text = element_text(size = 6), # Adjust facet label text size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
-    axis.text.x = element_text(angle = 45, hjust = 1)         
-  )
-
-m4.1_mcmc_dens_overlay <- mcmc_dens_overlay(m4.1) +
-  ggtitle("MCMC density plots for model m4.1") + 
-  theme(
-    strip.text = element_text(size = 6), # Adjust facet label text size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
-    axis.text.x = element_text(angle = 45, hjust = 1)         
-  )
+m4.1_mcmc_trace <- mcmc_trace(m4.1)
+m4.1_mcmc_dens_overlay <- mcmc_dens_overlay(m4.1)
 
 # ACF for fixed effects
-m4.1_mcmc_acf_fixed <- mcmc_acf_bar(m4.1_array, pars = m4.1_fixed_pars, lags = 10) +
-  ggtitle("Autocorrelation plots for model m4.1 - fixed effects") +
-  theme(
-    strip.text = element_text(size = 5),               # Shrink variable headers
-    axis.text = element_text(size = 5),
-    axis.title = element_text(size = 6),
-    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-    panel.spacing = unit(0.2, "lines"),
-    plot.margin = margin(5, 5, 5, 5)
-  )
+m4.1_mcmc_acf_fixed <- mcmc_acf_bar(m4.1_array, pars = m4.1_fixed_pars, lags = 10)
 # ACF for random effects
-m4.1_mcmc_acf_random <- mcmc_acf_bar(m4.1_array, pars = m4.1_random_pars, lags = 10) +
-  ggtitle("Autocorrelation plots for model m4.1 - random effects") +
-  theme(
-    strip.text = element_text(size = 5),               # Shrink variable headers
-    axis.text = element_text(size = 5),
-    axis.title = element_text(size = 6),
-    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-    panel.spacing = unit(0.2, "lines"),
-    plot.margin = margin(5, 5, 5, 5)
-  )
+m4.1_mcmc_acf_random <- mcmc_acf_bar(m4.1_array, pars = m4.1_random_pars, lags = 10)
 
 #Summary
 m4.1_neff <- neff_ratio(m4.1)
@@ -727,7 +799,7 @@ models_CI <- models_CI %>%
 #------------------------------- Output ----------------------------------------
 #-------------------------------------------------------------------------------
 
-#--------------------------- Ouput Tables --------------------------------------
+#--------------------------- Output Tables --------------------------------------
 # List of your data frames:
 tables_list <- list(
   rhat_summary_df = rhat_summary_df,
@@ -767,7 +839,18 @@ write_tables_to_tex <- function(tables, outdir) {
 write_tables_to_tex(tables_list, output_dir)
 
 #--------------------------- Output Plots ---------------------------------------
+##m2
+ggsave("./output/output_windows/m2_mcmc_trace.pdf", plot = m2_mcmc_trace, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m2_mcmc_acf_fixed.pdf", plot = m2_mcmc_acf_fixed, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m2_mcmc_acf_random.pdf", plot = m2_mcmc_acf_random, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m2_mcmc_dens_overlay.pdf", plot = m2_mcmc_dens_overlay, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m2_ppc.pdf", plot = m2_ppc, dpi = 300, scale = 1.2)
+
+##m3.1
 ggsave("./output/scatter_EPS_adoption_by_tech_sub.pdf", plot = scatter_EPS_adoption_by_tech_sub, dpi = 300, scale = 1.2)
+
+
+##m4
 
 
 
@@ -775,20 +858,19 @@ m3.1_mcmc_trace
 m3.1_mcmc_acf_fixed
 m3.1_mcmc_acf_random
 m3.1_mcmc_dens_overlay
+m3.1_ppc
 
 m4_mcmc_trace
 m4_mcmc_acf_fixed
 m4_mcmc_acf_random
 m4_mcmc_dens_overlay
-
-m2_mcmc_trace
-m2_mcmc_acf_fixed
-m2_mcmc_acf_random
-m2_mcmc_dens_overlay
-
-m3.1_ppc
-m2_ppc
 m4_ppc
+
+
+
+
+
+
 
 
 
