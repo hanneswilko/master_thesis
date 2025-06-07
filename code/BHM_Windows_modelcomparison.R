@@ -18,7 +18,8 @@
 
 pacman::p_load("bayesrules", "tidyverse", "janitor", "rstanarm",
                "bayesplot", "tidybayes", "broom.mixed", "modelr",
-               "e1071", "forcats", "dplyr", "ggplot2", "loo", "readr")
+               "e1071", "forcats", "dplyr", "ggplot2", "loo", "readr",
+               "knitr", "kableExtra", "purrr")
 
 #-------------------------------------------------------------------------------
 #-------------------------- 2. Loading Data ------------------------------------
@@ -563,12 +564,12 @@ neff_summary <- rbind(m3.1_neff_df, m4_neff_df, m2_neff_df)
 neff_summary_df <- neff_summary %>%
   group_by(Model) %>%
   summarize(
-    Min = min(Neff),
-    Q1 = quantile(Neff, 0.25),
-    Median = median(Neff),
-    Mean = mean(Neff),
-    Q3 = quantile(Neff, 0.75),
-    Max = max(Neff),
+    Min    = round(min(Neff), 2),
+    Q1     = round(quantile(Neff, 0.25), 2),
+    Median = round(median(Neff), 2),
+    Mean   = round(mean(Neff), 2),
+    Q3     = round(quantile(Neff, 0.75), 2),
+    Max    = round(max(Neff), 2),
     .groups = "drop"
   )
 
@@ -581,12 +582,12 @@ rhat_summary <- rbind(m3.1_rhat_df, m4_rhat_df, m2_rhat_df)
 rhat_summary_df <- rhat_summary %>%
   group_by(Model) %>%
   summarize(
-    Min = min(Rhat),
-    Q1 = quantile(Rhat, 0.25),
-    Median = median(Rhat),
-    Mean = mean(Rhat),
-    Q3 = quantile(Rhat, 0.75),
-    Max = max(Rhat),
+    Min    = sprintf("%.4f", min(Rhat)),
+    Q1     = sprintf("%.4f", quantile(Rhat, 0.25)),
+    Median = sprintf("%.4f", median(Rhat)),
+    Mean   = sprintf("%.4f", mean(Rhat)),
+    Q3     = sprintf("%.4f", quantile(Rhat, 0.75)),
+    Max    = sprintf("%.4f", max(Rhat)),
     .groups = "drop"
   )
 
@@ -598,8 +599,8 @@ m4_ppc
 
 ##posterior predictive p-value
 ppc_pval_df <- data.frame(
-  Model = c("m3.1", "m4", "m2"),
-  pppval = c(m3.1_pval, m4_pval, m2_pval)
+  Model = c("m2", "m3.1", "m4"),
+  pppval = c(m2_pval, m3.1_pval, m4_pval)
 )
 
 # View the table
@@ -613,26 +614,27 @@ m2_postclass <- classification_summary(model = m2, data = windows, cutoff = 0.7)
 m3.1_postclass <- classification_summary(model = m3.1, data = windows, cutoff = 0.7)
 m4_postclass <- classification_summary(model = m4, data = windows, cutoff = 0.7)
 
+accuracy_list <- list(
+  "Model m2" = m2_postclass$accuracy_rates,
+  "Model m3.1" = m3.1_postclass$accuracy_rates,
+  "Model m4" = m4_postclass$accuracy_rates
+)
+
+models_postclass_accuracy <- bind_rows(lapply(names(accuracy_list), function(model) {
+  data.frame(
+    Metric = rownames(accuracy_list[[model]]),
+    Rate = round(unlist(accuracy_list[[model]]), 3),
+    Model = model,
+    row.names = NULL
+  )
+}))
+
+# Pivot to wide format
+models_postclass_accuracy <- models_postclass_accuracy %>%
+  pivot_wider(names_from = Model, values_from = Rate) %>%
+  select(Metric, `Model m2`, `Model m3.1`, `Model m4`)
+
 #Posterior analysis ------------------------------------------------------------
-##fixed effects
-m2_fixed$Model <- "m2"
-m3.1_fixed$Model <- "m3.1"
-m4_fixed$Model <- "m4"
-
-models_fixed <- bind_rows(m2_fixed, m3.1_fixed, m4_fixed)
-
-model_order <- c("m2", "m3.1", "m4")
-col_types <- c("estimate", "std.error", "conf.low", "conf.high")
-
-fixed_wide <- models_fixed %>%
-  select(Model, term, all_of(col_types)) %>%
-  pivot_wider(
-    names_from = Model,
-    values_from = all_of(col_types),
-    names_glue = "{Model}_{.value}"
-  ) %>%
-  select(term, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
-
 ##fixed effects
 m2_fixed$Model <- "m2"
 m3.1_fixed$Model <- "m3.1"
@@ -690,6 +692,101 @@ models_CI <- models_CI %>%
     names_glue = "{Model}_{.value}"
   ) %>%
   select(Parameters, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
+
+#-------------------------------------------------------------------------------
+#------------------------------- Output ----------------------------------------
+#-------------------------------------------------------------------------------
+
+#--------------------------- Ouput Tables --------------------------------------
+# List of your data frames:
+tables_list <- list(
+  rhat_summary_df = rhat_summary_df,
+  neff_summary_df = neff_summary_df,
+  ppc_pval_df = ppc_pval_df,
+  models_postclass_accuracy = models_postclass_accuracy,
+  WAIC_all_summary = WAIC_all_summary,
+  models_fixed = models_fixed,
+  models_ran_pars = models_ran_pars,
+  models_auxiliary = models_auxiliary,
+  models_CI = models_CI
+)
+
+# Output directory:
+output_dir <- "./output"
+
+# Function to write each table as separate .tex file:
+write_tables_to_tex <- function(tables, outdir) {
+  walk2(tables, names(tables), ~ {
+    tex_code <- .x %>%
+      kbl(
+        caption = paste("Dummy caption for", .y),
+        format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        linesep = ""
+      ) %>%
+      kable_styling(latex_options = c("striped"), font_size = 10) %>%
+      as.character()
+    
+    file_path <- file.path(outdir, paste0(.y, ".tex"))
+    writeLines(tex_code, con = file_path)
+  })
+}
+
+# Run the function
+write_tables_to_tex(tables_list, output_dir)
+
+
+str(m2_postclass)
+m2_postclass
+m3.1_postclass
+m4_postclass
+
+
+
+rhat_summary_df %>%
+  kbl(
+    caption = "Normalized Policy Indicators ranked",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
+  )
+
+
+#--------------------------- Output Plots ---------------------------------------
+
+m3.1_mcmc_trace
+m3.1_mcmc_acf_fixed
+m3.1_mcmc_acf_random
+m3.1_mcmc_dens_overlay
+
+m4_mcmc_trace
+m4_mcmc_acf_fixed
+m4_mcmc_acf_random
+m4_mcmc_dens_overlay
+
+m2_mcmc_trace
+m2_mcmc_acf_fixed
+m2_mcmc_acf_random
+m2_mcmc_dens_overlay
+
+m3.1_ppc
+m2_ppc
+m4_ppc
+
+
+
+
+
+
+
+
+
+
+
 
 
 
