@@ -332,7 +332,13 @@ summary(m4)
 #Posterior predictive checks
 Adoption <- windows$Adoption
 Adoption_rep <- posterior_predict(m4,draws=1000)
-m4_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean")
+m4_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
+  ggtitle("Posterior predictive check for model m4") + 
+  labs(x = "Adoption rate") +
+  theme(
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)   
+  )
 
 #Bayesian p-value
 m4_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
@@ -847,18 +853,18 @@ ggsave("./output/output_windows/m2_mcmc_dens_overlay.pdf", plot = m2_mcmc_dens_o
 ggsave("./output/output_windows/m2_ppc.pdf", plot = m2_ppc, dpi = 300, scale = 1.2)
 
 ##m3.1
-ggsave("./output/scatter_EPS_adoption_by_tech_sub.pdf", plot = scatter_EPS_adoption_by_tech_sub, dpi = 300, scale = 1.2)
-
+ggsave("./output/output_windows/m3.1_mcmc_trace.pdf", plot = m3.1_mcmc_trace, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m3.1_mcmc_acf_fixed.pdf", plot = m3.1_mcmc_acf_fixed, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m3.1_mcmc_acf_random.pdf", plot = m3.1_mcmc_acf_random, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m3.1_mcmc_dens_overlay.pdf", plot = m3.1_mcmc_dens_overlay, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m3.1_ppc.pdf", plot = m3.1_ppc, dpi = 300, scale = 1.2)
 
 ##m4
-
-
-
-m3.1_mcmc_trace
-m3.1_mcmc_acf_fixed
-m3.1_mcmc_acf_random
-m3.1_mcmc_dens_overlay
-m3.1_ppc
+ggsave("./output/output_windows/m4_mcmc_trace.pdf", plot = m4_mcmc_trace, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m4_mcmc_acf_fixed.pdf", plot = m4_mcmc_acf_fixed, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m4_mcmc_acf_random.pdf", plot = m4_mcmc_acf_random, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m4_mcmc_dens_overlay.pdf", plot = m4_mcmc_dens_overlay, dpi = 300, scale = 1.2)
+ggsave("./output/output_windows/m4_ppc.pdf", plot = m4_ppc, dpi = 300, scale = 1.2)
 
 m4_mcmc_trace
 m4_mcmc_acf_fixed
