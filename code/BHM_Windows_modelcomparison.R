@@ -493,8 +493,7 @@ m2_CI <-  m2_CI %>%
 View(m2_ran_vals)
 
 ##Probability estimate is non-zero
-variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Incomequintile 2",
-                           "Incomequintile 4", "Incomequintile 5", "Higher_edu",
+variables_of_interest <- c("(Intercept)", "Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5",
                            "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
                            "b[(Intercept) Country_name:IL]", "b[(Intercept) Country_name:BE]",
                            "b[(Intercept) Country_name:NL]", "b[(Intercept) Country_name:UK]",
@@ -504,16 +503,6 @@ fixed_random_df <- get_probabilities(m2$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m2_fixed_random <- fixed_random_df
-
-ran_pars_df <- as.data.frame(m2_ran_pars)
-colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
-ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
-m2_ran_pars <- ran_pars_df
-
-auxiliary_df <- as.data.frame(m2_ran_auxiliary)
-colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
-auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
-m2_auxiliary <- auxiliary_df
 
 #model 3.1----------------------------------------------------------------------
 ##Output
@@ -529,8 +518,7 @@ m3.1_CI <-  m3.1_CI %>%
 View(m3.1_ran_pars)
 
 ##Probability estimate is non-zero
-variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Incomequintile 2",
-                           "Incomequintile 4", "Incomequintile 5", "Higher_edu",
+variables_of_interest <- c("(Intercept)", "Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5",
                            "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
                            "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
@@ -546,16 +534,6 @@ fixed_random_df <- get_probabilities(m3.1$stan_summary, variables_of_interest)
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m3.1_fixed_random <- fixed_random_df
 
-ran_pars_df <- as.data.frame(m3.1_ran_pars)
-colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
-ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
-m3.1_ran_pars <- ran_pars_df
-
-auxiliary_df <- as.data.frame(m3.1_ran_auxiliary)
-colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
-auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
-m3.1_auxiliary <- auxiliary_df
-
 #model 4------------------------------------------------------------------------
 ##Output
 m4_fixed <- tidy_rounded(m4, "fixed")
@@ -569,10 +547,9 @@ m4_CI <- m4_CI %>%
 View(m4_ran_vals)
 
 ##Probability estimate is non-zero
-variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Higher_edu",
-                           "Env_concern", "Gov_support", "EPS", "Incomequintile 2",
-                           "Incomequintile 4", "Incomequintile 5", "EPS:Incomequintile 2", 
-                           "EPS:Incomequintile 4", "EPS:Incomequintile 5",
+variables_of_interest <- c("Env_concern", "Gov_support", "EPS", "Incomequintile 2", "Incomequintile 3",
+                           "Incomequintile 4", "Incomequintile 5", "EPS:Incomequintile 2",
+                           "EPS:Incomequintile 3", "EPS:Incomequintile 4", "EPS:Incomequintile 5",
                            "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
                            "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
@@ -588,16 +565,6 @@ fixed_random_df <- get_probabilities(m4$stan_summary, variables_of_interest)
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m4_fixed_random <- fixed_random_df
 
-ran_pars_df <- as.data.frame(m4_ran_pars)
-colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
-ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
-m4_ran_pars <- ran_pars_df
-
-auxiliary_df <- as.data.frame(m4_ran_auxiliary)
-colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
-auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
-m4_auxiliary <- auxiliary_df
-
 #model 4.1 ---------------------------------------------------------------------
 ##Output
 m4.1_fixed <- tidy_rounded(m4.1, "fixed")
@@ -612,9 +579,8 @@ m4.1_CI <- m4.1_CI %>%
 View(m4.1_fixed)
 
 ##Probability estimate is non-zero
-variables_of_interest <- c("Age_cat25-34", "Age_cat55+", "Age_cat45-54", "Higher_edu",
-                           "Env_concern", "Gov_support", "EPS", "Incomequintile 2",
-                           "Incomequintile 4", "Incomequintile 5", "EPS:Gov_support",
+variables_of_interest <- c("Env_concern", "Gov_support", "EPS", "Incomequintile 2",
+                           "Incomequintile 3", "Incomequintile 4", "Incomequintile 5", "EPS:Gov_support",
                            "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
                            "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
@@ -629,16 +595,6 @@ fixed_random_df <- get_probabilities(m4.1$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m4.1_fixed_random <- fixed_random_df
-
-ran_pars_df <- as.data.frame(m4.1_ran_pars)
-colnames(ran_pars_df) <- c("Term", "Group", "Estimate")
-ran_pars_df$Estimate <- round(ran_pars_df$Estimate, 2)
-m4.1_ran_pars <- ran_pars_df
-
-auxiliary_df <- as.data.frame(m4.1_ran_auxiliary)
-colnames(auxiliary_df) <- c("Term", "Estimate", "Std_Error", "CI_Lower", "CI_Upper")
-auxiliary_df[, sapply(auxiliary_df, is.numeric)] <- round(auxiliary_df[, sapply(auxiliary_df, is.numeric)], 2)
-m4.1_auxiliary <- auxiliary_df
 
 #--------------------------------- Summary -------------------------------------
 #all following summaries and comparisons based on model m3.1, m4 and m2
@@ -806,6 +762,10 @@ models_CI <- models_CI %>%
 #-------------------------------------------------------------------------------
 
 #--------------------------- Output Tables --------------------------------------
+m2_fixed_random
+m3.1_fixed_random
+m4_fixed_random
+
 # List of your data frames:
 tables_list <- list(
   rhat_summary_df = rhat_summary_df,
