@@ -99,7 +99,7 @@ m2_mcmc_trace <- mcmc_trace(m2) +
   ggtitle("MCMC trace plots for model m2") + 
   theme(
     strip.text = element_text(size = 6), # Adjust facet label text size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)         
   )
 
@@ -107,7 +107,7 @@ m2_mcmc_dens_overlay <- mcmc_dens_overlay(m2) +
   ggtitle("MCMC density plots for model m2") + 
   theme(
     strip.text = element_text(size = 6), # Adjust facet label text size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)         
   )
 
@@ -147,7 +147,7 @@ m2_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
   labs(x = "Adoption rate") +
   theme(
     axis.title = element_text(size = 12, face = "bold"),
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)   
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)   
   )
 
 #Bayesian p-value
@@ -213,7 +213,7 @@ m3.1_mcmc_trace <- mcmc_trace(m3.1) +
   ggtitle("MCMC trace plots for model m3.1") + 
   theme(
     strip.text = element_text(size = 6), # Adjust facet label text size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)         
   )
 
@@ -221,7 +221,7 @@ m3.1_mcmc_dens_overlay <- mcmc_dens_overlay(m3.1)+
   ggtitle("MCMC trace plots for model m3.1") + 
   theme(
     strip.text = element_text(size = 6), # Adjust facet label text size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)         
   )
 
@@ -261,7 +261,7 @@ m3.1_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
   labs(x = "Adoption rate") +
   theme(
     axis.title = element_text(size = 12, face = "bold"),
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)   
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)   
   )
 
 #Bayesian p-value
@@ -288,7 +288,7 @@ m4_mcmc_trace <- mcmc_trace(m4) +
   ggtitle("MCMC trace plots for model m4") + 
   theme(
     strip.text = element_text(size = 6), # Adjust facet label text size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)         
   )
 
@@ -296,7 +296,7 @@ m4_mcmc_dens_overlay <- mcmc_dens_overlay(m4) +
   ggtitle("MCMC density plots for model m4") + 
   theme(
     strip.text = element_text(size = 6), # Adjust facet label text size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)         
   )
 
@@ -337,7 +337,7 @@ m4_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
   labs(x = "Adoption rate") +
   theme(
     axis.title = element_text(size = 12, face = "bold"),
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)   
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)   
   )
 
 #Bayesian p-value
