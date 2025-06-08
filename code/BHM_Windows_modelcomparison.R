@@ -866,12 +866,6 @@ ggsave("./output/output_windows/m4_mcmc_acf_random.pdf", plot = m4_mcmc_acf_rand
 ggsave("./output/output_windows/m4_mcmc_dens_overlay.pdf", plot = m4_mcmc_dens_overlay, dpi = 300, scale = 1.2)
 ggsave("./output/output_windows/m4_ppc.pdf", plot = m4_ppc, dpi = 300, scale = 1.2)
 
-m4_mcmc_trace
-m4_mcmc_acf_fixed
-m4_mcmc_acf_random
-m4_mcmc_dens_overlay
-m4_ppc
-
 
 
 
