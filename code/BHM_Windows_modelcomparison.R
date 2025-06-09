@@ -547,7 +547,7 @@ m4_CI <- m4_CI %>%
 View(m4_ran_vals)
 
 ##Probability estimate is non-zero
-variables_of_interest <- c("Env_concern", "Gov_support", "EPS", "Incomequintile 2", "Incomequintile 3",
+variables_of_interest <- c("(Intercept)", "Env_concern", "Gov_support", "EPS", "Incomequintile 2", "Incomequintile 3",
                            "Incomequintile 4", "Incomequintile 5", "EPS:Incomequintile 2",
                            "EPS:Incomequintile 3", "EPS:Incomequintile 4", "EPS:Incomequintile 5",
                            "b[(Intercept) Country_name:US]",
@@ -779,7 +779,7 @@ tables_list <- list(
 )
 
 # Output directory:
-output_dir <- "./output"
+output_dir <- "./output/tables_tex"
 
 # Function to write each table as separate .tex file:
 write_tables_to_tex <- function(tables, outdir) {
