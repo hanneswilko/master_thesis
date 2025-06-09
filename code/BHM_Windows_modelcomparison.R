@@ -762,10 +762,6 @@ models_CI <- models_CI %>%
 #-------------------------------------------------------------------------------
 
 #--------------------------- Output Tables --------------------------------------
-m2_fixed_random
-m3.1_fixed_random
-m4_fixed_random
-
 # List of your data frames:
 tables_list <- list(
   rhat_summary_df = rhat_summary_df,
@@ -776,7 +772,10 @@ tables_list <- list(
   models_fixed = models_fixed,
   models_ran_pars = models_ran_pars,
   models_auxiliary = models_auxiliary,
-  models_CI = models_CI
+  models_CI = models_CI,
+  m2_fixed_random = m2_fixed_random,
+  m3.1_fixed_random = m3.1_fixed_random,
+  m4_fixed_random = m4_fixed_random
 )
 
 # Output directory:
