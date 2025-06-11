@@ -674,9 +674,9 @@ ppc_pval_df
 print(WAIC_all_summary)
 
 set.seed(84735)
-m2_postclass <- classification_summary(model = m2, data = windows, cutoff = 0.7)
-m3.1_postclass <- classification_summary(model = m3.1, data = windows, cutoff = 0.7)
-m4_postclass <- classification_summary(model = m4, data = windows, cutoff = 0.7)
+m2_postclass <- classification_summary(model = m2, data = windows, cutoff = 0.5)
+m3.1_postclass <- classification_summary(model = m3.1, data = windows, cutoff = 0.5)
+m4_postclass <- classification_summary(model = m4, data = windows, cutoff = 0.5)
 
 accuracy_list <- list(
   "Model m2" = m2_postclass$accuracy_rates,
