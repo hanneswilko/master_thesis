@@ -50,6 +50,7 @@ mcmc_acf_bar(
   lags = 10
 )
 mcmc_dens_overlay(fitAppliances_m2)
+
 summary(fitAppliances_m2)
 
 ## 3.3 model3.1 weighted, level-2 predictor: varying intercept and slopes --------
@@ -73,6 +74,8 @@ mcmc_acf_bar(
   lags = 10
 )
 mcmc_dens_overlay(fitAppliances_m3.1)
+
+summary(fitAppliances_m3.1)
 
 ## 3.4 model4 weighted, level-2 predictor: varying intercept and slopes + interaction term --------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
