@@ -99,13 +99,15 @@ mcmc_acf_bar(
 )
 mcmc_dens_overlay(fitAppliances_m4)
 
+summary(fitAppliances_m4)
+
 ############################ SAVING RESULTS ####################################
 #m2 - weighted, random and fixed effects
-saveRDS(fitAppliances_m2, "./output/fitAppliances_m2.rds")
-#m3.1 - weighted, randowm and fixed effects, varying slope and intercept (EPS|Country)
-saveRDS(fitAppliances_m3.1, "./output/fitAppliances_m3.1.rds")
-#m4 - weighted, randowm and fixed effects, varying slope and intercept + EPS*Income
-saveRDS(fitAppliances_m4, "./output/fitAppliances_m4.rds")
+saveRDS(fitAppliances_m2, "./output/models_rds/fitAppliances_m2.rds")
+#m3.1 - weighted, random and fixed effects, varying slope and intercept (EPS|Country)
+saveRDS(fitAppliances_m3.1, "./output/models_rds/fitAppliances_m3.1.rds")
+#m4 - weighted, random and fixed effects, varying slope and intercept + EPS*Income
+saveRDS(fitAppliances_m4, "./output/models_rds/fitAppliances_m4.rds")
 
 
 
