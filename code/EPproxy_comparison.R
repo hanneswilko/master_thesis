@@ -1,6 +1,6 @@
 #---------------------------- Libraries ----------------------------------------
 # Load libraries
-pacman::p_load(tidyr, dplyr, oenbr, stringr, openxlsx, zoo, reshape2, data.table,
+pacman::p_load(tidyr, dplyr, stringr, openxlsx, zoo, reshape2, data.table,
                ggplot2, forcats, tidytext, tidyverse, corrplot, kableExtra)
 
 #------------------------------- Data ------------------------------------------
@@ -156,7 +156,7 @@ cor_mat <- cor(num_data, use = "complete.obs", method = "pearson")
 cor_mat_spearman <- cor(num_data, use = "complete.obs", method = "spearman")
 
 # Plot Pearson correlation matrix
-png("./output/corrplot_policy_indicators.pdf", width = 800, height = 600)
+png("./output/output_desc_stats/corrplot_policy_indicators.pdf", width = 800, height = 600)
 
 corrplot_policy_indicators <- corrplot(
   cor_mat, method = "color", addCoef.col = "black", tl.col = "black", 
@@ -190,7 +190,7 @@ correlations <- correlations %>%
   mutate(across(where(is.numeric), ~ round(.x, 2)))
 
 #--------------------------- Saving Graphs -------------------------------------
-ggsave("./output/barchart_Policy_indicators_comparison.pdf", plot = barchart_Policy_indicators_comparison, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Policy_indicators_comparison.pdf", plot = barchart_Policy_indicators_comparison, dpi = 300, scale = 1.2)
 
 #--------------------------- Ouput Tables --------------------------------------
 
