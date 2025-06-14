@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-#--------------- Bayesian hierarchical model - Headpumps ----------------------
+#--------------- Bayesian hierarchical model - Heatpumps ----------------------
 #-------------------------------------------------------------------------------
 # 1. Loading Packages
 # 2. Loading Data
@@ -14,10 +14,10 @@ pacman::p_load("dplyr","haven", "readr", "bayesrules", "tidyverse", "broom.mixed
 #-------------------------------------------------------------------------------
 #-------------------------- 2. Loading Data ------------------------------------
 #-------------------------------------------------------------------------------
-#headpumps
-headpumps <- read.csv("./processed_data/headpumps.csv")
-glimpse(headpumps)
-View(headpumps)
+#Heatpumps
+Heatpumps <- read.csv("./processed_data/Heatpumps.csv")
+glimpse(Heatpumps)
+View(Heatpumps)
 
 #-------------------------------------------------------------------------------
 #------------------- 3. Bayesian Linear Regressions ----------------------------
@@ -25,14 +25,14 @@ View(headpumps)
 
 # 3.1 Weights and Normalized Weights -------------------------------------------
 #weights are already normalized
-sum(headpumps$weight_2)
-nrow(headpumps)
-summary(headpumps$weight_2)
+sum(Heatpumps$weight_2)
+nrow(Heatpumps)
+summary(Heatpumps$weight_2)
 
 ## 3.2 model2 weighted, level-2 predictor: varying intercept -------------------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
 
-fitHeadpumps_m2 <- stan_glmer(
+fitHeatpumps_m2 <- stan_glmer(
   Adoption ~ Age_cat + Female + Income + Higher_edu + Home_ownership + 
     Dwelling_house + Dwelling_size + Rural + Env_concern + Gov_support +
     EPS + (1 | Country_name),
@@ -40,23 +40,23 @@ fitHeadpumps_m2 <- stan_glmer(
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
   weights = weight_2,
-  data = headpumps
+  data = Heatpumps
 )
 
 ## Diagnostic Plots 
-mcmc_trace(fitHeadpumps_m2)
+mcmc_trace(fitHeatpumps_m2)
 mcmc_acf_bar(
-  as.array(fitHeadpumps_m2),
+  as.array(fitHeatpumps_m2),
   lags = 10
 )
-mcmc_dens_overlay(fitHeadpumps_m2)
+mcmc_dens_overlay(fitHeatpumps_m2)
 
-summary(fitHeadpumps_m2)
+summary(fitHeatpumps_m2)
 
 ## 3.3 model3.1 weighted, level-2 predictor: varying intercept and slopes --------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
 
-fitHeadpumps_m3.1 <- stan_glmer(
+fitHeatpumps_m3.1 <- stan_glmer(
   Adoption ~ Age_cat + Female + Income + Higher_edu + Home_ownership + 
     Dwelling_house + Dwelling_size + Rural + Env_concern + Gov_support +
     EPS + (EPS | Country_name),
@@ -64,23 +64,23 @@ fitHeadpumps_m3.1 <- stan_glmer(
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
   weights = weight_2,
-  data = headpumps
+  data = Heatpumps
 )
 
 ## Diagnostic Plots 
-mcmc_trace(fitHeadpumps_m3.1)
+mcmc_trace(fitHeatpumps_m3.1)
 mcmc_acf_bar(
-  as.array(fitHeadpumps_m3.1),
+  as.array(fitHeatpumps_m3.1),
   lags = 10
 )
-mcmc_dens_overlay(fitHeadpumps_m3.1)
+mcmc_dens_overlay(fitHeatpumps_m3.1)
 
-summary(fitHeadpumps_m3.1)
+summary(fitHeatpumps_m3.1)
 
 ## 3.4 model4 weighted, level-2 predictor: varying intercept and slopes + interaction term --------
 options(mc.cores = 4) #for speeding up computation when working with models or imputation tasks that support parallelization
 
-fitHeadpumps_m4 <- stan_glmer(
+fitHeatpumps_m4 <- stan_glmer(
   Adoption ~ Age_cat + Female + Higher_edu + Home_ownership + 
     Dwelling_house + Dwelling_size + Rural + Env_concern + Gov_support +
     EPS*Income + (EPS | Country_name),
@@ -88,30 +88,30 @@ fitHeadpumps_m4 <- stan_glmer(
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
   weights = weight_2,
-  data = headpumps
+  data = Heatpumps
 )
 
 ## Diagnostic Plots 
-mcmc_trace(fitHeadpumps_m4)
+mcmc_trace(fitHeatpumps_m4)
 mcmc_acf_bar(
-  as.array(fitHeadpumps_m4),
+  as.array(fitHeatpumps_m4),
   lags = 10
 )
-mcmc_dens_overlay(fitHeadpumps_m4)
+mcmc_dens_overlay(fitHeatpumps_m4)
 
-summary(fitHeadpumps_m4)
+summary(fitHeatpumps_m4)
 
 ############################ SAVING RESULTS ####################################
 #m2 - weighted, random and fixed effects
-saveRDS(fitHeadpumps_m2, "./output/models_rds/fitHeadpumps_m2.rds")
+saveRDS(fitHeatpumps_m2, "./output/models_rds/fitHeatpumps_m2.rds")
 #m3.1 - weighted, random and fixed effects, varying slope and intercept (EPS|Country)
-saveRDS(fitHeadpumps_m3.1, "./output/models_rds/fitHeadpumps_m3.1.rds")
+saveRDS(fitHeatpumps_m3.1, "./output/models_rds/fitHeatpumps_m3.1.rds")
 #m4 - weighted, random and fixed effects, varying slope and intercept + EPS*Income
-saveRDS(fitHeadpumps_m4, "./output/models_rds/fitHeadpumps_m4.rds")
+saveRDS(fitHeatpumps_m4, "./output/models_rds/fitHeatpumps_m4.rds")
 
 
 
-
+fitHeatpumps_m3.1 <- read_rds("./output/models_rds/fitHeadpumps_m3.1.rds")
 
 
 

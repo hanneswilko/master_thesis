@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-#-------------------- Data - Headpumps - Model setup --------------------------
+#-------------------- Data - heatpumps - Model setup --------------------------
 #-------------------------------------------------------------------------------
 # 1. Loading Packages
 # 2. Loading Data
@@ -26,9 +26,9 @@ EPS <- read.csv("./processed_data/OECD_EPS_data.csv")
 #-------------------------- 3. Cleaning Data -----------------------------------
 #-------------------------------------------------------------------------------
 
-#C44_9: Headpumps
-#C45_9: Government support for headpumps
-#C46_9: Why not headpumps
+#C44_9: heatpumps
+#C45_9: Government support for heatpumps
+#C46_9: Why not heatpumps
 
 #Age_cat: 18-24 = 1, 25-34 = 2, 35-44 = 3, 45-54 = 4, 55+ = 5
 #Gender: Male = 1, Female = 2
@@ -46,9 +46,9 @@ EPS <- read.csv("./processed_data/OECD_EPS_data.csv")
 #B23_1: 1 = Not at all important, 2 = Not important, 3 = Somewhat important, 4 = Important, 5 = Very important, 999999 = Prefer not to say 
 #B31_5: Environmental issues should be resolved mainly through public policies
 #B31_6: Environmental policies introduced by the government should not cost me extra money
-#C49_1: In support of providing subsidies to households for purchasing energy-efficient headpumps or investing in renewable energy equipment
-#C49_2: In support of Taxing energy use or the purchase of headpumps and equipment that use a lot of energy
-#C49_3: In support of introducing energy efficiency standards for headpumps and buildings that manufacturers have to comply with
+#C49_1: In support of providing subsidies to households for purchasing energy-efficient heatpumps or investing in renewable energy equipment
+#C49_2: In support of Taxing energy use or the purchase of heatpumps and equipment that use a lot of energy
+#C49_3: In support of introducing energy efficiency standards for heatpumps and buildings that manufacturers have to comply with
 #C50: In support of low-income households receiving government support to help them pay for energy equipment
 
 #--------------------------- 3.1 EPIC Data -------------------------------------
@@ -73,9 +73,9 @@ epic <- epic %>%
          C37_5, C37_6, C37_8, C49_1, C49_2, C49_3, C50, C44_9, C45_9, C46_9)
 
 #create flag for HHs where respective EET adoption wasn't possible
-epic_headpumps <- epic %>%
+epic_heatpumps <- epic %>%
   mutate(
-    # Highly energy-efficient headpumps
+    # Highly energy-efficient heatpumps
     install_pos = case_when(
       C44_9 == 1 ~ 1, #if adopted = possible
       C46_9 == 4 ~ 0, #no possible
@@ -83,7 +83,7 @@ epic_headpumps <- epic %>%
     )
   )
 
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Gov_support = case_when(
       C45_9 == 1 ~ 1, #support
@@ -93,7 +93,7 @@ epic_headpumps <- epic_headpumps %>%
   )
 
 #filter for cases where adoption is possible
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   filter(install_pos != 0) %>% #filter for cases where adoption is possible
   select(ID, weight, weight_2, Country_code, Country_name, Age_cat, Gender, Income,
          S9_US, S9_UK, S9_FR, S9_SE, S9_CH, S9_NL, S9_CA, S9_BE, S9_IL, S5, S18, S19_1, S19_1_1,
@@ -103,7 +103,7 @@ epic_headpumps <- epic_headpumps %>%
 #------------------------- Socioeconomic Variables -----------------------------
 #Age_cat
 #Gender
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Female = case_when(
       Gender == 2 ~ 1,
@@ -114,11 +114,11 @@ epic_headpumps <- epic_headpumps %>%
 
 #Income quintiles
 #S9_X: Education
-summary(as.factor(epic_headpumps$S9_IL))
-summary(as.factor(epic_headpumps$S9_NL))
+summary(as.factor(epic_heatpumps$S9_IL))
+summary(as.factor(epic_heatpumps$S9_NL))
 
 
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     # US
     Higher_edu_US = case_when(
@@ -200,7 +200,7 @@ epic_headpumps <- epic_headpumps %>%
 #C37_6: energy costs IL
 #C37_8: energy costs CA
 #creating new variable with merged info on average monthly cost
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Energy_costs = case_when(
       Country_name == "US" ~ C37_1,
@@ -218,7 +218,7 @@ epic_headpumps <- epic_headpumps %>%
 #Home ownership
 #S5
 #creating new variable of home ownership with only two categories owned/not owned
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Home_ownership = case_when(
       S5 == 1 ~ 1,           # Owned
@@ -230,7 +230,7 @@ epic_headpumps <- epic_headpumps %>%
 #Dwelling
 #S18
 #creating new variable of home ownership with only two categories owned/not owned
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Dwelling_house = case_when(
       S18 == 3 ~ 1, #house
@@ -243,7 +243,7 @@ epic_headpumps <- epic_headpumps %>%
 #Dwelling size
 #S19_X
 #creating new variable for mergerd info auf dwelling size (m2 and ft2)
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Dwelling_size = case_when(
       !is.na(S19_1) & S19_1 != 888888 ~ S19_1,
@@ -255,7 +255,7 @@ epic_headpumps <- epic_headpumps %>%
 #Rural
 #S20 - area
 #creating new variable of home ownership with only two categories owned/not owned
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Rural = case_when(
       S20 %in% c(3, 4, 89) ~ 1,
@@ -268,7 +268,7 @@ epic_headpumps <- epic_headpumps %>%
 #Environmental concern
 #B23_1
 #create new variable with binary level for low and high environmental concern
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Env_concern = case_when(
       B23_1 %in% c(4, 5) ~ 1, #high
@@ -280,16 +280,16 @@ epic_headpumps <- epic_headpumps %>%
 ##Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
 #Environmental policies introduced by the government should not cost me extra money
 ##Strongly disagree = 1, Disagree = 2, Neither agree or disagree = 3, Agree = 4, Strongly agree = 5, Prefer not to say = 999999
-#In support of providing subsidies to households for purchasing energy-efficient headpumps or investing in renewable energy equipment
+#In support of providing subsidies to households for purchasing energy-efficient heatpumps or investing in renewable energy equipment
 ##Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
-#In support of Taxing energy use or the purchase of headpumps and equipment that use a lot of energy
+#In support of Taxing energy use or the purchase of heatpumps and equipment that use a lot of energy
 ##Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
-#In support of introducing energy efficiency standards for headpumps and buildings that manufacturers have to comply with
+#In support of introducing energy efficiency standards for heatpumps and buildings that manufacturers have to comply with
 ##Strongly against = 1, against = 2, indifferent = 3, support = 4, Strongly support = 5
 #In support of low-income households receiving government support to help them pay for energy equipment
 ##Yes = 1, No = 2, Don´t know = 3 
 
-epic_headpumps <- epic_headpumps %>%
+epic_heatpumps <- epic_heatpumps %>%
   mutate(
     Env_policy_public = case_when(
       B31_5 %in% c(4, 5) ~ 1,  # Agree or Strongly agree
@@ -318,7 +318,7 @@ epic_headpumps <- epic_headpumps %>%
   )
 
 #---------------------------- Selected Data Set  -------------------------------
-epic_headpumps_selected <- epic_headpumps %>%
+epic_heatpumps_selected <- epic_heatpumps %>%
   select(ID, weight, weight_2, Country_code, Country_name, Age_cat, Female, Income,
          Higher_edu, Home_ownership, Dwelling_house, Dwelling_size, Rural,
          Env_concern, Env_policy_public, Env_policy_costs, Env_policy_subsidy,
@@ -338,29 +338,29 @@ EPS_sub_avg <- EPS_sub %>%
 #-------------------------------------------------------------------------------
 #-------------------------- 4. Merging Data ------------------------------------
 #-------------------------------------------------------------------------------
-headpumps <- epic_headpumps_selected %>%
+heatpumps <- epic_heatpumps_selected %>%
   left_join(EPS_sub_avg, by = c("Country_name" = "REF_AREA"))
 
 #---------------------------- 4.1 Check Data -----------------------------------
-glimpse(headpumps)
-unique(headpumps$Adoption)
-unique(headpumps$Income)
-unique(headpumps$Dwelling_size)
+glimpse(heatpumps)
+unique(heatpumps$Adoption)
+unique(heatpumps$Income)
+unique(heatpumps$Dwelling_size)
 
-summary(as.factor(headpumps$Dwelling_size)) #coded such that don't know is separate category (since relatively large number)
+summary(as.factor(heatpumps$Dwelling_size)) #coded such that don't know is separate category (since relatively large number)
 
-summary(as.factor(headpumps$Env_concern)) #no NAs
-summary(as.factor(headpumps$Env_policy_public)) #no NAs
-summary(as.factor(headpumps$Env_policy_costs)) #no NAs
-summary(as.factor(headpumps$Env_policy_subsidy)) #no NAs
-summary(as.factor(headpumps$Env_policy_tax)) #no NAs
-summary(as.factor(headpumps$Env_policy_standards)) #no NAs
-summary(as.factor(headpumps$Env_policy_liH)) #no NAs
+summary(as.factor(heatpumps$Env_concern)) #no NAs
+summary(as.factor(heatpumps$Env_policy_public)) #no NAs
+summary(as.factor(heatpumps$Env_policy_costs)) #no NAs
+summary(as.factor(heatpumps$Env_policy_subsidy)) #no NAs
+summary(as.factor(heatpumps$Env_policy_tax)) #no NAs
+summary(as.factor(heatpumps$Env_policy_standards)) #no NAs
+summary(as.factor(heatpumps$Env_policy_liH)) #no NAs
 #recoded NAs with environmental policy preferences since relatively small number only ~1%
 
 #---------------------------- 4.2 Factoring Data -------------------------------
 #Dwelling size
-headpumps$Dwelling_size = factor(headpumps$Dwelling_size,
+heatpumps$Dwelling_size = factor(heatpumps$Dwelling_size,
                                   levels = c(1, 2, 3, 4, 5, 6, 7, 888888),
                                   labels = c(
                                     "Less than 25 m²", "26–50 m²", "51–75 m²",
@@ -368,51 +368,51 @@ headpumps$Dwelling_size = factor(headpumps$Dwelling_size,
                                     "More than 200 m²", "Don't know"
                                   ))
 
-headpumps$Dwelling_size <- relevel(headpumps$Dwelling_size, ref = "Less than 25 m²")
+heatpumps$Dwelling_size <- relevel(heatpumps$Dwelling_size, ref = "Less than 25 m²")
 
 
 # Age category
-headpumps$Age_cat <- factor(headpumps$Age_cat,
+heatpumps$Age_cat <- factor(heatpumps$Age_cat,
                              levels = 1:5,
                              labels = c("18-24", "25-34", "35-44", "45-54", "55+"))
 
-headpumps$Age_cat <- relevel(headpumps$Age_cat, ref = "18-24")
+heatpumps$Age_cat <- relevel(heatpumps$Age_cat, ref = "18-24")
 
 
 # Income quintile
-headpumps$Income <- factor(headpumps$Income,
+heatpumps$Income <- factor(heatpumps$Income,
                             levels = 1:5,
                             labels = c("quintile 1", "quintile 2", "quintile 3", "quintile 4", "quintile 5"))
 
-headpumps$Income <- relevel(headpumps$Income, ref = "quintile 1")
+heatpumps$Income <- relevel(heatpumps$Income, ref = "quintile 1")
 
 #Country_name
-headpumps <- headpumps %>%
+heatpumps <- heatpumps %>%
   mutate(Country_name = factor(Country_name))
 
-glimpse(headpumps)
+glimpse(heatpumps)
 
 #------------------------- 4.3 Final Data Check --------------------------------
 #number of observations
-table(headpumps$Country_name)
+table(heatpumps$Country_name)
 
 #distribution of key variables per country
-headpumps %>% group_by(Country_name) %>% summarise(across(c(Income, Age_cat, Dwelling_size), ~n_distinct(.)))
+heatpumps %>% group_by(Country_name) %>% summarise(across(c(Income, Age_cat, Dwelling_size), ~n_distinct(.)))
 
 #checking NAs
-missing_data <- colSums(is.na(headpumps))
+missing_data <- colSums(is.na(heatpumps))
 print(missing_data)
 
 # Cross-tabulation of Dwelling_size by Country_name
-dwelling_distribution <- table(headpumps$Country_name, headpumps$Dwelling_size)
+dwelling_distribution <- table(heatpumps$Country_name, heatpumps$Dwelling_size)
 print(dwelling_distribution)
 
-glimpse(headpumps)
+glimpse(heatpumps)
 
 #-------------------------------------------------------------------------------
 #--------------------------- 5. Saving Data ------------------------------------
 #-------------------------------------------------------------------------------
-write.csv(headpumps, "./processed_data/headpumps.csv", row.names = FALSE)
+write.csv(heatpumps, "./processed_data/heatpumps.csv", row.names = FALSE)
 
 
 
