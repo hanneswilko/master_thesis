@@ -63,6 +63,7 @@ fitHeatpumps_m3.1 <- stan_glmer(
   family = binomial(link = "logit"),
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
+  control = list(adapt_delta = 0.99),
   weights = weight_2,
   data = Heatpumps
 )
@@ -87,6 +88,7 @@ fitHeatpumps_m4 <- stan_glmer(
   family = binomial(link = "logit"),
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
+  control = list(adapt_delta = 0.99),
   weights = weight_2,
   data = Heatpumps
 )
@@ -109,9 +111,6 @@ saveRDS(fitHeatpumps_m3.1, "./output/models_rds/fitHeatpumps_m3.1.rds")
 #m4 - weighted, random and fixed effects, varying slope and intercept + EPS*Income
 saveRDS(fitHeatpumps_m4, "./output/models_rds/fitHeatpumps_m4.rds")
 
-
-
-fitHeatpumps_m3.1 <- read_rds("./output/models_rds/fitHeadpumps_m3.1.rds")
 
 
 
