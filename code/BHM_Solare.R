@@ -76,6 +76,9 @@ mcmc_acf_bar(
 )
 mcmc_dens_overlay(fitSolare_m3.1)
 
+mcmc_pairs(as.array(fitSolare_m3.1), pars = c("EPS", "Sigma[Country_name:(Intercept),(Intercept)]",
+                                              "Sigma[Country_name:EPS,(Intercept)]"))
+
 summary(fitSolare_m3.1)
 
 ## 3.4 model4 weighted, level-2 predictor: varying intercept and slopes + interaction term --------
@@ -88,7 +91,7 @@ fitSolare_m4 <- stan_glmer(
   family = binomial(link = "logit"),
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
-  control = list(adapt_delta = 0.99),
+  control = list(adapt_delta = 0.995),
   weights = weight_2,
   data = Solare
 )
@@ -100,6 +103,9 @@ mcmc_acf_bar(
   lags = 10
 )
 mcmc_dens_overlay(fitSolare_m4)
+
+mcmc_pairs(as.array(fitSolare_m4), pars = c("EPS", "Sigma[Country_name:(Intercept),(Intercept)]",
+                                              "Sigma[Country_name:EPS,(Intercept)]"))
 
 summary(fitSolare_m4)
 
