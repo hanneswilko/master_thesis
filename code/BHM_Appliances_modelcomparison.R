@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-#--------------- Bayesian hierarchical model - Windows -------------------------
+#--------------- Bayesian hierarchical model - Appliances -------------------------
 #-------------------------------------------------------------------------------
 # 1. Loading Packages
 # 2. Loading Data
@@ -11,11 +11,6 @@
 #------------------------ 1. Loading Packages ----------------------------------
 #-------------------------------------------------------------------------------
 
-#install.packages(c("bayesrules", "tidyverse", "janitor", "rstanarm",
-#                   "bayesplot", "tidybayes", "broom.mixed", "modelr",
-#                   "e1071", "forcats"), 
-#                 dependencies = TRUE)
-
 pacman::p_load("bayesrules", "tidyverse", "janitor", "rstanarm",
                "bayesplot", "tidybayes", "broom.mixed", "modelr",
                "e1071", "forcats", "dplyr", "ggplot2", "loo", "readr",
@@ -24,61 +19,19 @@ pacman::p_load("bayesrules", "tidyverse", "janitor", "rstanarm",
 #-------------------------------------------------------------------------------
 #-------------------------- 2. Loading Data ------------------------------------
 #-------------------------------------------------------------------------------
-#data windows
-windows <- read.csv("./processed_data/windows.csv")
+#data appliances
+appliances <- read.csv("./processed_data/appliances.csv")
 
-#BHM windows models
-m1 <- read_rds("./output/models_rds/fitWindows_m1.rds") # varying intercept
-m2 <- read_rds("./output/models_rds/fitWindows_m2.rds") # varying intercept + group level predictor
-m3 <- read_rds("./output/models_rds/fitWindows_m3.rds") # varying intercept & slope (1+EPS|country)
-m3.1 <- read_rds("./output/models_rds/fitWindows_m3.1.rds") # varying intercept & slope (EPS|country)
-m4 <- read_rds("./output/models_rds/fitWindows_m4.rds") # varying intercept & slope (1+EPS|country) + interaction EPS*Income
-m4.1 <- read_rds("./output/models_rds/fitWindows_m4.1.rds") # varying intercept & slope (1+EPS|country) + interaction EPS*Gov_support
+#BHM appliances models
+m2 <- read_rds("./output/models_rds/fitAppliances_m2.rds") # varying intercept + group level predictor
+m3.1 <- read_rds("./output/models_rds/fitAppliances_m3.1.rds") # varying intercept & slope (EPS|country)
+m4 <- read_rds("./output/models_rds/fitAppliances_m4.rds") # varying intercept & slope (1+EPS|country) + interaction EPS*Income
 
 #-------------------------------------------------------------------------------
 #------------------------- 3. BHM evaluation -----------------------------------
 #-------------------------------------------------------------------------------
 
 #------------------------------ Model 1 ----------------------------------------
-# varying intercept (random effects)
-names(m1)
-
-#priors ------------------------------------------------------------------------
-m1_prior_summary <- prior_summary(m1)
-m1$prior.info
-
-#Diagnostics -------------------------------------------------------------------
-##separate fixed and random effects
-m1_array <- as.array(m1)
-m1_all_pars <- dimnames(m1_array)$parameters
-
-m1_fixed_pars <- m1_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m1_all_pars)]
-m1_random_pars <- m1_all_pars[grepl("^(b\\[|Sigma|cor_)", m1_all_pars)]
-
-#Diagnostic Plots 
-m1_mcmc_trace <- mcmc_trace(m1)
-
-m1_mcmc_dens_overlay <- mcmc_dens_overlay(m1)
-
-# ACF for fixed effects
-m1_mcmc_acf_fixed <- mcmc_acf_bar(m1_array, pars = m1_fixed_pars, lags = 10)
-# ACF for random effects
-m1_mcmc_acf_random <- mcmc_acf_bar(m1_array, pars = m1_random_pars, lags = 10)
-
-#Summary
-m1_neff <- neff_ratio(m1)
-m1_rhat <- rhat(m1)
-summary(m1)
-
-#Posterior predictive checks
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(m1,draws=1000)
-m1_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean")
-
-#Bayesian p-value
-m1_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-
-#------------------------------ Model 2 ----------------------------------------
 # varying intercept (random effects)
 names(m2)
 
@@ -140,7 +93,7 @@ m2_rhat <- rhat(m2)
 summary(m2)
 
 #Posterior predictive checks
-Adoption <- windows$Adoption
+Adoption <- appliances$Adoption
 Adoption_rep <- posterior_predict(m2,draws=1000)
 m2_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
   ggtitle("Posterior predictive check for model m2") + 
@@ -153,46 +106,7 @@ m2_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
 #Bayesian p-value
 m2_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
 
-#------------------------------ Model 3 ----------------------------------------
-# varying intercept (random effects)
-names(m3)
-
-#priors ------------------------------------------------------------------------
-m3_prior_summary <- prior_summary(m3)
-m3$prior.info
-
-#Diagnostics -------------------------------------------------------------------
-##separate fixed and random effects
-m3_array <- as.array(m3)
-m3_all_pars <- dimnames(m3_array)$parameters
-
-m3_fixed_pars <- m3_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m3_all_pars)]
-m3_random_pars <- m3_all_pars[grepl("^(b\\[|Sigma|cor_)", m3_all_pars)]
-
-#Diagnostic Plots 
-m3_mcmc_trace <- mcmc_trace(m3)
-
-m3_mcmc_dens_overlay <- mcmc_dens_overlay(m3)
-
-# ACF for fixed effects
-m3_mcmc_acf_fixed <- mcmc_acf_bar(m3_array, pars = m3_fixed_pars, lags = 10)
-# ACF for random effects
-m3_mcmc_acf_random <- mcmc_acf_bar(m3_array, pars = m3_random_pars, lags = 10)
-
-#Summary
-m3_neff <- neff_ratio(m3)
-m3_rhat <- rhat(m3)
-summary(m3)
-
-#Posterior predictive checks
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(m3,draws=1000)
-m3_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean")
-
-#Bayesian p-value
-m3_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-
-#------------------------------ Model 3.1 --------------------------------------
+#------------------------------ Model 2 ----------------------------------------
 # varying intercept (random effects)
 names(m3.1)
 
@@ -254,7 +168,7 @@ m3.1_rhat <- rhat(m3.1)
 summary(m3.1)
 
 #Posterior predictive checks
-Adoption <- windows$Adoption
+Adoption <- appliances$Adoption
 Adoption_rep <- posterior_predict(m3.1,draws=1000)
 m3.1_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
   ggtitle("Posterior predictive check for model m3.1") + 
@@ -267,7 +181,7 @@ m3.1_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
 #Bayesian p-value
 m3.1_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
 
-#-------------------------------- Model 4 --------------------------------------
+#-------------------------------- Model 3 --------------------------------------
 # varying intercept (random effects)
 names(m4)
 
@@ -330,7 +244,7 @@ m4_rhat <- rhat(m4)
 summary(m4)
 
 #Posterior predictive checks
-Adoption <- windows$Adoption
+Adoption <- appliances$Adoption
 Adoption_rep <- posterior_predict(m4,draws=1000)
 m4_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
   ggtitle("Posterior predictive check for model m4") + 
@@ -343,95 +257,14 @@ m4_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
 #Bayesian p-value
 m4_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
 
-#------------------------------ Model 4.1 --------------------------------------
-# varying intercept (random effects)
-names(m4.1)
-
-#priors ------------------------------------------------------------------------
-m4.1_prior_summary <- prior_summary(m4.1)
-m4.1$prior.info
-
-#Diagnostics -------------------------------------------------------------------
-##separate fixed and random effects
-m4.1_array <- as.array(m4)
-m4.1_all_pars <- dimnames(m4_array)$parameters
-
-m4.1_fixed_pars <- m4.1_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m4.1_all_pars)]
-m4.1_random_pars <- m4.1_all_pars[grepl("^(b\\[|Sigma|cor_)", m4.1_all_pars)]
-
-#Diagnostic Plots 
-m4.1_mcmc_trace <- mcmc_trace(m4.1)
-m4.1_mcmc_dens_overlay <- mcmc_dens_overlay(m4.1)
-
-# ACF for fixed effects
-m4.1_mcmc_acf_fixed <- mcmc_acf_bar(m4.1_array, pars = m4.1_fixed_pars, lags = 10)
-# ACF for random effects
-m4.1_mcmc_acf_random <- mcmc_acf_bar(m4.1_array, pars = m4.1_random_pars, lags = 10)
-
-#Summary
-m4.1_neff <- neff_ratio(m4.1)
-m4.1_rhat <- rhat(m4.1)
-summary(m4.1)
-
-#Posterior predictive checks
-Adoption <- windows$Adoption
-Adoption_rep <- posterior_predict(m4.1,draws=1000)
-m4.1_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean")
-
-#Bayesian p-value
-m4.1_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
-
 #-------------------------------------------------------------------------------
 #------------------------- 4. BHM comparison -----------------------------------
 #-------------------------------------------------------------------------------
 
 #----------------- Watanabe-Akaike Information Criterion (ELPD) ----------------
-waic_m1 <- waic(m1)
 waic_m2 <- waic(m2)
-waic_m3 <- waic(m3)
 waic_m3.1 <- waic(m3.1)
 waic_m4 <- waic(m4)
-waic_m4.1 <- waic(m4.1)
-
-#All models
-WAIC <- loo_compare(waic_m1, waic_m2, waic_m3, waic_m3.1, waic_m4, waic_m4.1)
-
-WAIC_df <- as.data.frame(WAIC)
-colnames(WAIC_df) <- c("elpd_diff", "se_diff", "elpd_waic", "se_elpd_waic", 
-                       "p_waic", "se_p_waic", "waic", "se_waic")
-WAIC_summary <- cbind(Model = rownames(WAIC_df), round(WAIC_df, 2))
-rownames(WAIC_summary) <- NULL
-print(WAIC_summary) #m3.1
-
-#Varying intercept models
-WAIC_vi <- loo_compare(waic_m1, waic_m2)
-
-WAIC_vi_df <- as.data.frame(WAIC_vi)
-colnames(WAIC_vi_df) <- c("elpd_diff", "se_diff", "elpd_waic", "se_elpd_waic", 
-                       "p_waic", "se_p_waic", "waic", "se_waic")
-WAIC_vi_summary <- cbind(Model = rownames(WAIC_vi_df), round(WAIC_vi_df, 2))
-rownames(WAIC_vi_summary) <- NULL
-print(WAIC_vi_summary) #m2
-
-#Varying intercept & slopes models
-WAIC_vis <- loo_compare(waic_m3, waic_m3.1)
-
-WAIC_vis_df <- as.data.frame(WAIC_vis)
-colnames(WAIC_vis_df) <- c("elpd_diff", "se_diff", "elpd_waic", "se_elpd_waic", 
-                          "p_waic", "se_p_waic", "waic", "se_waic")
-WAIC_vis_summary <- cbind(Model = rownames(WAIC_vis_df), round(WAIC_vis_df, 2))
-rownames(WAIC_vis_summary) <- NULL
-print(WAIC_vis_summary) #m3.1
-
-#Varying intercept & slopes + interaction term models
-WAIC_visi <- loo_compare(waic_m4, waic_m4.1)
-
-WAIC_visi_df <- as.data.frame(WAIC_visi)
-colnames(WAIC_visi_df) <- c("elpd_diff", "se_diff", "elpd_waic", "se_elpd_waic", 
-                           "p_waic", "se_p_waic", "waic", "se_waic")
-WAIC_visi_summary <- cbind(Model = rownames(WAIC_visi_df), round(WAIC_visi_df, 2))
-rownames(WAIC_visi_summary) <- NULL
-print(WAIC_visi_summary) #m4
 
 #Cross model check
 WAIC_vi_vis <- loo_compare(waic_m2, waic_m3.1)
@@ -479,7 +312,7 @@ get_probabilities <- function(stan_summary, variables) {
   do.call(rbind, results)
 }
 
-#model 2------------------------------------------------------------------------
+#model 1------------------------------------------------------------------------
 ##Output
 m2_fixed <- tidy_rounded(m2, "fixed")
 m2_ran_vals <- tidy_rounded(m2, "ran_vals")
@@ -489,8 +322,6 @@ m2_CI <- as.data.frame(posterior_interval(m2, prob=0.95))
 m2_CI <-  m2_CI %>%
   tibble::rownames_to_column(var = "Parameters") %>%
   select(Parameters, everything())
-
-View(m2_ran_vals)
 
 ##Probability estimate is non-zero
 variables_of_interest <- c("(Intercept)", "Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5",
@@ -504,7 +335,7 @@ fixed_random_df <- get_probabilities(m2$stan_summary, variables_of_interest)
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m2_fixed_random <- fixed_random_df
 
-#model 3.1----------------------------------------------------------------------
+#model 2------------------------------------------------------------------------
 ##Output
 m3.1_fixed <- tidy_rounded(m3.1, "fixed")
 m3.1_ran_vals <- tidy_rounded(m3.1, "ran_vals")
@@ -514,8 +345,6 @@ m3.1_CI <- as.data.frame(posterior_interval(m3.1, prob=0.95))
 m3.1_CI <-  m3.1_CI %>%
   tibble::rownames_to_column(var = "Parameters") %>%
   select(Parameters, everything())
-
-View(m3.1_ran_pars)
 
 ##Probability estimate is non-zero
 variables_of_interest <- c("(Intercept)", "Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5",
@@ -534,7 +363,7 @@ fixed_random_df <- get_probabilities(m3.1$stan_summary, variables_of_interest)
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m3.1_fixed_random <- fixed_random_df
 
-#model 4------------------------------------------------------------------------
+#model 3------------------------------------------------------------------------
 ##Output
 m4_fixed <- tidy_rounded(m4, "fixed")
 m4_ran_vals <- tidy_rounded(m4, "ran_vals")
@@ -543,8 +372,6 @@ m4_CI <- as.data.frame(posterior_interval(m4, prob=0.95))
 m4_CI <- m4_CI %>%
   tibble::rownames_to_column(var = "Parameters") %>%
   select(Parameters, everything())
-
-View(m4_ran_vals)
 
 ##Probability estimate is non-zero
 variables_of_interest <- c("(Intercept)", "Env_concern", "Gov_support", "EPS", "Incomequintile 2", "Incomequintile 3",
@@ -564,37 +391,6 @@ fixed_random_df <- get_probabilities(m4$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m4_fixed_random <- fixed_random_df
-
-#model 4.1 ---------------------------------------------------------------------
-##Output
-m4.1_fixed <- tidy_rounded(m4.1, "fixed")
-m4.1_ran_vals <- tidy_rounded(m4.1, "ran_vals")
-m4.1_ran_pars <- tidy_rounded(m4.1, "ran_pars")
-m4.1_ran_auxiliary <- tidy_rounded(m4.1, "auxiliary")
-m4.1_CI <- as.data.frame(posterior_interval(m4.1, prob=0.95))
-m4.1_CI <- m4.1_CI %>%
-  tibble::rownames_to_column(var = "Parameters") %>%
-  select(Parameters, everything())
-
-View(m4.1_fixed)
-
-##Probability estimate is non-zero
-variables_of_interest <- c("Env_concern", "Gov_support", "EPS", "Incomequintile 2",
-                           "Incomequintile 3", "Incomequintile 4", "Incomequintile 5", "EPS:Gov_support",
-                           "b[(Intercept) Country_name:US]",
-                           "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
-                           "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
-                           "b[EPS Country_name:BE]", "b[(Intercept) Country_name:NL]",
-                           "b[EPS Country_name:NL]", "b[(Intercept) Country_name:UK]",
-                           "b[EPS Country_name:UK]", "b[(Intercept) Country_name:CA]",
-                           "b[EPS Country_name:CA]", "b[(Intercept) Country_name:SE]",
-                           "b[EPS Country_name:SE]", "b[(Intercept) Country_name:CH]",
-                           "b[EPS Country_name:CH]", "b[(Intercept) Country_name:FR]",
-                           "b[EPS Country_name:FR]")
-fixed_random_df <- get_probabilities(m4.1$stan_summary, variables_of_interest)
-# Round only numeric columns
-fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
-m4.1_fixed_random <- fixed_random_df
 
 #--------------------------------- Summary -------------------------------------
 #all following summaries and comparisons based on model m3.1, m4 and m2
@@ -674,9 +470,9 @@ ppc_pval_df
 print(WAIC_all_summary)
 
 set.seed(84735)
-m2_postclass <- classification_summary(model = m2, data = windows, cutoff = 0.5)
-m3.1_postclass <- classification_summary(model = m3.1, data = windows, cutoff = 0.5)
-m4_postclass <- classification_summary(model = m4, data = windows, cutoff = 0.5)
+m2_postclass <- classification_summary(model = m2, data = appliances, cutoff = 0.5)
+m3.1_postclass <- classification_summary(model = m3.1, data = appliances, cutoff = 0.5)
+m4_postclass <- classification_summary(model = m4, data = appliances, cutoff = 0.5)
 
 accuracy_list <- list(
   "Model m2" = m2_postclass$accuracy_rates,
@@ -779,7 +575,7 @@ tables_list <- list(
 )
 
 # Output directory:
-output_dir <- "./output/tables_tex/windows_tables"
+output_dir <- "./output/tables_tex/appliances_tables"
 
 # Function to write each table as separate .tex file:
 write_tables_to_tex <- function(tables, outdir) {
@@ -805,48 +601,23 @@ write_tables_to_tex(tables_list, output_dir)
 
 #--------------------------- Output Plots ---------------------------------------
 ##m2
-ggsave("./output/output_windows/m2_mcmc_trace.pdf", plot = m2_mcmc_trace, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m2_mcmc_acf_fixed.pdf", plot = m2_mcmc_acf_fixed, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m2_mcmc_acf_random.pdf", plot = m2_mcmc_acf_random, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m2_mcmc_dens_overlay.pdf", plot = m2_mcmc_dens_overlay, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m2_ppc.pdf", plot = m2_ppc, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m2_mcmc_trace.pdf", plot = m2_mcmc_trace, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m2_mcmc_acf_fixed.pdf", plot = m2_mcmc_acf_fixed, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m2_mcmc_acf_random.pdf", plot = m2_mcmc_acf_random, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m2_mcmc_dens_overlay.pdf", plot = m2_mcmc_dens_overlay, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m2_ppc.pdf", plot = m2_ppc, dpi = 300, scale = 1.2)
 
 ##m3.1
-ggsave("./output/output_windows/m3.1_mcmc_trace.pdf", plot = m3.1_mcmc_trace, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m3.1_mcmc_acf_fixed.pdf", plot = m3.1_mcmc_acf_fixed, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m3.1_mcmc_acf_random.pdf", plot = m3.1_mcmc_acf_random, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m3.1_mcmc_dens_overlay.pdf", plot = m3.1_mcmc_dens_overlay, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m3.1_ppc.pdf", plot = m3.1_ppc, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m3.1_mcmc_trace.pdf", plot = m3.1_mcmc_trace, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m3.1_mcmc_acf_fixed.pdf", plot = m3.1_mcmc_acf_fixed, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m3.1_mcmc_acf_random.pdf", plot = m3.1_mcmc_acf_random, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m3.1_mcmc_dens_overlay.pdf", plot = m3.1_mcmc_dens_overlay, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m3.1_ppc.pdf", plot = m3.1_ppc, dpi = 300, scale = 1.2)
 
 ##m4
-ggsave("./output/output_windows/m4_mcmc_trace.pdf", plot = m4_mcmc_trace, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m4_mcmc_acf_fixed.pdf", plot = m4_mcmc_acf_fixed, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m4_mcmc_acf_random.pdf", plot = m4_mcmc_acf_random, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m4_mcmc_dens_overlay.pdf", plot = m4_mcmc_dens_overlay, dpi = 300, scale = 1.2)
-ggsave("./output/output_windows/m4_ppc.pdf", plot = m4_ppc, dpi = 300, scale = 1.2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ggsave("./output/output_appliances/m4_mcmc_trace.pdf", plot = m4_mcmc_trace, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m4_mcmc_acf_fixed.pdf", plot = m4_mcmc_acf_fixed, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m4_mcmc_acf_random.pdf", plot = m4_mcmc_acf_random, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m4_mcmc_dens_overlay.pdf", plot = m4_mcmc_dens_overlay, dpi = 300, scale = 1.2)
+ggsave("./output/output_appliances/m4_ppc.pdf", plot = m4_ppc, dpi = 300, scale = 1.2)
 
