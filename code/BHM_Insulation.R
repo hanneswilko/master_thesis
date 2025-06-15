@@ -103,11 +103,11 @@ summary(fitInsulation_m4)
 
 ############################ SAVING RESULTS ####################################
 #m2 - weighted, random and fixed effects
-saveRDS(fitInsulation_m2, "./output/models_rds/fitinsulation_m2.rds")
+saveRDS(fitInsulation_m2, "./output/models_rds/fitInsulation_m2.rds")
 #m3.1 - weighted, random and fixed effects, varying slope and intercept (EPS|Country)
-saveRDS(fitInsulation_m3.1, "./output/models_rds/fitinsulation_m3.1.rds")
+saveRDS(fitInsulation_m3.1, "./output/models_rds/fitInsulation_m3.1.rds")
 #m4 - weighted, random and fixed effects, varying slope and intercept + EPS*Income
-saveRDS(fitInsulation_m4, "./output/models_rds/fitinsulation_m4.rds")
+saveRDS(fitInsulation_m4, "./output/models_rds/fitInsulation_m4.rds")
 
 
 
