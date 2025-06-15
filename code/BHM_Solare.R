@@ -63,7 +63,7 @@ fitSolare_m3.1 <- stan_glmer(
   family = binomial(link = "logit"),
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
-  control = list(adapt_delta = 0.99),
+  control = list(adapt_delta = 0.999),
   weights = weight_2,
   data = Solare
 )
@@ -91,7 +91,7 @@ fitSolare_m4 <- stan_glmer(
   family = binomial(link = "logit"),
   prior_covariance = decov(regularization = 3),
   iter = 2000, warm = 1000, thin = 1,
-  control = list(adapt_delta = 0.995),
+  control = list(adapt_delta = 0.999),
   weights = weight_2,
   data = Solare
 )
