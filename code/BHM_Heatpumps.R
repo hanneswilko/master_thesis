@@ -86,7 +86,7 @@ fitHeatpumps_m4 <- stan_glmer(
     Dwelling_house + Dwelling_size + Rural + Env_concern + Gov_support +
     EPS*Income + (EPS | Country_name),
   family = binomial(link = "logit"),
-  prior_covariance = decov(regularization = 3),
+  prior_covariance = decov(regularization = 5),
   iter = 2000, warm = 1000, thin = 1,
   control = list(adapt_delta = 0.999),
   weights = weight_2,
@@ -100,6 +100,9 @@ mcmc_acf_bar(
   lags = 10
 )
 mcmc_dens_overlay(fitHeatpumps_m4)
+
+mcmc_pairs(as.array(fitHeatpumps_m4), pars = c("Sigma[Country_name:EPS,EPS]", "Sigma[Country_name:(Intercept),(Intercept)]",
+                                              "Sigma[Country_name:EPS,(Intercept)]"))
 
 summary(fitHeatpumps_m4)
 
