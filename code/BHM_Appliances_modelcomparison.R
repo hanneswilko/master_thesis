@@ -11,6 +11,11 @@
 #------------------------ 1. Loading Packages ----------------------------------
 #-------------------------------------------------------------------------------
 
+#install.packages(c("bayesrules", "tidyverse", "janitor", "rstanarm",
+#                   "bayesplot", "tidybayes", "broom.mixed", "modelr",
+#                   "e1071", "forcats"), 
+#                 dependencies = TRUE)
+
 pacman::p_load("bayesrules", "tidyverse", "janitor", "rstanarm",
                "bayesplot", "tidybayes", "broom.mixed", "modelr",
                "e1071", "forcats", "dplyr", "ggplot2", "loo", "readr",
@@ -30,8 +35,7 @@ m4 <- read_rds("./output/models_rds/fitAppliances_m4.rds") # varying intercept &
 #-------------------------------------------------------------------------------
 #------------------------- 3. BHM evaluation -----------------------------------
 #-------------------------------------------------------------------------------
-
-#------------------------------ Model 1 ----------------------------------------
+#------------------------------ Model 2 ----------------------------------------
 # varying intercept (random effects)
 names(m2)
 
@@ -106,7 +110,7 @@ m2_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
 #Bayesian p-value
 m2_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
 
-#------------------------------ Model 2 ----------------------------------------
+#------------------------------ Model 3.1 --------------------------------------
 # varying intercept (random effects)
 names(m3.1)
 
@@ -181,7 +185,7 @@ m3.1_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
 #Bayesian p-value
 m3.1_pval <- mean(apply(Adoption_rep, 1, mean) > mean(Adoption))
 
-#-------------------------------- Model 3 --------------------------------------
+#-------------------------------- Model 4 --------------------------------------
 # varying intercept (random effects)
 names(m4)
 
@@ -282,7 +286,7 @@ print(WAIC_all_summary)
 #-------------------------------------------------------------------------------
 #--------------------------- 5. BHM results ------------------------------------
 #-------------------------------------------------------------------------------
-##results for m2, m3.1, m4, m4.1
+##results for m2, m3.1, m4
 
 #-------------------------- Posterior analysis ---------------------------------
 tidy_rounded <- function(model, effect) {
@@ -312,7 +316,7 @@ get_probabilities <- function(stan_summary, variables) {
   do.call(rbind, results)
 }
 
-#model 1------------------------------------------------------------------------
+#model 2------------------------------------------------------------------------
 ##Output
 m2_fixed <- tidy_rounded(m2, "fixed")
 m2_ran_vals <- tidy_rounded(m2, "ran_vals")
@@ -336,7 +340,7 @@ fixed_random_df <- get_probabilities(m2$stan_summary, variables_of_interest)
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m2_fixed_random <- fixed_random_df
 
-#model 2------------------------------------------------------------------------
+#model 3.1----------------------------------------------------------------------
 ##Output
 m3.1_fixed <- tidy_rounded(m3.1, "fixed")
 m3.1_ran_vals <- tidy_rounded(m3.1, "ran_vals")
@@ -365,7 +369,7 @@ fixed_random_df <- get_probabilities(m3.1$stan_summary, variables_of_interest)
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m3.1_fixed_random <- fixed_random_df
 
-#model 3------------------------------------------------------------------------
+#model 4------------------------------------------------------------------------
 ##Output
 m4_fixed <- tidy_rounded(m4, "fixed")
 m4_ran_vals <- tidy_rounded(m4, "ran_vals")
@@ -500,22 +504,22 @@ models_fixed <- models_fixed %>%
   ) %>%
   select(term, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
 
+##random vals
+m2_ran_vals$Model <- "m2"
+m3.1_ran_vals$Model <- "m3.1"
+m4_ran_vals$Model <- "m4"
+
+models_vals_pars <- bind_rows(m2_ran_vals, m3.1_ran_vals, m4_ran_vals) %>%
+  mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
+  arrange(Model) %>%
+  select(Model, everything())
+
 ##random parameter
 m2_ran_pars$Model <- "m2"
 m3.1_ran_pars$Model <- "m3.1"
 m4_ran_pars$Model <- "m4"
 
 models_ran_pars <- bind_rows(m2_ran_pars, m3.1_ran_pars, m4_ran_pars) %>%
-  mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
-  arrange(Model) %>%
-  select(Model, everything())
-
-##auxiliary parameter
-m2_auxiliary$Model <- "m2"
-m3.1_auxiliary$Model <- "m3.1"
-m4_auxiliary$Model <- "m4"
-
-models_auxiliary <- bind_rows(m2_auxiliary, m3.1_auxiliary, m4_auxiliary) %>%
   mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
   arrange(Model) %>%
   select(Model, everything())
@@ -552,8 +556,8 @@ tables_list <- list(
   models_postclass_accuracy = models_postclass_accuracy,
   WAIC_all_summary = WAIC_all_summary,
   models_fixed = models_fixed,
+  models_vals_pars = models_vals_pars,
   models_ran_pars = models_ran_pars,
-  models_auxiliary = models_auxiliary,
   models_CI = models_CI,
   m2_fixed_random = m2_fixed_random,
   m3.1_fixed_random = m3.1_fixed_random,
@@ -606,4 +610,29 @@ ggsave("./output/output_appliances/m4_mcmc_acf_fixed.pdf", plot = m4_mcmc_acf_fi
 ggsave("./output/output_appliances/m4_mcmc_acf_random.pdf", plot = m4_mcmc_acf_random, dpi = 300, scale = 1.2)
 ggsave("./output/output_appliances/m4_mcmc_dens_overlay.pdf", plot = m4_mcmc_dens_overlay, dpi = 300, scale = 1.2)
 ggsave("./output/output_appliances/m4_ppc.pdf", plot = m4_ppc, dpi = 300, scale = 1.2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
