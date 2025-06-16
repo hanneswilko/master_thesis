@@ -324,7 +324,8 @@ m2_CI <-  m2_CI %>%
   select(Parameters, everything())
 
 ##Probability estimate is non-zero
-variables_of_interest <- c("(Intercept)", "Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5",
+variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+",
+                           "Home_ownership",
                            "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
                            "b[(Intercept) Country_name:IL]", "b[(Intercept) Country_name:BE]",
                            "b[(Intercept) Country_name:NL]", "b[(Intercept) Country_name:UK]",
@@ -347,7 +348,8 @@ m3.1_CI <-  m3.1_CI %>%
   select(Parameters, everything())
 
 ##Probability estimate is non-zero
-variables_of_interest <- c("(Intercept)", "Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5",
+variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+",
+                           "Home_ownership",
                            "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
                            "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
@@ -374,9 +376,9 @@ m4_CI <- m4_CI %>%
   select(Parameters, everything())
 
 ##Probability estimate is non-zero
-variables_of_interest <- c("(Intercept)", "Env_concern", "Gov_support", "EPS", "Incomequintile 2", "Incomequintile 3",
-                           "Incomequintile 4", "Incomequintile 5", "EPS:Incomequintile 2",
-                           "EPS:Incomequintile 3", "EPS:Incomequintile 4", "EPS:Incomequintile 5",
+variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+",
+                           "Home_ownership",
+                           "Env_concern", "Gov_support", "EPS",
                            "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
                            "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
@@ -399,22 +401,6 @@ m4_fixed_random <- fixed_random_df
 #m2: varying intercepts with EPS as group-predictor
 
 #MCMC diagnostics --------------------------------------------------------------
-##Plots
-m3.1_mcmc_trace
-m3.1_mcmc_acf_fixed
-m3.1_mcmc_acf_random
-m3.1_mcmc_dens_overlay
-
-m4_mcmc_trace
-m4_mcmc_acf_fixed
-m4_mcmc_acf_random
-m4_mcmc_dens_overlay
-
-m2_mcmc_trace
-m2_mcmc_acf_fixed
-m2_mcmc_acf_random
-m2_mcmc_dens_overlay
-
 ##neff-ratio
 m2_neff_df <- data.frame(Parameter = names(m2_neff), Neff = m2_neff, Model = "m2")
 m3.1_neff_df <- data.frame(Parameter = names(m3.1_neff), Neff = m3.1_neff, Model = "m3.1")

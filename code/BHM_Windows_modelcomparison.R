@@ -490,10 +490,8 @@ m2_CI <-  m2_CI %>%
   tibble::rownames_to_column(var = "Parameters") %>%
   select(Parameters, everything())
 
-View(m2_ran_vals)
-
 ##Probability estimate is non-zero
-variables_of_interest <- c("(Intercept)", "Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5",
+variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+", "Incomequintile 4", "Incomequintile 5",
                            "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
                            "b[(Intercept) Country_name:IL]", "b[(Intercept) Country_name:BE]",
                            "b[(Intercept) Country_name:NL]", "b[(Intercept) Country_name:UK]",
@@ -515,10 +513,8 @@ m3.1_CI <-  m3.1_CI %>%
   tibble::rownames_to_column(var = "Parameters") %>%
   select(Parameters, everything())
 
-View(m3.1_ran_pars)
-
 ##Probability estimate is non-zero
-variables_of_interest <- c("(Intercept)", "Incomequintile 2", "Incomequintile 3", "Incomequintile 4", "Incomequintile 5",
+variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+", "Incomequintile 4", "Incomequintile 5",
                            "Env_concern", "Gov_support", "EPS", "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
                            "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
@@ -544,11 +540,9 @@ m4_CI <- m4_CI %>%
   tibble::rownames_to_column(var = "Parameters") %>%
   select(Parameters, everything())
 
-View(m4_ran_vals)
-
 ##Probability estimate is non-zero
-variables_of_interest <- c("(Intercept)", "Env_concern", "Gov_support", "EPS", "Incomequintile 2", "Incomequintile 3",
-                           "Incomequintile 4", "Incomequintile 5", "EPS:Incomequintile 2",
+variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+", "Env_concern", "Gov_support", "EPS",
+                           "Incomequintile 4", "Incomequintile 5",
                            "EPS:Incomequintile 3", "EPS:Incomequintile 4", "EPS:Incomequintile 5",
                            "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
@@ -576,11 +570,9 @@ m4.1_CI <- m4.1_CI %>%
   tibble::rownames_to_column(var = "Parameters") %>%
   select(Parameters, everything())
 
-View(m4.1_fixed)
-
 ##Probability estimate is non-zero
-variables_of_interest <- c("Env_concern", "Gov_support", "EPS", "Incomequintile 2",
-                           "Incomequintile 3", "Incomequintile 4", "Incomequintile 5", "EPS:Gov_support",
+variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+", "Env_concern", "Gov_support", "EPS",
+                           "Incomequintile 4", "Incomequintile 5", "EPS:Gov_support",
                            "b[(Intercept) Country_name:US]",
                            "b[EPS Country_name:US]", "b[(Intercept) Country_name:IL]",
                            "b[EPS Country_name:IL]", "b[(Intercept) Country_name:BE]",
@@ -603,22 +595,6 @@ m4.1_fixed_random <- fixed_random_df
 #m2: varying intercepts with EPS as group-predictor
 
 #MCMC diagnostics --------------------------------------------------------------
-##Plots
-m3.1_mcmc_trace
-m3.1_mcmc_acf_fixed
-m3.1_mcmc_acf_random
-m3.1_mcmc_dens_overlay
-
-m4_mcmc_trace
-m4_mcmc_acf_fixed
-m4_mcmc_acf_random
-m4_mcmc_dens_overlay
-
-m2_mcmc_trace
-m2_mcmc_acf_fixed
-m2_mcmc_acf_random
-m2_mcmc_dens_overlay
-
 ##neff-ratio
 m2_neff_df <- data.frame(Parameter = names(m2_neff), Neff = m2_neff, Model = "m2")
 m3.1_neff_df <- data.frame(Parameter = names(m3.1_neff), Neff = m3.1_neff, Model = "m3.1")
@@ -718,22 +694,22 @@ models_fixed <- models_fixed %>%
   ) %>%
   select(term, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
 
+##random vals
+m2_ran_vals$Model <- "m2"
+m3.1_ran_vals$Model <- "m3.1"
+m4_ran_vals$Model <- "m4"
+
+models_vals_pars <- bind_rows(m2_ran_vals, m3.1_ran_vals, m4_ran_vals) %>%
+  mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
+  arrange(Model) %>%
+  select(Model, everything())
+
 ##random parameter
 m2_ran_pars$Model <- "m2"
 m3.1_ran_pars$Model <- "m3.1"
 m4_ran_pars$Model <- "m4"
 
 models_ran_pars <- bind_rows(m2_ran_pars, m3.1_ran_pars, m4_ran_pars) %>%
-  mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
-  arrange(Model) %>%
-  select(Model, everything())
-
-##auxiliary parameter
-m2_auxiliary$Model <- "m2"
-m3.1_auxiliary$Model <- "m3.1"
-m4_auxiliary$Model <- "m4"
-
-models_auxiliary <- bind_rows(m2_auxiliary, m3.1_auxiliary, m4_auxiliary) %>%
   mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
   arrange(Model) %>%
   select(Model, everything())
@@ -770,8 +746,8 @@ tables_list <- list(
   models_postclass_accuracy = models_postclass_accuracy,
   WAIC_all_summary = WAIC_all_summary,
   models_fixed = models_fixed,
+  models_vals_pars = models_vals_pars,
   models_ran_pars = models_ran_pars,
-  models_auxiliary = models_auxiliary,
   models_CI = models_CI,
   m2_fixed_random = m2_fixed_random,
   m3.1_fixed_random = m3.1_fixed_random,
