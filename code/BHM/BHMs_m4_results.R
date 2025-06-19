@@ -141,43 +141,40 @@ pppval_list <- lapply(names(models), function(name) {
 # Combine into one data frame
 ppc_pval_df <- do.call(rbind, pppval_list)
 
-################################################################################
-################################################################################
-################################################################################
-
 #Posterior classification ------------------------------------------------------
-print(WAIC_all_summary)
-
 set.seed(84735)
-m2_postclass <- classification_summary(model = m2, data = heatpumps, cutoff = 0.5)
-m3.1_postclass <- classification_summary(model = m3.1, data = heatpumps, cutoff = 0.5)
-m4_postclass <- classification_summary(model = m4, data = heatpumps, cutoff = 0.5)
+windows_m4_postclass <- classification_summary(model = windows_m4, data = windows, cutoff = 0.5)
+appliances_m4_postclass <- classification_summary(model = appliances_m4, data = appliances, cutoff = 0.5)
+insulation_m4_postclass <- classification_summary(model = insulation_m4, data = insulation, cutoff = 0.5)
+solare_m4_postclass <- classification_summary(model = solare_m4, data = solare, cutoff = 0.5)
+heatpumps_m4_postclass <- classification_summary(model = heatpumps_m4, data = heatpumps, cutoff = 0.5)
 
 accuracy_list <- list(
-  "Model m2" = m2_postclass$accuracy_rates,
-  "Model m3.1" = m3.1_postclass$accuracy_rates,
-  "Model m4" = m4_postclass$accuracy_rates
+  "Windows m4" = windows_m4_postclass$accuracy_rates,
+  "Appliances m4" = appliances_m4_postclass$accuracy_rates,
+  "Thermal Insulation m4" = insulation_m4_postclass$accuracy_rates,
+  "Solar panels m4" = solare_m4_postclass$accuracy_rates,
+  "Heat pumps m4" = heatpumps_m4_postclass$accuracy_rates
 )
 
 models_postclass_accuracy <- bind_rows(lapply(names(accuracy_list), function(model) {
   data.frame(
     Metric = rownames(accuracy_list[[model]]),
-    Rate = round(unlist(accuracy_list[[model]]), 3),
+    Rate = sprintf("%.3f", unlist(accuracy_list[[model]])),
     Model = model,
     row.names = NULL
   )
 }))
 
 # Pivot to wide format
-models_postclass_accuracy <- models_postclass_accuracy %>%
+postclass_accuracy_df <- models_postclass_accuracy %>%
   pivot_wider(names_from = Model, values_from = Rate) %>%
-  select(Metric, `Model m2`, `Model m3.1`, `Model m4`)
+  select(Metric, "Windows m4", "Appliances m4", "Thermal Insulation m4", 
+         "Solar panels m4", "Heat pumps m4")
 
 #-------------------------------------------------------------------------------
 #--------------------------- 5. BHM results ------------------------------------
 #-------------------------------------------------------------------------------
-##results for m2, m3.1, m4
-
 #-------------------------- Posterior analysis ---------------------------------
 tidy_rounded <- function(model, effect) {
   tidy(model, effects = effect, conf.int = TRUE, conf.level = 0.95) %>%
@@ -206,88 +203,108 @@ get_probabilities <- function(stan_summary, variables) {
   do.call(rbind, results)
 }
 
-#model 4------------------------------------------------------------------------
-##Output
-m4_fixed <- tidy_rounded(m4, "fixed")
-m4_ran_vals <- tidy_rounded(m4, "ran_vals")
-m4_ran_pars <- tidy_rounded(m4, "ran_pars")
-m4_CI <- as.data.frame(posterior_interval(m4, prob=0.95))
-m4_CI <- m4_CI %>%
-  tibble::rownames_to_column(var = "Parameters") %>%
-  select(Parameters, everything())
+#Output tables of estimates ----------------------------------------------------
+extract_model_info <- function(model) {
+  list(
+    fixed = tidy_rounded(model, "fixed"),
+    ran_vals = tidy_rounded(model, "ran_vals"),
+    ran_pars = tidy_rounded(model, "ran_pars"),
+    ci = posterior_interval(model, prob = 0.95) %>%
+      as.data.frame() %>%
+      round(2) %>%
+      rownames_to_column(var = "Parameters") %>%
+      select(Parameters, everything())
+  )
+}
 
-##Probability estimate is non-zero
+model_outputs <- map(models, extract_model_info)
+
+build_long_wide <- function(component, id_cols) {
+  long_df <- imap_dfr(model_outputs, function(model_out, model_name) {
+    df <- model_out[[component]]
+    df$Model <- model_name
+    df
+  })
+  
+  long_df %>%
+    pivot_wider(
+      names_from = Model,
+      values_from = setdiff(names(long_df), c(id_cols, "Model")),
+      names_sep = "_"
+    )
+}
+
+fixed_effects <- build_long_wide("fixed", c("term"))
+ran_effects <- build_long_wide("ran_vals", c("term", "group", "level"))
+ran_pars <- build_long_wide("ran_pars", c("term", "group"))
+cintervals <- build_long_wide("ci", c("Parameters"))
+
+fixed_effects <- {
+  fixed_wide_clean <- fixed_effects %>%
+    select(term, matches("^(estimate|std\\.error)_"))
+  
+  tech_names <- fixed_wide_clean %>%
+    select(-term) %>%
+    names() %>%
+    str_remove("^(estimate_|std\\.error_)") %>%
+    unique()
+  
+  ordered_cols <- unlist(lapply(tech_names, function(tech) {
+    c(paste0("estimate_", tech), paste0("std.error_", tech))
+  }))
+  
+  fixed_wide_clean %>%
+    select(term, all_of(ordered_cols))
+}
+
+ran_effects <- {
+  ran_vals_wide_clean <- ran_effects %>%
+    select(term, matches("^(estimate|std\\.error)_"))
+  
+  tech_names <- ran_vals_wide_clean %>%
+    select(-term) %>%
+    names() %>%
+    str_remove("^(estimate_|std\\.error_)") %>%
+    unique()
+  
+  ordered_cols <- unlist(lapply(tech_names, function(tech) {
+    c(paste0("estimate_", tech), paste0("std.error_", tech))
+  }))
+  
+  ran_vals_wide_clean %>%
+    select(term, all_of(ordered_cols))
+}
+
+cintervals <- {
+  ci_wide_clean <- cintervals %>%
+    select(Parameters, matches("^(2.5%|97.5%)_"))
+  
+  tech_names <- ci_wide_clean %>%
+    select(-Parameters) %>%
+    names() %>%
+    str_remove("^(2.5%_|97.5%_)") %>%
+    unique()
+  
+  ordered_cols <- unlist(lapply(tech_names, function(tech) {
+    c(paste0("2.5%_", tech), paste0("97.5%_", tech))
+  }))
+  
+  ci_wide_clean %>%
+    select(Parameters, all_of(ordered_cols))
+}
+
+
+################################################################################
+################################################################################
+################################################################################
+
+#Probability estimate is non-zero ----------------------------------------------
 variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+", "Female", "Home_ownership", "Rural",
                            "Env_concern", "Gov_support", "EPS")
 fixed_random_df <- get_probabilities(m4$stan_summary, variables_of_interest)
 # Round only numeric columns
 fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
 m4_fixed_random <- fixed_random_df
-
-#--------------------------------- Summary -------------------------------------
-#all following summaries and comparisons based on model m3.1, m4 and m2
-#m3.1: varying intercepts and slopes with EPS as group-predictor
-#m4: varying intercepts and slopes with EPS, and interaction term between group- & HH-level predictors EPS:Income
-#m2: varying intercepts with EPS as group-predictor
-
-#Posterior analysis ------------------------------------------------------------
-##fixed effects
-m2_fixed$Model <- "m2"
-m3.1_fixed$Model <- "m3.1"
-m4_fixed$Model <- "m4"
-
-models_fixed <- bind_rows(m2_fixed, m3.1_fixed, m4_fixed)
-
-model_order <- c("m2", "m3.1", "m4")
-col_types <- c("estimate", "std.error", "conf.low", "conf.high")
-
-models_fixed <- models_fixed %>%
-  select(Model, term, all_of(col_types)) %>%
-  pivot_wider(
-    names_from = Model,
-    values_from = all_of(col_types),
-    names_glue = "{Model}_{.value}"
-  ) %>%
-  select(term, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
-
-##random vals
-m2_ran_vals$Model <- "m2"
-m3.1_ran_vals$Model <- "m3.1"
-m4_ran_vals$Model <- "m4"
-
-models_vals_pars <- bind_rows(m2_ran_vals, m3.1_ran_vals, m4_ran_vals) %>%
-  mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
-  arrange(Model) %>%
-  select(Model, everything())
-
-##random parameter
-m2_ran_pars$Model <- "m2"
-m3.1_ran_pars$Model <- "m3.1"
-m4_ran_pars$Model <- "m4"
-
-models_ran_pars <- bind_rows(m2_ran_pars, m3.1_ran_pars, m4_ran_pars) %>%
-  mutate(Model = factor(Model, levels = c("m2", "m3.1", "m4"))) %>%
-  arrange(Model) %>%
-  select(Model, everything())
-
-##posterior CI
-m2_CI$Model <- "m2"
-m3.1_CI$Model <- "m3.1"
-m4_CI$Model <- "m4"
-
-models_CI <- bind_rows(m2_CI, m3.1_CI, m4_CI)
-
-model_order <- c("m2", "m3.1", "m4")
-col_types <- c("2.5%", "97.5%")
-
-models_CI <- models_CI %>%
-  select(Model, Parameters, all_of(col_types)) %>%
-  pivot_wider(
-    names_from = Model,
-    values_from = all_of(col_types),
-    names_glue = "{Model}_{.value}"
-  ) %>%
-  select(Parameters, all_of(as.vector(t(outer(model_order, col_types, paste, sep = "_")))))
 
 #-------------------------------------------------------------------------------
 #------------------------------- Output ----------------------------------------
