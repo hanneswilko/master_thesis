@@ -35,12 +35,6 @@ heatpumps_m4 <- read_rds("./output/models_rds/fitHeatpumps_m4.rds") # varying in
 #-------------------------------------------------------------------------------
 #------------------------- 3. BHM evaluation -----------------------------------
 #-------------------------------------------------------------------------------
-windows_m4
-appliances_m4
-insulation_m4
-solare_m4
-heatpumps_m4
-
 models <- list(
   windows_m4 = windows_m4,
   appliances_m4 = appliances_m4,
@@ -58,7 +52,7 @@ models_data <- list(
 )
 
 m4_array <- as.array(windows_m4) #any tech_m4 model - just to separate for type of effect
-m4_all_pars <- dimnames(windows_m4_array)$parameters
+m4_all_pars <- dimnames(m4_array)$parameters
 
 m4_fixed_pars <- m4_all_pars[!grepl("^(b\\[|Sigma|cor_|lp__)", m4_all_pars)]
 m4_random_pars <- m4_all_pars[grepl("^(b\\[|Sigma|cor_)", m4_all_pars)]
@@ -236,10 +230,10 @@ build_long_wide <- function(component, id_cols) {
 
 fixed_effects <- build_long_wide("fixed", c("term"))
 ran_effects <- build_long_wide("ran_vals", c("term", "group", "level"))
-ran_pars <- build_long_wide("ran_pars", c("term", "group"))
+ran_pars_df <- build_long_wide("ran_pars", c("term", "group"))
 cintervals <- build_long_wide("ci", c("Parameters"))
 
-fixed_effects <- {
+fixed_effects_df <- {
   fixed_wide_clean <- fixed_effects %>%
     select(term, matches("^(estimate|std\\.error)_"))
   
@@ -257,7 +251,7 @@ fixed_effects <- {
     select(term, all_of(ordered_cols))
 }
 
-ran_effects <- {
+ran_effects_df <- {
   ran_vals_wide_clean <- ran_effects %>%
     select(term, matches("^(estimate|std\\.error)_"))
   
@@ -275,7 +269,7 @@ ran_effects <- {
     select(term, all_of(ordered_cols))
 }
 
-cintervals <- {
+cintervals_df <- {
   ci_wide_clean <- cintervals %>%
     select(Parameters, matches("^(2.5%|97.5%)_"))
   
@@ -293,38 +287,95 @@ cintervals <- {
     select(Parameters, all_of(ordered_cols))
 }
 
-
-################################################################################
-################################################################################
-################################################################################
-
 #Probability estimate is non-zero ----------------------------------------------
-variables_of_interest <- c("(Intercept)", "Age_cat45-54", "Age_cat55+", "Female", "Home_ownership", "Rural",
-                           "Env_concern", "Gov_support", "EPS")
-fixed_random_df <- get_probabilities(m4$stan_summary, variables_of_interest)
+#fixed effects
+prob_fixed_windows <- get_probabilities(windows_m4$stan_summary, m4_fixed_pars)
+prob_fixed_appliances <- get_probabilities(appliances_m4$stan_summary, m4_fixed_pars)
+prob_fixed_insulation <- get_probabilities(insulation_m4$stan_summary, m4_fixed_pars)
+prob_fixed_solare <- get_probabilities(solare_m4$stan_summary, m4_fixed_pars)
+prob_fixed_heatpumps <- get_probabilities(heatpumps_m4$stan_summary, m4_fixed_pars)
+
+prob_fixed_windows[, sapply(prob_fixed_windows, is.numeric)] <- round(prob_fixed_windows[, sapply(prob_fixed_windows, is.numeric)], 2)
+prob_fixed_appliances[, sapply(prob_fixed_appliances, is.numeric)] <- round(prob_fixed_appliances[, sapply(prob_fixed_appliances, is.numeric)], 2)
+prob_fixed_insulation[, sapply(prob_fixed_insulation, is.numeric)] <- round(prob_fixed_insulation[, sapply(prob_fixed_insulation, is.numeric)], 2)
+prob_fixed_solare[, sapply(prob_fixed_solare, is.numeric)] <- round(prob_fixed_solare[, sapply(prob_fixed_solare, is.numeric)], 2)
+prob_fixed_heatpumps[, sapply(prob_fixed_heatpumps, is.numeric)] <- round(prob_fixed_heatpumps[, sapply(prob_fixed_heatpumps, is.numeric)], 2)
+
+prob_models <- list(
+  windows = prob_fixed_windows,
+  appliances = prob_fixed_appliances,
+  insulation = prob_fixed_insulation,
+  solare = prob_fixed_solare,
+  heatpumps = prob_fixed_heatpumps
+)
+
+prob_models <- imap(prob_models, function(df, name) {
+  df %>%
+    rename_with(~ paste0(.x, "_", name), .cols = -Variable)
+})
+
+prob_fixed_df <- reduce(prob_models, full_join, by = "Variable")
+
+#random effects
+prob_random_windows <- get_probabilities(windows_m4$stan_summary, m4_random_pars)
+prob_random_appliances <- get_probabilities(appliances_m4$stan_summary, m4_random_pars)
+prob_random_insulation <- get_probabilities(insulation_m4$stan_summary, m4_random_pars)
+prob_random_solare <- get_probabilities(solare_m4$stan_summary, m4_random_pars)
+prob_random_heatpumps <- get_probabilities(heatpumps_m4$stan_summary, m4_random_pars)
+
 # Round only numeric columns
-fixed_random_df[, sapply(fixed_random_df, is.numeric)] <- round(fixed_random_df[, sapply(fixed_random_df, is.numeric)], 2)
-m4_fixed_random <- fixed_random_df
+prob_random_windows[, sapply(prob_random_windows, is.numeric)] <- round(prob_random_windows[, sapply(prob_random_windows, is.numeric)], 2)
+prob_random_appliances[, sapply(prob_random_appliances, is.numeric)] <- round(prob_random_appliances[, sapply(prob_random_appliances, is.numeric)], 2)
+prob_random_insulation[, sapply(prob_random_insulation, is.numeric)] <- round(prob_random_insulation[, sapply(prob_random_insulation, is.numeric)], 2)
+prob_random_solare[, sapply(prob_random_solare, is.numeric)] <- round(prob_random_solare[, sapply(prob_random_solare, is.numeric)], 2)
+prob_random_heatpumps[, sapply(prob_random_heatpumps, is.numeric)] <- round(prob_random_heatpumps[, sapply(prob_random_heatpumps, is.numeric)], 2)
+
+#combine data sets
+prob_models <- list(
+  windows = prob_random_windows,
+  appliances = prob_random_appliances,
+  insulation = prob_random_insulation,
+  solare = prob_random_solare,
+  heatpumps = prob_random_heatpumps
+)
+
+prob_models <- imap(prob_models, function(df, name) {
+  df %>%
+    rename_with(~ paste0(.x, "_", name), .cols = -Variable)
+})
+
+# Now reduce into a single data frame by joining on 'Variable'
+prob_random_df <- reduce(prob_models, full_join, by = "Variable")
 
 #-------------------------------------------------------------------------------
 #------------------------------- Output ----------------------------------------
 #-------------------------------------------------------------------------------
+prob_fixed_df2 <- prob_fixed_df %>%
+  select(Variable, Prob_LT_0_windows, Prob_GT_0_windows, Prob_LT_0_appliances,
+         Prob_GT_0_appliances, Prob_LT_0_insulation, Prob_GT_0_insulation,
+         Prob_LT_0_solare, Prob_GT_0_solare, Prob_LT_0_heatpumps, Prob_GT_0_heatpumps)
+
+prob_random_df2 <- prob_random_df %>%
+  select(Variable, Prob_LT_0_windows, Prob_GT_0_windows, Prob_LT_0_appliances,
+         Prob_GT_0_appliances, Prob_LT_0_insulation, Prob_GT_0_insulation,
+         Prob_LT_0_solare, Prob_GT_0_solare, Prob_LT_0_heatpumps, Prob_GT_0_heatpumps) %>%
+  filter(!Variable %in% c("Sigma[Country_name:(Intercept),(Intercept)]", "Sigma[Country_name:EPS,(Intercept)]",
+                          "Sigma[Country_name:EPS,EPS]"))
+
 
 #--------------------------- Output Tables --------------------------------------
 # List of your data frames:
 tables_list <- list(
-  rhat_summary_df = rhat_summary_df,
   neff_summary_df = neff_summary_df,
+  rhat_summary_df = rhat_summary_df,
   ppc_pval_df = ppc_pval_df,
-  models_postclass_accuracy = models_postclass_accuracy,
-  WAIC_all_summary = WAIC_all_summary,
-  models_fixed = models_fixed,
-  models_vals_pars = models_vals_pars,
-  models_ran_pars = models_ran_pars,
-  models_CI = models_CI,
-  m2_fixed_random = m2_fixed_random,
-  m3.1_fixed_random = m3.1_fixed_random,
-  m4_fixed_random = m4_fixed_random
+  postclass_accuracy_df = postclass_accuracy_df,
+  fixed_effects_df = fixed_effects_df,
+  ran_effects_df = ran_effects_df,
+  ran_pars_df = ran_pars_df,
+  cintervals_df = cintervals_df,
+  prob_fixed_df2 = prob_fixed_df2,
+  prob_random_df2 = prob_random_df2
 )
 
 # Output directory:
