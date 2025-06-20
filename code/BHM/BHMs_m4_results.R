@@ -403,63 +403,155 @@ write_tables_to_tex <- function(tables, outdir) {
 write_tables_to_tex(tables_list, output_dir)
 
 #--------------------------- Output Plots ---------------------------------------
-# Step 1: Filter rows for EPS by country
-eps_effects <- prob_random_df %>%
-  filter(str_detect(Variable, "b\\[EPS Country_name:")) %>%
-  mutate(
-    Country = str_extract(Variable, "(?<=Country_name:)[A-Z]+"),
-    abs_effect_prob = pmax(Prob_LT_0_windows, Prob_GT_0_windows),  # WINDOWS
-    effect = Mean_windows  # choose the effect column per technology
-  )
-
-# Step 2: Bin probabilities
-eps_effects <- eps_effects %>%
-  mutate(
-    prob_bin = cut(abs_effect_prob,
-                   breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1),
-                   labels = c("(.00–.10)", "(.11–.20)", "(.21–.30)", "(.31–.40)",
-                              "(.41–.50)", "(.51–.70)", "(.71–1.00)"),
-                   include.lowest = TRUE)
-  )
-
-
-# Step 3: Create the plot
-library(ggplot2)
-library(dplyr)
-library(forcats)
-
-# Updated color palette — high contrast
 custom_bin_colors <- c(
-  "(.00–.10)" = "#e0e0e0",  # light gray
-  "(.11–.20)" = "#fdae61",  # orange
-  "(.21–.30)" = "#abd9e9",  # light cyan
-  "(.31–.40)" = "#74add1",  # light blue
-  "(.41–.50)" = "#4575b4",  # medium blue
-  "(.51–.70)" = "#313695",  # deep blue
-  "(.71–1.00)" = "#542788"  # purple
+  "(.00–.20)" = "#fdae61",  
+  "(.21–.40)" = "#abd9e9",
+  "(.41–.60)" = "#74add1",
+  "(.61–.80)" = "#4575b4",
+  "(.81–1.00)" = "#542788"
 )
 
-# Create the updated plot
-ggplot(eps_effects, aes(x = fct_reorder(Country, effect), y = effect, color = prob_bin)) +
-  geom_point(size = 5) +
-  scale_color_manual(
-    values = custom_bin_colors,
-    name = "Probability |effect| ≠ 0"
-  ) +
-  labs(
-    title = "Estimated Effect of EPS on Adoption by Country",
-    x = "Country",
-    y = "Mean Estimated Effect"
-  ) +
-  theme_minimal(base_size = 14) +
-  theme(
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
-    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
-    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
-    legend.title = element_text(size = 11, face = "bold"),
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
-    axis.text.y = element_text(size = 10)
+#Estimated effect of EPS slope on technology adoption by country ---------------------
+technologies <- list(
+  "Windows" = c("Prob_LT_0_windows", "Prob_GT_0_windows", "Mean_windows"),
+  "Appliances" = c("Prob_LT_0_appliances", "Prob_GT_0_appliances", "Mean_appliances"),
+  "Insulation" = c("Prob_LT_0_insulation", "Prob_GT_0_insulation", "Mean_insulation"),
+  "Solar panels" = c("Prob_LT_0_solare", "Prob_GT_0_solare", "Mean_solare"),
+  "Heat pumps" = c("Prob_LT_0_heatpumps", "Prob_GT_0_heatpumps", "Mean_heatpumps")
+)
+
+eps_effects_base <- prob_random_df %>%
+  filter(str_detect(Variable, "b\\[EPS Country_name:")) %>%
+  mutate(Country = str_extract(Variable, "(?<=Country_name:)[A-Z]+"))
+
+plot_eps_by_tech <- function(cols, tech_name) {
+  lt_col <- cols[1]
+  gt_col <- cols[2]
+  mean_col <- cols[3]
+  
+  df <- eps_effects_base %>%
+    mutate(
+      abs_effect_prob = pmax(.data[[lt_col]], .data[[gt_col]]),
+      effect = .data[[mean_col]],
+      prob_bin = cut(abs_effect_prob,
+                     breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+                     labels = names(custom_bin_colors),
+                     include.lowest = TRUE)
+    )
+  
+  ggplot(df, aes(x = fct_reorder(Country, effect), y = effect, color = prob_bin)) +
+    geom_point(size = 5) +
+    scale_color_manual(values = custom_bin_colors, name = "Probability |effect| ≠ 0") +
+    labs(
+      title = paste("Estimated Effect of EPS on", tech_name, "Adoption by Country"),
+      x = "Country",
+      y = "Mean Estimated Effect"
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+      axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+      legend.title = element_text(size = 11, face = "bold"),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = element_text(size = 10)
+    )
+}
+
+# Generate and store plots
+eps_plots <- imap(technologies, plot_eps_by_tech)
+
+eps_plots$Appliances
+
+#Estimated effect of fixed-effect predictors across technology ---------------------
+eps_effects_base <- prob_fixed_df %>%
+  filter(
+    !str_detect(Variable, "^Gov_support$|^EPS$|^\\(Intercept\\)$|^Dwelling_size|^EPS:Incomequintile")
   )
+
+plot_fixed_by_tech <- function(cols, tech_name) {
+  lt_col <- cols[1]
+  gt_col <- cols[2]
+  mean_col <- cols[3]
+  
+  df <- eps_effects_base %>%
+    mutate(
+      abs_effect_prob = pmax(.data[[lt_col]], .data[[gt_col]]),
+      effect = .data[[mean_col]],
+      prob_bin = cut(
+        abs_effect_prob,
+        breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+        labels = names(custom_bin_colors),
+        include.lowest = TRUE
+      )
+    )
+  
+  ggplot(df, aes(x = fct_reorder(Variable, effect), y = effect, color = prob_bin)) +
+    geom_point(size = 5) +
+    scale_color_manual(values = custom_bin_colors, name = "Probability |effect| ≠ 0") +
+    labs(
+      title = paste("Estimated Effect of Predictors on", tech_name, "Adoption"),
+      x = "Predictor",
+      y = "Mean Estimated Effect"
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+      axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+      legend.title = element_text(size = 11, face = "bold"),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = element_text(size = 10)
+    )
+}
+
+# Generate and store plots
+fixed_effects_plots <- imap(technologies, plot_fixed_by_tech)
+
+fixed_effects_plots$`Solar panels`
+
+#Estimated effect of Gov_support and EPS across technology ---------------------
+# General function to plot fixed effects (EPS or Gov_support)
+plot_fixed_effect_across_tech <- function(effect_var, df, custom_colors) {
+  df %>%
+    filter(Variable == effect_var) %>%
+    pivot_longer(
+      cols = matches("^(Mean|Prob_LT_0|Prob_GT_0)_"),
+      names_to = c(".value", "Technology"),
+      names_pattern = "^(Mean|Prob_LT_0|Prob_GT_0)_(.+)$"
+    ) %>%
+    mutate(
+      abs_effect_prob = pmax(Prob_LT_0, Prob_GT_0),
+      prob_bin = cut(
+        abs_effect_prob,
+        breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+        labels = names(custom_colors),
+        include.lowest = TRUE
+      )
+    ) %>%
+    ggplot(aes(x = fct_reorder(Technology, Mean), y = Mean, color = prob_bin)) +
+    geom_point(size = 5) +
+    scale_color_manual(values = custom_colors, name = "Probability |effect| ≠ 0") +
+    labs(
+      title = paste("Estimated Effect of", effect_var, "on Technology Adoption"),
+      x = "Technology",
+      y = "Mean Estimated Effect"
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+      axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+      legend.title = element_text(size = 11, face = "bold"),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = element_text(size = 10)
+    )
+}
+
+govsupport_plot <- plot_fixed_effect_across_tech("Gov_support", prob_fixed_df, custom_bin_colors)
+eps_plot <- plot_fixed_effect_across_tech("EPS", prob_fixed_df, custom_bin_colors)
+
+
 
 
 
