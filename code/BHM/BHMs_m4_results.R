@@ -82,10 +82,10 @@ neff_summary_df <- neff_summary %>%
   group_by(Model) %>%
   summarize(
     Min    = round(min(Neff), 2),
-    Q1     = round(quantile(Neff, 0.25), 2),
+    q1     = round(quantile(Neff, 0.25), 2),
     Median = round(median(Neff), 2),
     Mean   = round(mean(Neff), 2),
-    Q3     = round(quantile(Neff, 0.75), 2),
+    q3     = round(quantile(Neff, 0.75), 2),
     Max    = round(max(Neff), 2),
     .groups = "drop"
   )
@@ -107,10 +107,10 @@ rhat_summary_df <- rhat_summary %>%
   group_by(Model) %>%
   summarize(
     Min    = sprintf("%.4f", min(Rhat)),
-    Q1     = sprintf("%.4f", quantile(Rhat, 0.25)),
+    q1     = sprintf("%.4f", quantile(Rhat, 0.25)),
     Median = sprintf("%.4f", median(Rhat)),
     Mean   = sprintf("%.4f", mean(Rhat)),
-    Q3     = sprintf("%.4f", quantile(Rhat, 0.75)),
+    q3     = sprintf("%.4f", quantile(Rhat, 0.75)),
     Max    = sprintf("%.4f", max(Rhat)),
     .groups = "drop"
   )
@@ -316,6 +316,20 @@ prob_models <- imap(prob_models, function(df, name) {
 
 prob_fixed_df <- reduce(prob_models, full_join, by = "Variable")
 
+fixed_effects_labels <- c("(Intercept)" = "Intercept", "Age_cat25-34" = "Age: 25–34", "Age_cat35-44" = "Age: 35–44", "Age_cat45-54" = "Age: 45–54",
+  "Age_cat55+"   = "Age: 55+", "Female" = "Female", "Higher_edu" = "Higher education", "Home_ownership" = "Homeowner",
+  "Dwelling_house" = "D-Type: House", "Dwelling_size151–200 m²" = "D-size: 151–200 m²", "Dwelling_size26–50 m²" = "D-Size: 26–50 m²",
+  "Dwelling_size51–75 m²" = "D-Size: 51–75 m²", "Dwelling_size76–100 m²" = "D-Size: 76–100 m²", "Dwelling_sizeDon't know" = "D-Size: Don't know",
+  "Dwelling_sizeLess than 25 m²" = "D-Size: <25 m²", "Dwelling_sizeMore than 200 m²" = "D-Size: >200 m²", "Rural" = "D-Location: Rural",
+  "Env_concern" = "Environmental concern", "Gov_support" = "Government support",
+  "EPS" = "EPS index", "Incomequintile 2" = "Income q2", "Incomequintile 3" = "Income q3", "Incomequintile 4" = "Income q4",
+  "Incomequintile 5" = "Income q5", "EPS:Incomequintile 2" = "EPS × Income q2", "EPS:Incomequintile 3" = "EPS × Income q3",
+  "EPS:Incomequintile 4" = "EPS × Income q4", "EPS:Incomequintile 5" = "EPS × Income q5"
+)
+
+prob_fixed_df <- prob_fixed_df %>%
+  mutate(Variable = recode(Variable, !!!fixed_effects_labels))
+
 #random effects
 prob_random_windows <- get_probabilities(windows_m4$stan_summary, m4_random_pars)
 prob_random_appliances <- get_probabilities(appliances_m4$stan_summary, m4_random_pars)
@@ -323,14 +337,12 @@ prob_random_insulation <- get_probabilities(insulation_m4$stan_summary, m4_rando
 prob_random_solare <- get_probabilities(solare_m4$stan_summary, m4_random_pars)
 prob_random_heatpumps <- get_probabilities(heatpumps_m4$stan_summary, m4_random_pars)
 
-# Round only numeric columns
 prob_random_windows[, sapply(prob_random_windows, is.numeric)] <- round(prob_random_windows[, sapply(prob_random_windows, is.numeric)], 2)
 prob_random_appliances[, sapply(prob_random_appliances, is.numeric)] <- round(prob_random_appliances[, sapply(prob_random_appliances, is.numeric)], 2)
 prob_random_insulation[, sapply(prob_random_insulation, is.numeric)] <- round(prob_random_insulation[, sapply(prob_random_insulation, is.numeric)], 2)
 prob_random_solare[, sapply(prob_random_solare, is.numeric)] <- round(prob_random_solare[, sapply(prob_random_solare, is.numeric)], 2)
 prob_random_heatpumps[, sapply(prob_random_heatpumps, is.numeric)] <- round(prob_random_heatpumps[, sapply(prob_random_heatpumps, is.numeric)], 2)
 
-#combine data sets
 prob_models <- list(
   windows = prob_random_windows,
   appliances = prob_random_appliances,
@@ -344,8 +356,39 @@ prob_models <- imap(prob_models, function(df, name) {
     rename_with(~ paste0(.x, "_", name), .cols = -Variable)
 })
 
-# Now reduce into a single data frame by joining on 'Variable'
 prob_random_df <- reduce(prob_models, full_join, by = "Variable")
+
+random_effect_labels <- c(
+  # Intercepts by country
+  "b[(Intercept) Country_name:BE]" = "Intercept (BE)",
+  "b[(Intercept) Country_name:CA]" = "Intercept (CA)",
+  "b[(Intercept) Country_name:CH]" = "Intercept (CH)",
+  "b[(Intercept) Country_name:FR]" = "Intercept (FR)",
+  "b[(Intercept) Country_name:IL]" = "Intercept (IL)",
+  "b[(Intercept) Country_name:NL]" = "Intercept (NL)",
+  "b[(Intercept) Country_name:SE]" = "Intercept (SE)",
+  "b[(Intercept) Country_name:UK]" = "Intercept (UK)",
+  "b[(Intercept) Country_name:US]" = "Intercept (US)",
+  
+  # EPS slopes by country
+  "b[EPS Country_name:BE]" = "EPS effect (BE)",
+  "b[EPS Country_name:CA]" = "EPS effect (CA)",
+  "b[EPS Country_name:CH]" = "EPS effect (CH)",
+  "b[EPS Country_name:FR]" = "EPS effect (FR)",
+  "b[EPS Country_name:IL]" = "EPS effect (IL)",
+  "b[EPS Country_name:NL]" = "EPS effect (NL)",
+  "b[EPS Country_name:SE]" = "EPS effect (SE)",
+  "b[EPS Country_name:UK]" = "EPS effect (UK)",
+  "b[EPS Country_name:US]" = "EPS effect (US)",
+  
+  # Sigma covariance components
+  "Sigma[Country_name:(Intercept),(Intercept)]" = "Var(Intercept)",
+  "Sigma[Country_name:EPS,(Intercept)]" = "Cov(EPS, Intercept)",
+  "Sigma[Country_name:EPS,EPS]" = "Var(EPS)"
+)
+
+prob_random_df <- prob_random_df %>%
+  mutate(Variable = recode(Variable, !!!random_effect_labels))
 
 #-------------------------------------------------------------------------------
 #------------------------------- Output ----------------------------------------
@@ -359,8 +402,8 @@ prob_random_df2 <- prob_random_df %>%
   select(Variable, Prob_LT_0_windows, Prob_GT_0_windows, Prob_LT_0_appliances,
          Prob_GT_0_appliances, Prob_LT_0_insulation, Prob_GT_0_insulation,
          Prob_LT_0_solare, Prob_GT_0_solare, Prob_LT_0_heatpumps, Prob_GT_0_heatpumps) %>%
-  filter(!Variable %in% c("Sigma[Country_name:(Intercept),(Intercept)]", "Sigma[Country_name:EPS,(Intercept)]",
-                          "Sigma[Country_name:EPS,EPS]"))
+  filter(!Variable %in% c("Var(Intercept)", "Cov(EPS, Intercept)",
+                          "Var(EPS)"))
 
 #--------------------------- Output Tables --------------------------------------
 # List of your data frames:
@@ -404,11 +447,11 @@ write_tables_to_tex(tables_list, output_dir)
 
 #--------------------------- Output Plots ---------------------------------------
 custom_bin_colors <- c(
-  "(.00–.20)" = "#fdae61",  
+  "(.00–.20)" = "#d9d9d9",  
   "(.21–.40)" = "#abd9e9",
   "(.41–.60)" = "#74add1",
   "(.61–.80)" = "#4575b4",
-  "(.81–1.00)" = "#542788"
+  "(.81–1.00)" = "#fdae61"
 )
 
 #Estimated effect of EPS slope on technology adoption by country ---------------------
@@ -420,61 +463,16 @@ technologies <- list(
   "Heat pumps" = c("Prob_LT_0_heatpumps", "Prob_GT_0_heatpumps", "Mean_heatpumps")
 )
 
-eps_effects_base <- prob_random_df %>%
-  filter(str_detect(Variable, "b\\[EPS Country_name:")) %>%
-  mutate(Country = str_extract(Variable, "(?<=Country_name:)[A-Z]+"))
+eps_slope_effects_base <- prob_random_df %>%
+  filter(str_detect(Variable, "^EPS effect \\(")) %>%
+  mutate(Country = str_extract(Variable, "(?<=\\().+(?=\\))"))
 
 plot_eps_by_tech <- function(cols, tech_name) {
   lt_col <- cols[1]
   gt_col <- cols[2]
   mean_col <- cols[3]
   
-  df <- eps_effects_base %>%
-    mutate(
-      abs_effect_prob = pmax(.data[[lt_col]], .data[[gt_col]]),
-      effect = .data[[mean_col]],
-      prob_bin = cut(abs_effect_prob,
-                     breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
-                     labels = names(custom_bin_colors),
-                     include.lowest = TRUE)
-    )
-  
-  ggplot(df, aes(x = fct_reorder(Country, effect), y = effect, color = prob_bin)) +
-    geom_point(size = 5) +
-    scale_color_manual(values = custom_bin_colors, name = "Probability |effect| ≠ 0") +
-    labs(
-      title = paste("Estimated Effect of EPS on", tech_name, "Adoption by Country"),
-      x = "Country",
-      y = "Mean Estimated Effect"
-    ) +
-    theme_minimal(base_size = 14) +
-    theme(
-      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
-      axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
-      axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
-      legend.title = element_text(size = 11, face = "bold"),
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
-      axis.text.y = element_text(size = 10)
-    )
-}
-
-# Generate and store plots
-eps_plots <- imap(technologies, plot_eps_by_tech)
-
-eps_plots$Appliances
-
-#Estimated effect of fixed-effect predictors across technology ---------------------
-eps_effects_base <- prob_fixed_df %>%
-  filter(
-    !str_detect(Variable, "^Gov_support$|^EPS$|^\\(Intercept\\)$|^Dwelling_size|^EPS:Incomequintile")
-  )
-
-plot_fixed_by_tech <- function(cols, tech_name) {
-  lt_col <- cols[1]
-  gt_col <- cols[2]
-  mean_col <- cols[3]
-  
-  df <- eps_effects_base %>%
+  df <- eps_slope_effects_base %>%
     mutate(
       abs_effect_prob = pmax(.data[[lt_col]], .data[[gt_col]]),
       effect = .data[[mean_col]],
@@ -486,8 +484,83 @@ plot_fixed_by_tech <- function(cols, tech_name) {
       )
     )
   
-  ggplot(df, aes(x = fct_reorder(Variable, effect), y = effect, color = prob_bin)) +
+  # Compute y-axis limits with forced inclusion of zero
+  y_min <- min(df$effect, na.rm = TRUE)
+  y_max <- max(df$effect, na.rm = TRUE)
+  y_margin <- 0.05 * (y_max - y_min)
+  y_min <- min(y_min, 0)
+  y_max <- max(y_max, 0)
+  
+  ggplot(df, aes(x = fct_reorder(Country, effect), y = effect, color = prob_bin)) +
+    geom_segment(aes(xend = fct_reorder(Country, effect), y = 0, yend = effect), color = "grey30", linetype = "dashed") +
     geom_point(size = 5) +
+    geom_hline(yintercept = 0, color = "grey30", linewidth = 0.7) +
+    scale_y_continuous(
+      limits = c(y_min - y_margin, y_max + y_margin),
+      breaks = pretty(c(y_min, y_max), n = 6)
+    ) +
+    scale_color_manual(values = custom_bin_colors, name = "Probability |effect| ≠ 0") +
+    labs(
+      title = paste("Estimated Effect of Varying Slope of EPS on", tech_name, "Adoption by Country"),
+      x = "Country",
+      y = "Mean Estimated Effect"
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+      axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+      legend.title = element_text(size = 11, face = "bold"),
+      axis.text.x = element_text(angle = 40, hjust = 1, size = 10),
+      axis.text.y = element_text(size = 10)
+    )
+}
+
+# Generate and store plots
+eps_slope_plots <- imap(technologies, plot_eps_by_tech)
+
+eps_slope_plots$`Heat pumps`
+
+#Estimated effect of fixed-effect predictors across technology ---------------------
+fixed_effects_base <- prob_fixed_df %>%
+  filter(
+    !str_detect(Variable, 
+                regex("^Intercept$|^Government support$|^EPS index$|^D[- ]?[sS]ize:|^EPS × Income q", ignore_case = TRUE))
+  )
+
+plot_fixed_by_tech <- function(cols, tech_name) {
+  lt_col <- cols[1]
+  gt_col <- cols[2]
+  mean_col <- cols[3]
+  
+  df <- fixed_effects_base %>%
+    mutate(
+      abs_effect_prob = pmax(.data[[lt_col]], .data[[gt_col]]),
+      effect = .data[[mean_col]],
+      prob_bin = cut(
+        abs_effect_prob,
+        breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+        labels = names(custom_bin_colors),
+        include.lowest = TRUE
+      )
+    )
+  
+  y_min <- min(df$effect, na.rm = TRUE)
+  y_max <- max(df$effect, na.rm = TRUE)
+  y_margin <- 0.05 * (y_max - y_min)
+  
+  ggplot(df, aes(x = fct_reorder(Variable, effect), y = effect, color = prob_bin)) +
+    # Vertical lines from 0 to each point
+    geom_segment(aes(xend = fct_reorder(Variable, effect), y = 0, yend = effect), color = "grey30", linetype = "dashed") +
+    # Points
+    geom_point(size = 5) +
+    # Horizontal zero line
+    geom_hline(yintercept = 0, color = "grey30", linewidth = 0.7) +
+    # Y-axis settings
+    scale_y_continuous(
+      limits = c(y_min - y_margin, y_max + y_margin),
+      breaks = pretty(c(y_min, y_max), n = 6)
+    ) +
     scale_color_manual(values = custom_bin_colors, name = "Probability |effect| ≠ 0") +
     labs(
       title = paste("Estimated Effect of Predictors on", tech_name, "Adoption"),
@@ -500,7 +573,7 @@ plot_fixed_by_tech <- function(cols, tech_name) {
       axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
       axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
       legend.title = element_text(size = 11, face = "bold"),
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.x = element_text(angle = 40, hjust = 1, size = 10),
       axis.text.y = element_text(size = 10)
     )
 }
@@ -508,12 +581,12 @@ plot_fixed_by_tech <- function(cols, tech_name) {
 # Generate and store plots
 fixed_effects_plots <- imap(technologies, plot_fixed_by_tech)
 
-fixed_effects_plots$`Solar panels`
+fixed_effects_plots$Appliances
 
 #Estimated effect of Gov_support and EPS across technology ---------------------
 # General function to plot fixed effects (EPS or Gov_support)
 plot_fixed_effect_across_tech <- function(effect_var, df, custom_colors) {
-  df %>%
+  plot_df <- df %>%
     filter(Variable == effect_var) %>%
     pivot_longer(
       cols = matches("^(Mean|Prob_LT_0|Prob_GT_0)_"),
@@ -521,6 +594,13 @@ plot_fixed_effect_across_tech <- function(effect_var, df, custom_colors) {
       names_pattern = "^(Mean|Prob_LT_0|Prob_GT_0)_(.+)$"
     ) %>%
     mutate(
+      Technology = recode(Technology,
+                          "appliances" = "Appliances",
+                          "windows" = "Windows",
+                          "heatpumps" = "Heat pumps",
+                          "solare" = "Solar panels",
+                          "insulation" = "Thermal insulation"
+      ),
       abs_effect_prob = pmax(Prob_LT_0, Prob_GT_0),
       prob_bin = cut(
         abs_effect_prob,
@@ -528,9 +608,24 @@ plot_fixed_effect_across_tech <- function(effect_var, df, custom_colors) {
         labels = names(custom_colors),
         include.lowest = TRUE
       )
-    ) %>%
-    ggplot(aes(x = fct_reorder(Technology, Mean), y = Mean, color = prob_bin)) +
+    )
+  
+  y_min <- min(plot_df$Mean, na.rm = TRUE)
+  y_max <- max(plot_df$Mean, na.rm = TRUE)
+  y_margin <- 0.05 * (y_max - y_min)
+  
+  # Force y-axis to include 0
+  y_min <- min(y_min, 0)
+  y_max <- max(y_max, 0)
+  
+  ggplot(plot_df, aes(x = fct_reorder(Technology, Mean), y = Mean, color = prob_bin)) +
+    geom_segment(aes(xend = fct_reorder(Technology, Mean), y = 0, yend = Mean), color = "grey30", linetype = "dashed") +
     geom_point(size = 5) +
+    geom_hline(yintercept = 0, color = "grey30", linewidth = 0.7) +
+    scale_y_continuous(
+      limits = c(y_min - y_margin, y_max + y_margin),
+      breaks = pretty(c(y_min, y_max), n = 6)
+    ) +
     scale_color_manual(values = custom_colors, name = "Probability |effect| ≠ 0") +
     labs(
       title = paste("Estimated Effect of", effect_var, "on Technology Adoption"),
@@ -543,20 +638,13 @@ plot_fixed_effect_across_tech <- function(effect_var, df, custom_colors) {
       axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
       axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
       legend.title = element_text(size = 11, face = "bold"),
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.x = element_text(hjust = 0.5, size = 10),
       axis.text.y = element_text(size = 10)
     )
 }
 
-govsupport_plot <- plot_fixed_effect_across_tech("Gov_support", prob_fixed_df, custom_bin_colors)
-eps_plot <- plot_fixed_effect_across_tech("EPS", prob_fixed_df, custom_bin_colors)
-
-
-
-
-
-
-
+eps_plot <- plot_fixed_effect_across_tech("EPS index", prob_fixed_df, custom_bin_colors)
+govsupport_plot <- plot_fixed_effect_across_tech("Government support", prob_fixed_df, custom_bin_colors)
 
 
 
