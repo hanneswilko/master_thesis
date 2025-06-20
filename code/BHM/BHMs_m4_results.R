@@ -362,7 +362,6 @@ prob_random_df2 <- prob_random_df %>%
   filter(!Variable %in% c("Sigma[Country_name:(Intercept),(Intercept)]", "Sigma[Country_name:EPS,(Intercept)]",
                           "Sigma[Country_name:EPS,EPS]"))
 
-
 #--------------------------- Output Tables --------------------------------------
 # List of your data frames:
 tables_list <- list(
@@ -404,26 +403,66 @@ write_tables_to_tex <- function(tables, outdir) {
 write_tables_to_tex(tables_list, output_dir)
 
 #--------------------------- Output Plots ---------------------------------------
-##m2
-ggsave("./output/output_heatpumps/m2_mcmc_trace.pdf", plot = m2_mcmc_trace, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m2_mcmc_acf_fixed.pdf", plot = m2_mcmc_acf_fixed, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m2_mcmc_acf_random.pdf", plot = m2_mcmc_acf_random, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m2_mcmc_dens_overlay.pdf", plot = m2_mcmc_dens_overlay, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m2_ppc.pdf", plot = m2_ppc, dpi = 300, scale = 1.2)
+# Step 1: Filter rows for EPS by country
+eps_effects <- prob_random_df %>%
+  filter(str_detect(Variable, "b\\[EPS Country_name:")) %>%
+  mutate(
+    Country = str_extract(Variable, "(?<=Country_name:)[A-Z]+"),
+    abs_effect_prob = pmax(Prob_LT_0_windows, Prob_GT_0_windows),  # WINDOWS
+    effect = Mean_windows  # choose the effect column per technology
+  )
 
-##m3.1
-ggsave("./output/output_heatpumps/m3.1_mcmc_trace.pdf", plot = m3.1_mcmc_trace, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m3.1_mcmc_acf_fixed.pdf", plot = m3.1_mcmc_acf_fixed, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m3.1_mcmc_acf_random.pdf", plot = m3.1_mcmc_acf_random, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m3.1_mcmc_dens_overlay.pdf", plot = m3.1_mcmc_dens_overlay, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m3.1_ppc.pdf", plot = m3.1_ppc, dpi = 300, scale = 1.2)
+# Step 2: Bin probabilities
+eps_effects <- eps_effects %>%
+  mutate(
+    prob_bin = cut(abs_effect_prob,
+                   breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1),
+                   labels = c("(.00–.10)", "(.11–.20)", "(.21–.30)", "(.31–.40)",
+                              "(.41–.50)", "(.51–.70)", "(.71–1.00)"),
+                   include.lowest = TRUE)
+  )
 
-##m4
-ggsave("./output/output_heatpumps/m4_mcmc_trace.pdf", plot = m4_mcmc_trace, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m4_mcmc_acf_fixed.pdf", plot = m4_mcmc_acf_fixed, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m4_mcmc_acf_random.pdf", plot = m4_mcmc_acf_random, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m4_mcmc_dens_overlay.pdf", plot = m4_mcmc_dens_overlay, dpi = 300, scale = 1.2)
-ggsave("./output/output_heatpumps/m4_ppc.pdf", plot = m4_ppc, dpi = 300, scale = 1.2)
+
+# Step 3: Create the plot
+library(ggplot2)
+library(dplyr)
+library(forcats)
+
+# Updated color palette — high contrast
+custom_bin_colors <- c(
+  "(.00–.10)" = "#e0e0e0",  # light gray
+  "(.11–.20)" = "#fdae61",  # orange
+  "(.21–.30)" = "#abd9e9",  # light cyan
+  "(.31–.40)" = "#74add1",  # light blue
+  "(.41–.50)" = "#4575b4",  # medium blue
+  "(.51–.70)" = "#313695",  # deep blue
+  "(.71–1.00)" = "#542788"  # purple
+)
+
+# Create the updated plot
+ggplot(eps_effects, aes(x = fct_reorder(Country, effect), y = effect, color = prob_bin)) +
+  geom_point(size = 5) +
+  scale_color_manual(
+    values = custom_bin_colors,
+    name = "Probability |effect| ≠ 0"
+  ) +
+  labs(
+    title = "Estimated Effect of EPS on Adoption by Country",
+    x = "Country",
+    y = "Mean Estimated Effect"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+    axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    legend.title = element_text(size = 11, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    axis.text.y = element_text(size = 10)
+  )
+
+
+
 
 
 
