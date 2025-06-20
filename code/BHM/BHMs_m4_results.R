@@ -316,7 +316,7 @@ prob_models <- imap(prob_models, function(df, name) {
 
 prob_fixed_df <- reduce(prob_models, full_join, by = "Variable")
 
-fixed_effects_labels <- c("(Intercept)" = "Intercept", "Age_cat25-34" = "Age: 25–34", "Age_cat35-44" = "Age: 35–44", "Age_cat45-54" = "Age: 45–54",
+fixed_effects_labels <- c("(Intercept)" = "Intercept", "Age_cat25-34" = "Age: 25-34", "Age_cat35-44" = "Age: 35-44", "Age_cat45-54" = "Age: 45-54",
   "Age_cat55+"   = "Age: 55+", "Female" = "Female", "Higher_edu" = "Higher education", "Home_ownership" = "Homeowner",
   "Dwelling_house" = "D-Type: House", "Dwelling_size151–200 m²" = "D-size: 151–200 m²", "Dwelling_size26–50 m²" = "D-Size: 26–50 m²",
   "Dwelling_size51–75 m²" = "D-Size: 51–75 m²", "Dwelling_size76–100 m²" = "D-Size: 76–100 m²", "Dwelling_sizeDon't know" = "D-Size: Don't know",
@@ -408,20 +408,20 @@ prob_random_df2 <- prob_random_df %>%
 #--------------------------- Output Tables --------------------------------------
 # List of your data frames:
 tables_list <- list(
-  neff_summary_df = neff_summary_df,
-  rhat_summary_df = rhat_summary_df,
-  ppc_pval_df = ppc_pval_df,
-  postclass_accuracy_df = postclass_accuracy_df,
-  fixed_effects_df = fixed_effects_df,
-  ran_effects_df = ran_effects_df,
-  ran_pars_df = ran_pars_df,
-  cintervals_df = cintervals_df,
-  prob_fixed_df2 = prob_fixed_df2,
-  prob_random_df2 = prob_random_df2
+  m4_neff_summary_df = neff_summary_df,
+  m4_rhat_summary_df = rhat_summary_df,
+  m4_ppc_pval_df = ppc_pval_df,
+  m4_postclass_accuracy_df = postclass_accuracy_df,
+  m4_fixed_effects_df = fixed_effects_df,
+  m4_ran_effects_df = ran_effects_df,
+  m4_ran_pars_df = ran_pars_df,
+  m4_cintervals_df = cintervals_df,
+  m4_prob_fixed_df2 = prob_fixed_df2,
+  m4_prob_random_df2 = prob_random_df2
 )
 
 # Output directory:
-output_dir <- "./output/tables_tex/heatpumps_tables"
+output_dir <- "./output/tables_tex/m4_tables"
 
 # Function to write each table as separate .tex file:
 write_tables_to_tex <- function(tables, outdir) {
@@ -447,27 +447,27 @@ write_tables_to_tex(tables_list, output_dir)
 
 #--------------------------- Output Plots ---------------------------------------
 custom_bin_colors <- c(
-  "(.00–.20)" = "#d9d9d9",  
-  "(.21–.40)" = "#abd9e9",
-  "(.41–.60)" = "#74add1",
-  "(.61–.80)" = "#4575b4",
-  "(.81–1.00)" = "#fdae61"
+  "(0.00-0.20)" = "#d9d9d9",  
+  "(0.21-0.40)" = "#abd9e9",
+  "(0.41-0.60)" = "#74add1",
+  "(0.61-0.80)" = "#4575b4",
+  "(0.81-1.00)" = "#fdae61"
 )
 
 #Estimated effect of EPS slope on technology adoption by country ---------------------
 technologies <- list(
   "Windows" = c("Prob_LT_0_windows", "Prob_GT_0_windows", "Mean_windows"),
   "Appliances" = c("Prob_LT_0_appliances", "Prob_GT_0_appliances", "Mean_appliances"),
-  "Insulation" = c("Prob_LT_0_insulation", "Prob_GT_0_insulation", "Mean_insulation"),
-  "Solar panels" = c("Prob_LT_0_solare", "Prob_GT_0_solare", "Mean_solare"),
-  "Heat pumps" = c("Prob_LT_0_heatpumps", "Prob_GT_0_heatpumps", "Mean_heatpumps")
+  "Thermal Insulation" = c("Prob_LT_0_insulation", "Prob_GT_0_insulation", "Mean_insulation"),
+  "Solar Panels" = c("Prob_LT_0_solare", "Prob_GT_0_solare", "Mean_solare"),
+  "Heat Pumps" = c("Prob_LT_0_heatpumps", "Prob_GT_0_heatpumps", "Mean_heatpumps")
 )
 
 eps_slope_effects_base <- prob_random_df %>%
   filter(str_detect(Variable, "^EPS effect \\(")) %>%
   mutate(Country = str_extract(Variable, "(?<=\\().+(?=\\))"))
 
-plot_eps_by_tech <- function(cols, tech_name) {
+plot_eps_slope_by_tech <- function(cols, tech_name) {
   lt_col <- cols[1]
   gt_col <- cols[2]
   mean_col <- cols[3]
@@ -499,7 +499,7 @@ plot_eps_by_tech <- function(cols, tech_name) {
       limits = c(y_min - y_margin, y_max + y_margin),
       breaks = pretty(c(y_min, y_max), n = 6)
     ) +
-    scale_color_manual(values = custom_bin_colors, name = "Probability |effect| ≠ 0") +
+    scale_color_manual(values = custom_bin_colors, name = expression("Probability |effect|" != 0)) +
     labs(
       title = paste("Estimated Effect of Varying Slope of EPS on", tech_name, "Adoption by Country"),
       x = "Country",
@@ -511,22 +511,20 @@ plot_eps_by_tech <- function(cols, tech_name) {
       axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
       axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
       legend.title = element_text(size = 11, face = "bold"),
-      axis.text.x = element_text(angle = 40, hjust = 1, size = 10),
+      axis.text.x = element_text(angle = 0, hjust = 0.5, size = 10),
       axis.text.y = element_text(size = 10)
     )
 }
 
 # Generate and store plots
-eps_slope_plots <- imap(technologies, plot_eps_by_tech)
-
-eps_slope_plots$`Heat pumps`
+eps_slope_plots <- imap(technologies, plot_eps_slope_by_tech)
 
 #Estimated effect of fixed-effect predictors across technology ---------------------
 fixed_effects_base <- prob_fixed_df %>%
-  filter(
-    !str_detect(Variable, 
-                regex("^Intercept$|^Government support$|^EPS index$|^D[- ]?[sS]ize:|^EPS × Income q", ignore_case = TRUE))
-  )
+  filter(Variable %in% c("Age: 45–54", "Age: 55+", "Higher education", "Income q4",
+                         "Income q5", "Environmental concern", "Homeowner",
+                         "D-Type: House", "EPS × Income q2", "EPS × Income q3",
+                         "EPS × Income q4", "EPS × Income q5"))
 
 plot_fixed_by_tech <- function(cols, tech_name) {
   lt_col <- cols[1]
@@ -561,7 +559,7 @@ plot_fixed_by_tech <- function(cols, tech_name) {
       limits = c(y_min - y_margin, y_max + y_margin),
       breaks = pretty(c(y_min, y_max), n = 6)
     ) +
-    scale_color_manual(values = custom_bin_colors, name = "Probability |effect| ≠ 0") +
+    scale_color_manual(values = custom_bin_colors, name = expression("Probability |effect|" != 0)) +
     labs(
       title = paste("Estimated Effect of Predictors on", tech_name, "Adoption"),
       x = "Predictor",
@@ -573,15 +571,13 @@ plot_fixed_by_tech <- function(cols, tech_name) {
       axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
       axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
       legend.title = element_text(size = 11, face = "bold"),
-      axis.text.x = element_text(angle = 40, hjust = 1, size = 10),
+      axis.text.x = element_text(angle = 35, hjust = 1, size = 10),
       axis.text.y = element_text(size = 10)
     )
 }
 
 # Generate and store plots
 fixed_effects_plots <- imap(technologies, plot_fixed_by_tech)
-
-fixed_effects_plots$Appliances
 
 #Estimated effect of Gov_support and EPS across technology ---------------------
 # General function to plot fixed effects (EPS or Gov_support)
@@ -626,7 +622,7 @@ plot_fixed_effect_across_tech <- function(effect_var, df, custom_colors) {
       limits = c(y_min - y_margin, y_max + y_margin),
       breaks = pretty(c(y_min, y_max), n = 6)
     ) +
-    scale_color_manual(values = custom_colors, name = "Probability |effect| ≠ 0") +
+    scale_color_manual(values = custom_colors, name = expression("Probability |effect|" != 0)) +
     labs(
       title = paste("Estimated Effect of", effect_var, "on Technology Adoption"),
       x = "Technology",
@@ -643,8 +639,38 @@ plot_fixed_effect_across_tech <- function(effect_var, df, custom_colors) {
     )
 }
 
-eps_plot <- plot_fixed_effect_across_tech("EPS index", prob_fixed_df, custom_bin_colors)
-govsupport_plot <- plot_fixed_effect_across_tech("Government support", prob_fixed_df, custom_bin_colors)
+EPS_effects_plot <- plot_fixed_effect_across_tech("EPS index", prob_fixed_df, custom_bin_colors)
+Govsupport_effects_plot <- plot_fixed_effect_across_tech("Government support", prob_fixed_df, custom_bin_colors)
+
+EPS_slope_windows_plot <- eps_slope_plots$Windows
+EPS_slope_appliances_plot <- eps_slope_plots$Appliances
+EPS_slope_insulation_plot <- eps_slope_plots$`Thermal Insulation`
+EPS_slope_solare_plot <- eps_slope_plots$`Solar Panels`
+EPS_slope_heatpumps_plot <- eps_slope_plots$`Heat Pumps`
+
+Fixed_effects_windows_plot <- fixed_effects_plots$Windows
+Fixed_effects_appliances_plot <- fixed_effects_plots$Appliances
+Fixed_effects_insulation_plot <- fixed_effects_plots$`Thermal Insulation`
+Fixed_effects_solare_plot <- fixed_effects_plots$`Solar Panels`
+Fixed_effects_heatpumps_plot <- fixed_effects_plots$`Heat Pumps`
+
+#Saving plots ------------------------------------------------------------------
+ggsave("./output/output_m4/EPS_effects_plot.pdf", plot = EPS_effects_plot, width = 9, height = 6)
+ggsave("./output/output_m4/Govsupport_effects_plot.pdf", plot = Govsupport_effects_plot, width = 9, height = 6)
+
+ggsave("./output/output_m4/EPS_slope_windows_plot.pdf", plot = EPS_slope_windows_plot, width = 10, height = 6)
+ggsave("./output/output_m4/EPS_slope_appliances_plot.pdf", plot = EPS_slope_appliances_plot, width = 10, height = 6)
+ggsave("./output/output_m4/EPS_slope_insulation_plot.pdf", plot = EPS_slope_insulation_plot, width = 11, height = 6)
+ggsave("./output/output_m4/EPS_slope_solare_plot.pdf", plot = EPS_slope_solare_plot, width = 10, height = 6)
+ggsave("./output/output_m4/EPS_slope_heatpumps_plot.pdf", plot = EPS_slope_heatpumps_plot, width = 10, height = 6)
+
+ggsave("./output/output_m4/Fixed_effects_windows_plot.pdf", plot = Fixed_effects_windows_plot, width = 9, height = 6)
+ggsave("./output/output_m4/Fixed_effects_appliances_plot.pdf", plot = Fixed_effects_appliances_plot, width = 9, height = 6)
+ggsave("./output/output_m4/Fixed_effects_insulation_plot.pdf", plot = Fixed_effects_insulation_plot, width = 9, height = 6)
+ggsave("./output/output_m4/Fixed_effects_solare_plot.pdf", plot = Fixed_effects_solare_plot, width = 9, height = 6)
+ggsave("./output/output_m4/Fixed_effects_heatpumps_plot.pdf", plot = Fixed_effects_heatpumps_plot, width = 9, height = 6)
+
+
 
 
 
