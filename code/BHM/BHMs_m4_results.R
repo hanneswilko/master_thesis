@@ -253,10 +253,10 @@ fixed_effects_df <- {
 
 ran_effects_df <- {
   ran_vals_wide_clean <- ran_effects %>%
-    select(term, matches("^(estimate|std\\.error)_"))
+    select(level, term, matches("^(estimate|std\\.error)_"))
   
   tech_names <- ran_vals_wide_clean %>%
-    select(-term) %>%
+    select(-level, -term) %>%
     names() %>%
     str_remove("^(estimate_|std\\.error_)") %>%
     unique()
@@ -266,7 +266,7 @@ ran_effects_df <- {
   }))
   
   ran_vals_wide_clean %>%
-    select(term, all_of(ordered_cols))
+    select(level, term, all_of(ordered_cols))
 }
 
 cintervals_df <- {
