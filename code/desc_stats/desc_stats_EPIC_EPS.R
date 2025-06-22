@@ -861,7 +861,7 @@ EET_summary_df_EPS_wC02_sub <- EET_summary_df_EPS_wC02 %>%
 
 # Scatterplot: EPS vs Adoption Rate, colored by Technology
 scatter_EPS_adoption_by_tech_sub <- ggplot(EET_summary_df_EPS_wC02_sub, 
-                                       aes(x = avg_EPS, y = Mean_Adopted, color = Technology)) +
+                                       aes(x = avg_EPS, y = Mean_Adopted, color = Technology, linetype = Technology)) +
   geom_text(aes(label = Country), size = 4, fontface = "bold", alpha = 0.9, show.legend = FALSE) +  # use country labels
   geom_smooth(method = "lm", se = FALSE, linewidth = 1.1, aes(group = Technology, color = Technology), na.rm = TRUE) +  # regression by tech
   scale_y_continuous(limits = c(0, 0.80), breaks = seq(0, 0.80, by = 0.20)) +
@@ -872,6 +872,13 @@ scatter_EPS_adoption_by_tech_sub <- ggplot(EET_summary_df_EPS_wC02_sub,
     "Thermal insulation" = "#66c2a5",
     "Solar panels for electricity" = "#e78ac3",
     "Heat pumps" = "#a6d854"
+  )) +
+  scale_linetype_manual(values = c(
+    "Appliances" = "twodash",
+    "Windows" = "dashed",
+    "Thermal insulation" = "dotted",
+    "Solar panels for electricity" = "dotdash",
+    "Heat pumps" = "solid"
   )) +
   labs(
     title = "Adoption of Energy-Efficient Technologies by EPS Index",
