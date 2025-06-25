@@ -204,7 +204,7 @@ barchart_Appl_support_prop <- ggplot(epic_Appl_support_prop_long,
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = str_wrap("Adoption of highly energy-efficient Appliances by Country", 50),
+    title = str_wrap("Adoption of highly Energy-Efficient Appliances by Country", 50),
     x = "Country",
     y = "Proportions of Adopters",
     fill = "Government support"
@@ -255,7 +255,7 @@ barchart_Appl_income_support_prop <- ggplot(epic_Appl_income_support_prop_long, 
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of highly energy-efficient Appliances by Country and Income level",50),
+    title = str_wrap("Adoption of highly Energy-Efficient Appliances by Country and Income level",50),
     x = "Income level",
     y = "Proportions of Adopters",
     fill = "Government support"
@@ -417,7 +417,7 @@ barchart_Windows_support_prop <- ggplot(epic_Window_support_prop_long,
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(
-    title = str_wrap("Adoption of energy-efficient Windows by Country",50),
+    title = str_wrap("Adoption of Energy-Efficient Windows by Country",50),
     x = "Country",
     y = "Proportions of Adopters",
     fill = "Government support"
@@ -467,7 +467,7 @@ barchart_Windows_income_support_prop <- ggplot(epic_Window_income_support_prop_l
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of energy-efficient Windows by Country and Income level",50),
+    title = str_wrap("Adoption of Energy-Efficient Windows by Country and Income level",50),
     x = "Income level",
     y = "Proportions of Adopters",
     fill = "Government support"
@@ -1016,29 +1016,29 @@ barchart_Pump_income_support_prop <- ggplot(epic_Pump_income_support_prop_long, 
 #-------------------------------------------------------------------------------
 #---------------------------- 3. Saving Graphs ---------------------------------
 #-------------------------------------------------------------------------------
-ggsave("./output/barchart_Appl_income_support_prop.pdf", plot = barchart_Appl_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Appl_support_prop.pdf", plot = barchart_Appl_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Appl_income_support_prop.pdf", plot = barchart_Appl_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Appl_support_prop.pdf", plot = barchart_Appl_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Battery_income_support_prop.pdf", plot = barchart_Battery_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Battery_support_prop.pdf", plot = barchart_Battery_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Battery_income_support_prop.pdf", plot = barchart_Battery_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Battery_support_prop.pdf", plot = barchart_Battery_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_highEET_income_support_prop.pdf", plot = barchart_highEET_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_highEET_support_prop.pdf", plot = barchart_highEET_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_highEET_income_support_prop.pdf", plot = barchart_highEET_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_highEET_support_prop.pdf", plot = barchart_highEET_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Pump_income_support_prop.pdf", plot = barchart_Pump_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Pump_support_prop.pdf", plot = barchart_Pump_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Pump_income_support_prop.pdf", plot = barchart_Pump_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Pump_support_prop.pdf", plot = barchart_Pump_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Solare_income_support_prop.pdf", plot = barchart_Solare_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Solare_support_prop.pdf", plot = barchart_Solare_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Solare_income_support_prop.pdf", plot = barchart_Solare_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Solare_support_prop.pdf", plot = barchart_Solare_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Solarw_income_support_prop.pdf", plot = barchart_Solarw_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Solarw_support_prop.pdf", plot = barchart_Solarw_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Solarw_income_support_prop.pdf", plot = barchart_Solarw_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Solarw_support_prop.pdf", plot = barchart_Solarw_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Thermal_income_support_prop.pdf", plot = barchart_Thermal_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Thermal_support_prop.pdf", plot = barchart_Thermal_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Thermal_income_support_prop.pdf", plot = barchart_Thermal_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Thermal_support_prop.pdf", plot = barchart_Thermal_support_prop, dpi = 300, scale = 1.2)
 
-ggsave("./output/barchart_Windows_income_support_prop.pdf", plot = barchart_Windows_income_support_prop, dpi = 300, scale = 1.2)
-ggsave("./output/barchart_Windows_support_prop.pdf", plot = barchart_Windows_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Windows_income_support_prop.pdf", plot = barchart_Windows_income_support_prop, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/barchart_Windows_support_prop.pdf", plot = barchart_Windows_support_prop, dpi = 300, scale = 1.2)
 
 
 
