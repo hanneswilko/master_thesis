@@ -501,7 +501,7 @@ plot_eps_slope_by_tech <- function(cols, tech_name) {
     ) +
     scale_color_manual(values = custom_bin_colors, name = expression("Probability |effect|" != 0)) +
     labs(
-      title = paste("Estimated Effect of Varying Slope of EPS on", tech_name, "Adoption by Country"),
+      title = paste("Estimated Effect of EPS slope on", tech_name, "Adoption by Country"),
       x = "Country",
       y = "Mean Estimated Effect"
     ) +
