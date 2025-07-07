@@ -65,55 +65,87 @@ solare_m4_prior_summary <- prior_summary(solare_m4) #reg. = 3
 heatpumps_m4_prior_summary <- prior_summary(heatpumps_m4) #decov(reg. = 5, conc. = 1, shape = 1, scale = 1)
 
 #MCMC diagnostics --------------------------------------------------------------
-##effective sample size ratio
-###function for neff extraction
-neff_df_list <- lapply(names(models), function(name) {
-  neff <- neff_ratio(models[[name]])
-  data.frame(
-    Parameter = names(neff),
-    Neff = neff,
-    Model = name,
+##Effective sample size ratio
+neff_fixed_list <- list()
+neff_random_list <- list()
+
+for (model_name in names(models)) {
+  neff <- neff_ratio(models[[model_name]])
+  
+  # Separate based on parameter names
+  neff_fixed <- neff[names(neff) %in% m4_fixed_pars]
+  neff_random <- neff[names(neff) %in% m4_random_pars]
+  
+  # Fixed effects summary
+  neff_fixed_list[[model_name]] <- data.frame(
+    Model = model_name,
+    Type = "Fixed",
+    Min = round(min(neff_fixed), 2),
+    Q1 = round(quantile(neff_fixed, 0.25), 2),
+    Median = round(median(neff_fixed), 2),
+    Mean = round(mean(neff_fixed), 2),
+    Q3 = round(quantile(neff_fixed, 0.75), 2),
+    Max = round(max(neff_fixed), 2),
     stringsAsFactors = FALSE
   )
-})
-
-neff_summary <- do.call(rbind, neff_df_list)
-neff_summary_df <- neff_summary %>%
-  group_by(Model) %>%
-  summarize(
-    Min    = round(min(Neff), 2),
-    q1     = round(quantile(Neff, 0.25), 2),
-    Median = round(median(Neff), 2),
-    Mean   = round(mean(Neff), 2),
-    q3     = round(quantile(Neff, 0.75), 2),
-    Max    = round(max(Neff), 2),
-    .groups = "drop"
+  
+  # Random effects summary
+  neff_random_list[[model_name]] <- data.frame(
+    Model = model_name,
+    Type = "Random",
+    Min = round(min(neff_random), 2),
+    Q1 = round(quantile(neff_random, 0.25), 2),
+    Median = round(median(neff_random), 2),
+    Mean = round(mean(neff_random), 2),
+    Q3 = round(quantile(neff_random, 0.75), 2),
+    Max = round(max(neff_random), 2),
+    stringsAsFactors = FALSE
   )
+}
+
+neff_summary_df <- do.call(rbind, c(neff_fixed_list, neff_random_list))
+rownames(neff_summary_df) <- NULL
 
 ##Rhat statistics
-###function for rhat extraction
-rhat_df_list <- lapply(names(models), function(name) {
-  rhat <- rhat(models[[name]])
-  data.frame(
-    Parameter = names(rhat),
-    Rhat = rhat,
-    Model = name,
+rhat_fixed_list <- list()
+rhat_random_list <- list()
+
+for (model_name in names(models)) {
+  rhat_vals <- rhat(models[[model_name]])
+  
+  # Separate based on parameter type
+  rhat_fixed <- rhat_vals[names(rhat_vals) %in% m4_fixed_pars]
+  rhat_random <- rhat_vals[names(rhat_vals) %in% m4_random_pars]
+  
+  # Fixed effects summary
+  rhat_fixed_list[[model_name]] <- data.frame(
+    Model = model_name,
+    Type = "Fixed",
+    Min = sprintf("%.4f", min(rhat_fixed)),
+    Q1 = sprintf("%.4f", quantile(rhat_fixed, 0.25)),
+    Median = sprintf("%.4f", median(rhat_fixed)),
+    Mean = sprintf("%.4f", mean(rhat_fixed)),
+    Q3 = sprintf("%.4f", quantile(rhat_fixed, 0.75)),
+    Max = sprintf("%.4f", max(rhat_fixed)),
     stringsAsFactors = FALSE
   )
-})
-
-rhat_summary <- do.call(rbind, rhat_df_list)
-rhat_summary_df <- rhat_summary %>%
-  group_by(Model) %>%
-  summarize(
-    Min    = sprintf("%.4f", min(Rhat)),
-    q1     = sprintf("%.4f", quantile(Rhat, 0.25)),
-    Median = sprintf("%.4f", median(Rhat)),
-    Mean   = sprintf("%.4f", mean(Rhat)),
-    q3     = sprintf("%.4f", quantile(Rhat, 0.75)),
-    Max    = sprintf("%.4f", max(Rhat)),
-    .groups = "drop"
+  
+  # Random effects summary
+  rhat_random_list[[model_name]] <- data.frame(
+    Model = model_name,
+    Type = "Random",
+    Min = sprintf("%.4f", min(rhat_random)),
+    Q1 = sprintf("%.4f", quantile(rhat_random, 0.25)),
+    Median = sprintf("%.4f", median(rhat_random)),
+    Mean = sprintf("%.4f", mean(rhat_random)),
+    Q3 = sprintf("%.4f", quantile(rhat_random, 0.75)),
+    Max = sprintf("%.4f", max(rhat_random)),
+    stringsAsFactors = FALSE
   )
+}
+
+rhat_summary_df <- do.call(rbind, c(rhat_fixed_list, rhat_random_list))
+rownames(rhat_summary_df) <- NULL
 
 ##Posterior predictive checks - posterior predictive p-value
 #function for p-value extraction
@@ -233,6 +265,18 @@ ran_effects <- build_long_wide("ran_vals", c("term", "group", "level"))
 ran_pars_df <- build_long_wide("ran_pars", c("term", "group"))
 cintervals <- build_long_wide("ci", c("Parameters"))
 
+#Fixed Effects
+fixed_effects_labels <- c("(Intercept)" = "Intercept", "Age_cat25-34" = "Age: 25-34", "Age_cat35-44" = "Age: 35-44", "Age_cat45-54" = "Age: 45-54",
+                          "Age_cat55+"   = "Age: 55+", "Female" = "Female", "Higher_edu" = "Higher education", "Home_ownership" = "Homeowner",
+                          "Dwelling_house" = "D-Type: House", "Dwelling_size151–200 m²" = "D-size: 151–200 m²", "Dwelling_size26–50 m²" = "D-Size: 26–50 m²",
+                          "Dwelling_size51–75 m²" = "D-Size: 51–75 m²", "Dwelling_size76–100 m²" = "D-Size: 76–100 m²", "Dwelling_sizeDon't know" = "D-Size: Don't know",
+                          "Dwelling_sizeLess than 25 m²" = "D-Size: <25 m²", "Dwelling_sizeMore than 200 m²" = "D-Size: >200 m²", "Rural" = "D-Location: Rural",
+                          "Env_concern" = "Environmental concern", "Gov_support" = "Government support",
+                          "EPS" = "EPS index", "Incomequintile 2" = "Income q2", "Incomequintile 3" = "Income q3", "Incomequintile 4" = "Income q4",
+                          "Incomequintile 5" = "Income q5", "EPS:Incomequintile 2" = "EPS × Income q2", "EPS:Incomequintile 3" = "EPS × Income q3",
+                          "EPS:Incomequintile 4" = "EPS × Income q4", "EPS:Incomequintile 5" = "EPS × Income q5"
+)
+
 fixed_effects_df <- {
   fixed_wide_clean <- fixed_effects %>%
     select(term, matches("^(estimate|std\\.error)_"))
@@ -250,6 +294,39 @@ fixed_effects_df <- {
   fixed_wide_clean %>%
     select(term, all_of(ordered_cols))
 }
+
+fixed_effects_df <- fixed_effects_df %>%
+  mutate(term = recode(term, !!!fixed_effects_labels))
+
+#Random Effects
+random_effect_labels <- c(
+  # Intercepts by country
+  "b[(Intercept) Country_name:BE]" = "Intercept (BE)",
+  "b[(Intercept) Country_name:CA]" = "Intercept (CA)",
+  "b[(Intercept) Country_name:CH]" = "Intercept (CH)",
+  "b[(Intercept) Country_name:FR]" = "Intercept (FR)",
+  "b[(Intercept) Country_name:IL]" = "Intercept (IL)",
+  "b[(Intercept) Country_name:NL]" = "Intercept (NL)",
+  "b[(Intercept) Country_name:SE]" = "Intercept (SE)",
+  "b[(Intercept) Country_name:UK]" = "Intercept (UK)",
+  "b[(Intercept) Country_name:US]" = "Intercept (US)",
+  
+  # EPS slopes by country
+  "b[EPS Country_name:BE]" = "EPS effect (BE)",
+  "b[EPS Country_name:CA]" = "EPS effect (CA)",
+  "b[EPS Country_name:CH]" = "EPS effect (CH)",
+  "b[EPS Country_name:FR]" = "EPS effect (FR)",
+  "b[EPS Country_name:IL]" = "EPS effect (IL)",
+  "b[EPS Country_name:NL]" = "EPS effect (NL)",
+  "b[EPS Country_name:SE]" = "EPS effect (SE)",
+  "b[EPS Country_name:UK]" = "EPS effect (UK)",
+  "b[EPS Country_name:US]" = "EPS effect (US)",
+  
+  # Sigma covariance components
+  "Sigma[Country_name:(Intercept),(Intercept)]" = "Var(Intercept)",
+  "Sigma[Country_name:EPS,(Intercept)]" = "Cov(EPS, Intercept)",
+  "Sigma[Country_name:EPS,EPS]" = "Var(EPS)"
+)
 
 ran_effects_df <- {
   ran_vals_wide_clean <- ran_effects %>%
@@ -269,6 +346,9 @@ ran_effects_df <- {
     select(level, term, all_of(ordered_cols))
 }
 
+#Confidence Intervals
+ci_labels <- c(fixed_effects_labels, random_effect_labels)
+
 cintervals_df <- {
   ci_wide_clean <- cintervals %>%
     select(Parameters, matches("^(2.5%|97.5%)_"))
@@ -286,6 +366,15 @@ cintervals_df <- {
   ci_wide_clean %>%
     select(Parameters, all_of(ordered_cols))
 }
+
+cintervals_df <- cintervals_df %>%
+  mutate(Parameters = ifelse(!is.na(ci_labels[Parameters]), ci_labels[Parameters], Parameters))
+
+#Within- and between-group variability
+ran_pars_df
+
+ran_pars_df <- ran_pars_df %>%
+  mutate(Parameters = ifelse(!is.na(ci_labels[Parameters]), ci_labels[Parameters], Parameters))
 
 #Probability estimate is non-zero ----------------------------------------------
 #fixed effects
@@ -315,17 +404,6 @@ prob_models <- imap(prob_models, function(df, name) {
 })
 
 prob_fixed_df <- reduce(prob_models, full_join, by = "Variable")
-
-fixed_effects_labels <- c("(Intercept)" = "Intercept", "Age_cat25-34" = "Age: 25-34", "Age_cat35-44" = "Age: 35-44", "Age_cat45-54" = "Age: 45-54",
-  "Age_cat55+"   = "Age: 55+", "Female" = "Female", "Higher_edu" = "Higher education", "Home_ownership" = "Homeowner",
-  "Dwelling_house" = "D-Type: House", "Dwelling_size151–200 m²" = "D-size: 151–200 m²", "Dwelling_size26–50 m²" = "D-Size: 26–50 m²",
-  "Dwelling_size51–75 m²" = "D-Size: 51–75 m²", "Dwelling_size76–100 m²" = "D-Size: 76–100 m²", "Dwelling_sizeDon't know" = "D-Size: Don't know",
-  "Dwelling_sizeLess than 25 m²" = "D-Size: <25 m²", "Dwelling_sizeMore than 200 m²" = "D-Size: >200 m²", "Rural" = "D-Location: Rural",
-  "Env_concern" = "Environmental concern", "Gov_support" = "Government support",
-  "EPS" = "EPS index", "Incomequintile 2" = "Income q2", "Incomequintile 3" = "Income q3", "Incomequintile 4" = "Income q4",
-  "Incomequintile 5" = "Income q5", "EPS:Incomequintile 2" = "EPS × Income q2", "EPS:Incomequintile 3" = "EPS × Income q3",
-  "EPS:Incomequintile 4" = "EPS × Income q4", "EPS:Incomequintile 5" = "EPS × Income q5"
-)
 
 prob_fixed_df <- prob_fixed_df %>%
   mutate(Variable = recode(Variable, !!!fixed_effects_labels))
@@ -357,35 +435,6 @@ prob_models <- imap(prob_models, function(df, name) {
 })
 
 prob_random_df <- reduce(prob_models, full_join, by = "Variable")
-
-random_effect_labels <- c(
-  # Intercepts by country
-  "b[(Intercept) Country_name:BE]" = "Intercept (BE)",
-  "b[(Intercept) Country_name:CA]" = "Intercept (CA)",
-  "b[(Intercept) Country_name:CH]" = "Intercept (CH)",
-  "b[(Intercept) Country_name:FR]" = "Intercept (FR)",
-  "b[(Intercept) Country_name:IL]" = "Intercept (IL)",
-  "b[(Intercept) Country_name:NL]" = "Intercept (NL)",
-  "b[(Intercept) Country_name:SE]" = "Intercept (SE)",
-  "b[(Intercept) Country_name:UK]" = "Intercept (UK)",
-  "b[(Intercept) Country_name:US]" = "Intercept (US)",
-  
-  # EPS slopes by country
-  "b[EPS Country_name:BE]" = "EPS effect (BE)",
-  "b[EPS Country_name:CA]" = "EPS effect (CA)",
-  "b[EPS Country_name:CH]" = "EPS effect (CH)",
-  "b[EPS Country_name:FR]" = "EPS effect (FR)",
-  "b[EPS Country_name:IL]" = "EPS effect (IL)",
-  "b[EPS Country_name:NL]" = "EPS effect (NL)",
-  "b[EPS Country_name:SE]" = "EPS effect (SE)",
-  "b[EPS Country_name:UK]" = "EPS effect (UK)",
-  "b[EPS Country_name:US]" = "EPS effect (US)",
-  
-  # Sigma covariance components
-  "Sigma[Country_name:(Intercept),(Intercept)]" = "Var(Intercept)",
-  "Sigma[Country_name:EPS,(Intercept)]" = "Cov(EPS, Intercept)",
-  "Sigma[Country_name:EPS,EPS]" = "Var(EPS)"
-)
 
 prob_random_df <- prob_random_df %>%
   mutate(Variable = recode(Variable, !!!random_effect_labels))
