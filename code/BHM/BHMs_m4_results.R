@@ -371,10 +371,14 @@ cintervals_df <- cintervals_df %>%
   mutate(Parameters = ifelse(!is.na(ci_labels[Parameters]), ci_labels[Parameters], Parameters))
 
 #Within- and between-group variability
-ran_pars_df
-
 ran_pars_df <- ran_pars_df %>%
-  mutate(Parameters = ifelse(!is.na(ci_labels[Parameters]), ci_labels[Parameters], Parameters))
+  mutate(term = case_when(
+    term == "sd_(Intercept).Country_name" ~ "Var(Intercept)",
+    term == "sd_EPS.Country_name" ~ "Var(EPS)",
+    term == "cor_(Intercept).EPS.Country_name" ~ "Cov(EPS, Intercept)",
+    TRUE ~ term  # fallback if no match
+  )) %>%
+  select(-group)
 
 #Probability estimate is non-zero ----------------------------------------------
 #fixed effects
