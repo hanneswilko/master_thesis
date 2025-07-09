@@ -176,6 +176,7 @@ get_summary <- function(country) {
       Country = country,
       Technology = tech,
       Possible = total_possible,
+      Not_Possible = not_possible,
       Adopted = adopted,
       Supported = supported,
       Mean_Adopted = round(mean_adopt_rate, 2),
@@ -949,6 +950,72 @@ households_per_country_df <- households_per_country_df %>%
 households_per_country_df %>%
   kbl(
     caption = "Number of Households per Country",
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    latex_options = c("striped"),
+    font_size = 10
+  )
+
+#-------- 7. Table: Not possible across tenure status and residence type -------
+epic_EET <- epic_EET %>%
+  mutate(
+    Home_owned = case_when(
+      S5 == 1 ~ 1,
+      S5 %in% c(2, 3) ~ 0,
+      TRUE ~ NA_real_
+    ),
+    Dwelling_house = case_when(
+      S18 == 3 ~ 1,
+      S18 == 4 ~ 1,
+      S18 %in% c(1, 2, 89) ~ 0,
+      TRUE ~ NA_real_
+    )
+  )
+
+tech_vars <- c(
+  "Appl_p"   = "Appliances",
+  "Window_p" = "Windows",
+  "Thermal_p"= "Thermal insulation",
+  "Solare_p" = "Solar panels",
+  "Solarw_p" = "Solar panels heating",
+  "Battery_p"= "Battery storage",
+  "Pump_p"   = "Heat pumps"
+)
+
+calculate_percent <- function(group_var) {
+  epic_EET %>%
+    select(all_of(names(tech_vars)), {{group_var}}) %>%
+    pivot_longer(cols = all_of(names(tech_vars)), names_to = "Tech_code", values_to = "Install_possible") %>%
+    filter(!is.na(Install_possible), !is.na({{group_var}})) %>%
+    group_by(Technology = tech_vars[Tech_code], Group = {{group_var}}) %>%
+    summarise(
+      Not_possible = round(mean(Install_possible == 0), 2),  
+      .groups = "drop"
+    ) %>%
+    mutate(Group = case_when(
+      Group == 1 ~ "Owner/House",
+      Group == 0 ~ "Renter/Apartment"
+    ))
+}
+
+tenure_df <- calculate_percent(Home_owned) %>%
+  mutate(Category = ifelse(Group == "Owner/House", "Owner", "Renter"))
+
+residence_df <- calculate_percent(Dwelling_house) %>%
+  mutate(Category = ifelse(Group == "Owner/House", "House", "Apartment"))
+
+feasibility_tech_tenure_residence_df <- bind_rows(tenure_df, residence_df) %>%
+  select(Technology, Category, Not_possible) %>%
+  pivot_wider(names_from = Category, values_from = Not_possible)
+
+feasibility_tech_tenure_residence_df <- feasibility_tech_tenure_residence_df %>%
+  filter(!Technology %in% c("Battery storage", "Solar panels heating"))
+
+feasibility_tech_tenure_residence_df %>%
+  kbl(
+    caption = "Percentage of Respondents reporting that installing a given Technology is not possible",
     format = "latex",
     booktabs = TRUE
   ) %>%
