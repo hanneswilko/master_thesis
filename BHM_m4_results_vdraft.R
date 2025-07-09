@@ -282,23 +282,39 @@ eps_slope_df <- eps_slope_df %>%
   )
 
 # Plotting function
-plot_tech_effects <- function(tech_name) {
-  eps_slope_df %>%
-    filter(Term == "EPS", Technology == tech_name) %>%
+plot_slope_effects <- function(tech_name) {
+  df <- eps_slope_df %>% filter(Term == "EPS", Technology == tech_name)
+  
+  y_min <- min(df$`CI Lower`, na.rm = TRUE)
+  y_max <- max(df$`CI Upper`, na.rm = TRUE)
+  y_margin <- 0.1 * (y_max - y_min)
+  
+  df %>%
     ggplot(aes(x = reorder(Country, Mean), y = Mean)) +
-    geom_point(size = 3) +
-    geom_errorbar(aes(ymin = `CI Lower`, ymax = `CI Upper`), width = 0.2, linetype = "dashed") +
-    geom_hline(yintercept = 0, color = "black") +
+    geom_point(size = 4, color = "#8da0cb") +
+    geom_errorbar(aes(ymin = `CI Lower`, ymax = `CI Upper`), width = 0.2, linetype = "dashed", color = "#8da0cb", linewidth = 0.7) +
+    geom_hline(yintercept = 0, color = "grey30", linewidth = 0.7) +
     labs(
       title = paste("Estimated Effect of EPS Slope on", str_to_title(tech_name), "Adoption by Country"),
       x = "Country",
       y = "Mean Estimated Effect"
     ) +
-    theme_minimal(base_size = 14)
+    scale_y_continuous(
+      limits = c(y_min - y_margin, y_max + y_margin),
+      breaks = pretty(c(y_min, y_max), n = 6)
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+      axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+      axis.text.x = element_text(angle = 0, hjust = 0.5, size = 10),
+      axis.text.y = element_text(size = 10)
+    )
 }
 
 # Example: Plot for Windows
-plot_tech_effects("Solar panels")
+plot_slope_effects("Heat pumps")
 
 #---------------- Fixed effects Plots (except EPS and Gov support) -------------
 fixed_long <- fixed_ci_df %>%
@@ -325,19 +341,34 @@ fixed_long <- fixed_long %>%
   )
 
 plot_fixed_effects <- function(tech_name) {
-  fixed_long %>%
-    filter(Technology == tech_name) %>%
+  df <- fixed_long %>% filter(Technology == tech_name)
+  
+  y_min <- min(df$`CI Lower`, na.rm = TRUE)
+  y_max <- max(df$`CI Upper`, na.rm = TRUE)
+  y_margin <- 0.1 * (y_max - y_min)
+  
+  df %>%
     ggplot(aes(x = reorder(Term, Mean), y = Mean)) +
-    geom_point(size = 3) +
-    geom_errorbar(aes(ymin = `CI Lower`, ymax = `CI Upper`), width = 0.2, linetype = "dashed") +
-    geom_hline(yintercept = 0, color = "black") +
+    geom_point(size = 3, color = "#8da0cb") +
+    geom_errorbar(aes(ymin = `CI Lower`, ymax = `CI Upper`), width = 0.2, linetype = "dashed", color = "#8da0cb", linewidth = 0.7) +
+    geom_hline(yintercept = 0, color = "grey30", linewidth = 0.7) +
     labs(
-      title = paste("Estimated Effect of Predictors on", tech_name, "Adoption"),
+      title = paste("Estimated Effect of Predictors on", str_to_title(tech_name), "Adoption"),
       x = NULL,
       y = "Mean Estimated Effect"
     ) +
+    scale_y_continuous(
+      limits = c(y_min - y_margin, y_max + y_margin),
+      breaks = pretty(c(y_min, y_max), n = 6)
+    ) +
     theme_minimal(base_size = 14) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+      axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = element_text(size = 10)
+    )
 }
 
 plot_fixed_effects("Solar panels")
@@ -365,21 +396,39 @@ EPS_GOV_df <- EPS_GOV_df %>%
   ))
 
 plot_EPS_GOV_effect <- function(predictor_label) {
-  EPS_GOV_df %>%
-    filter(Term == predictor_label) %>%
+  df <- EPS_GOV_df %>% filter(Term == predictor_label)
+  
+  y_min <- min(df$`CI Lower`, na.rm = TRUE)
+  y_max <- max(df$`CI Upper`, na.rm = TRUE)
+  y_margin <- 0.1 * (y_max - y_min)
+  
+  # Ensure y-axis always includes 0
+  lower_limit <- min(y_min - y_margin, 0)
+  upper_limit <- max(y_max + y_margin, 0)
+  
+  df %>%
     ggplot(aes(x = reorder(Technology, Mean), y = Mean)) +
-    geom_point(size = 3) +
-    geom_errorbar(aes(ymin = `CI Lower`, ymax = `CI Upper`), width = 0.2, linetype = "dashed") +
-    geom_hline(yintercept = 0, color = "black") +
+    geom_point(size = 4, color = "#8da0cb") +
+    geom_errorbar(aes(ymin = `CI Lower`, ymax = `CI Upper`), width = 0.2, linetype = "dashed", color = "#8da0cb", linewidth = 0.7) +
+    geom_hline(yintercept = 0, color = "grey30", linewidth = 0.7) +
     labs(
       title = paste("Estimated Effect of", predictor_label, "on Technology Adoption"),
       x = "Technology",
       y = "Mean Estimated Effect"
     ) +
+    scale_y_continuous(
+      limits = c(lower_limit, upper_limit),
+      breaks = pretty(c(y_min, y_max, 0), n = 6)
+    ) +
     theme_minimal(base_size = 14) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
+      axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+      axis.text.x = element_text(angle = 0, hjust = 0.5, size = 10),
+      axis.text.y = element_text(size = 10)
+    )
 }
-
 
 plot_EPS_GOV_effect("Government support")
 plot_EPS_GOV_effect("EPS index")
