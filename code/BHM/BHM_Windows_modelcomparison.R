@@ -285,7 +285,7 @@ m4_random_pars <- m4_all_pars[grepl("^(b\\[|Sigma|cor_)", m4_all_pars)]
 
 #Diagnostic Plots 
 m4_mcmc_trace <- mcmc_trace(m4) +
-  ggtitle("MCMC trace plots for model m4") + 
+  ggtitle("MCMC Trace Plots for Windows (m4)") + 
   theme(
     strip.text = element_text(size = 6), # Adjust facet label text size
     plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
@@ -293,7 +293,7 @@ m4_mcmc_trace <- mcmc_trace(m4) +
   )
 
 m4_mcmc_dens_overlay <- mcmc_dens_overlay(m4) +
-  ggtitle("MCMC density plots for model m4") + 
+  ggtitle("MCMC Density Plots for Windows (m4)") + 
   theme(
     strip.text = element_text(size = 6), # Adjust facet label text size
     plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
@@ -302,7 +302,7 @@ m4_mcmc_dens_overlay <- mcmc_dens_overlay(m4) +
 
 # ACF for fixed effects
 m4_mcmc_acf_fixed <- mcmc_acf_bar(m4_array, pars = m4_fixed_pars, lags = 10) +
-  ggtitle("Autocorrelation plots for model m4 - fixed effects") +
+  ggtitle("Autocorrelation Plots for Windows (m4) - Fixed Effects") +
   theme(
     strip.text = element_text(size = 5),            
     axis.text = element_text(size = 5),
@@ -314,7 +314,7 @@ m4_mcmc_acf_fixed <- mcmc_acf_bar(m4_array, pars = m4_fixed_pars, lags = 10) +
 
 # ACF for random effects
 m4_mcmc_acf_random <- mcmc_acf_bar(m4_array, pars = m4_random_pars, lags = 10) +
-  ggtitle("Autocorrelation plots for model m4 - random effects") +
+  ggtitle("Autocorrelation Plots for Windows (m4) - Random Effects") +
   theme(
     strip.text = element_text(size = 5),            
     axis.text = element_text(size = 5),
@@ -333,7 +333,7 @@ summary(m4)
 Adoption <- windows$Adoption
 Adoption_rep <- posterior_predict(m4,draws=1000)
 m4_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
-  ggtitle("Posterior predictive check for model m4") + 
+  ggtitle("Posterior Predictive Check for Windows (m4)") + 
   labs(x = "Adoption rate") +
   theme(
     axis.title = element_text(size = 12, face = "bold"),
