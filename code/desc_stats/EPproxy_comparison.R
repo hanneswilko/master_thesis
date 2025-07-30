@@ -110,25 +110,34 @@ Policy_indicators_ranked <- Policy_indicators_ranked %>%
   mutate(across(where(is.numeric), ~ round(.x, 2)))
 
 #Visual analysis ---------------------------------------------------------------
-Policy_indicators_long <- Policy_indicators %>% #data in long format for ggplot
+Policy_indicators_long <- Policy_indicators %>% 
   pivot_longer(
     cols = -Country,
     names_to = "Indicator",
     values_to = "Value"
+  ) %>%
+  filter(!(Country == "US" & is.na(Value))) %>%
+  mutate(
+    Indicator = case_when(
+      Indicator == "Buildings_MbI" ~ "Buildings MbI",
+      Indicator == "Buildings_NMbI" ~ "Buildings NMbI",
+      Indicator == "Sectoral_policies" ~ "Sectoral policies",
+      Indicator == "CrossSectoral_policies" ~ "Cross-Sectoral policies",
+      Indicator == "EPS" ~ "EPS index",
+      TRUE ~ Indicator
+    ),
+    # Keep full country string for reordering
+    Country_reorder = reorder_within(Country, Value, Indicator)
   )
 
-##Countries per Policy indicator
-Policy_indicators_long <- Policy_indicators_long %>%
-  filter(!(Country == "US" & is.na(Value))) %>%
-  mutate(Country = reorder_within(Country, Value, Indicator, FUN = mean, order_by = -Value))
-
-# Plot
-barchart_Policy_indicators_comparison <- ggplot(Policy_indicators_long, aes(x = Country, y = Value)) +
+# Plot with reordered factor
+barchart_Policy_indicators_comparison <- ggplot(Policy_indicators_long, 
+                                                aes(x = Country_reorder, y = Value)) +
   geom_col(fill = "#8da0cb", show.legend = FALSE) +
   facet_wrap(~ Indicator, scales = "free_x", ncol = 2) +
-  scale_x_reordered() +
+  scale_x_reordered(labels = function(x) str_remove(x, "___.*")) + # clean labels here
   labs(
-    title = "Normalized Indicator Values by Country",
+    title = "Normalized Policy Indicators by Country",
     x = "Country",
     y = "Normalized Value (0-1)"
   ) +
@@ -136,14 +145,14 @@ barchart_Policy_indicators_comparison <- ggplot(Policy_indicators_long, aes(x = 
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.text.y = element_text(color = "black", size = 12),
-    axis.text.x = element_text(color = "black", size = 12, angle = 0, hjust = 0.5),
+    axis.text.x = element_text(color = "black", size = 10, angle = 0, hjust = 0.5, vjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
     axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
+    strip.text.x = element_text(size = 10, face = "bold"),
     panel.grid.major.y = element_line(color = "gray", size = 0.3),
     panel.grid.minor = element_blank(),
     panel.grid.major.x = element_blank()
   )
-
 
 #Statistical analysis ----------------------------------------------------------
 ##Simple correlation matrix
@@ -154,6 +163,18 @@ num_data <- Policy_indicators %>%
 # Calculate correlation matrix
 cor_mat <- cor(num_data, use = "complete.obs", method = "pearson")
 cor_mat_spearman <- cor(num_data, use = "complete.obs", method = "spearman")
+
+## rename policy indicators
+cormat_names <- c(
+  "Buildings MbI", 
+  "Buildings NMbI", 
+  "Sectoral policies", 
+  "Cross-Sectoral policies", 
+  "EPS index"
+)
+
+rownames(cor_mat) <- cormat_names
+colnames(cor_mat) <- new_names
 
 # Plot Pearson correlation matrix
 png("./output/output_desc_stats/corrplot_policy_indicators.pdf", width = 800, height = 600)
