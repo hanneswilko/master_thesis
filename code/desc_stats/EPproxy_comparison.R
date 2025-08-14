@@ -174,15 +174,23 @@ cormat_names <- c(
 )
 
 rownames(cor_mat) <- cormat_names
-colnames(cor_mat) <- new_names
+colnames(cor_mat) <- cormat_names
 
 # Plot Pearson correlation matrix
 png("./output/output_desc_stats/corrplot_policy_indicators.pdf", width = 800, height = 600)
 
 corrplot_policy_indicators <- corrplot(
-  cor_mat, method = "color", addCoef.col = "black", tl.col = "black", 
-  number.cex = 0.7, title = "Correlation between Policy Indicators", mar = c(0,0,1,0)
+  cor_mat,
+  method = "color",
+  addCoef.col = "black",
+  tl.col = "black",
+  tl.srt = 45,           # 1) Tilt column labels 45 degrees
+  number.cex = 0.7,
+  title = "Correlation between Policy Indicators",
+  mar = c(0, 0, 2, 0),   # 2) Increase top margin (last number is top space)
+  title.cex = 1.2        # Optional: make title a bit bigger
 )
+
 
 dev.off()
 
