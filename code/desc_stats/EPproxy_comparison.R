@@ -121,9 +121,9 @@ Policy_indicators_long <- Policy_indicators %>%
     Indicator = case_when(
       Indicator == "Buildings_MbI" ~ "Buildings MbI",
       Indicator == "Buildings_NMbI" ~ "Buildings NMbI",
-      Indicator == "Sectoral_policies" ~ "Sectoral policies",
-      Indicator == "CrossSectoral_policies" ~ "Cross-Sectoral policies",
-      Indicator == "EPS" ~ "EPS index",
+      Indicator == "Sectoral_policies" ~ "Sectoral Policies",
+      Indicator == "CrossSectoral_policies" ~ "Cross-Sectoral Policies",
+      Indicator == "EPS" ~ "EPS Index",
       TRUE ~ Indicator
     ),
     # Keep full country string for reordering
@@ -168,9 +168,9 @@ cor_mat_spearman <- cor(num_data, use = "complete.obs", method = "spearman")
 cormat_names <- c(
   "Buildings MbI", 
   "Buildings NMbI", 
-  "Sectoral policies", 
-  "Cross-Sectoral policies", 
-  "EPS index"
+  "Sectoral Policies", 
+  "Cross-Sectoral Policies", 
+  "EPS Index"
 )
 
 rownames(cor_mat) <- cormat_names
