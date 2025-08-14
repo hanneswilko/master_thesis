@@ -139,9 +139,9 @@ glimpse(epic_EET)
 countries <- unique(epic_EET$Country_name)
 
 #Define the technologies with corresponding column names
-technologies <- c("Appliances", "Windows", "Thermal insulation", 
-                  "Solar panels for electricity", "Solar water heating", 
-                  "Battery storage", "Heat pumps")
+technologies <- c("Appliances", "Windows", "Thermal Insulation", 
+                  "Solar Panels for Electricity", "Solar Water Heating", 
+                  "Battery Storage", "Heat Pumps")
 
 adopt_cols <- c("C44_1", "C44_3", "C44_4", "C44_6", "C44_7", "C44_8", "C44_9")
 support_cols <- c("C45_1", "C45_3", "C45_4", "C45_6", "C45_7", "C45_8", "C45_9")
@@ -834,11 +834,11 @@ scatter_EPS_adoption_by_tech <- ggplot(EET_summary_df_EPS_wC02,
   scale_color_manual(values = c(
     "Appliances" = "#8da0cb",
     "Windows" = "#fc8d62",
-    "Thermal insulation" = "#66c2a5",
-    "Solar panels for electricity" = "#e78ac3",
-    "Solar water heating" = "#a6d854",
-    "Battery storage" = "#ffd92f",
-    "Heat pumps" = "#e5c494"
+    "Thermal Insulation" = "#66c2a5",
+    "Solar Panels for Electricity" = "#e78ac3",
+    "Solar Water Heating" = "#a6d854",
+    "Battery Storage" = "#ffd92f",
+    "Heat Pumps" = "#e5c494"
   )) +
   labs(
     title = "Adoption of Energy-Efficient Technologies by EPS Index",
@@ -857,8 +857,8 @@ scatter_EPS_adoption_by_tech <- ggplot(EET_summary_df_EPS_wC02,
 
 #Subsample - EETs excluding Solar water heating and battery storage
 EET_summary_df_EPS_wC02_sub <- EET_summary_df_EPS_wC02 %>%
-  filter(Technology %in% c("Appliances", "Windows", "Thermal insulation",
-                           "Solar panels for electricity", "Heat pumps"))
+  filter(Technology %in% c("Appliances", "Windows", "Thermal Insulation",
+                           "Solar Panels for Electricity", "Heat Pumps"))
 
 # Scatterplot: EPS vs Adoption Rate, colored by Technology
 scatter_EPS_adoption_by_tech_sub <- ggplot(EET_summary_df_EPS_wC02_sub, 
@@ -870,16 +870,16 @@ scatter_EPS_adoption_by_tech_sub <- ggplot(EET_summary_df_EPS_wC02_sub,
   scale_color_manual(values = c(
     "Appliances" = "#8da0cb",
     "Windows" = "#fc8d62",
-    "Thermal insulation" = "#66c2a5",
-    "Solar panels for electricity" = "#e78ac3",
-    "Heat pumps" = "#a6d854"
+    "Thermal Insulation" = "#66c2a5",
+    "Solar Panels for Electricity" = "#e78ac3",
+    "Heat Pumps" = "#a6d854"
   )) +
   scale_linetype_manual(values = c(
     "Appliances" = "twodash",
     "Windows" = "dashed",
-    "Thermal insulation" = "dotted",
-    "Solar panels for electricity" = "dotdash",
-    "Heat pumps" = "solid"
+    "Thermal Insulation" = "dotted",
+    "Solar Panels for Electricity" = "dotdash",
+    "Heat Pumps" = "solid"
   )) +
   labs(
     title = "Adoption of Energy-Efficient Technologies by EPS Index",
