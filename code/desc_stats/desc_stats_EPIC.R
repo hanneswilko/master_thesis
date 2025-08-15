@@ -195,8 +195,8 @@ epic_Appl_support_prop_long <- epic_Appl_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
 ##Adoption of Appliances per Country and Government support in proportions
 barchart_Appl_support_prop <- ggplot(epic_Appl_support_prop_long, 
@@ -207,11 +207,11 @@ barchart_Appl_support_prop <- ggplot(epic_Appl_support_prop_long,
     title = str_wrap("Adoption of highly Energy-Efficient Appliances by Country", 50),
     x = "Country",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -245,24 +245,24 @@ epic_Appl_income_support_prop_long <- epic_Appl_income_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
 
-##adoption of middle-cost EET per Country, Income level and Government support in proportions
+##adoption of middle-cost EET per Country, Income Level and Government support in proportions
 barchart_Appl_income_support_prop <- ggplot(epic_Appl_income_support_prop_long, aes(x = as.factor(Income), 
                                                                               y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of highly Energy-Efficient Appliances by Country and Income level",50),
-    x = "Income level",
+    title = str_wrap("Adoption of highly Energy-Efficient Appliances by Country and Income Level",50),
+    x = "Income Level",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -303,10 +303,10 @@ epic_highEET_support_prop_long <- epic_highEET_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##Adoption of high-cost EETs per Country and Government support in proportions
+##Adoption of high-cost EETs per Country and Government Support in proportions
 barchart_highEET_support_prop <- ggplot(epic_highEET_support_prop_long, 
                                      aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
@@ -315,11 +315,11 @@ barchart_highEET_support_prop <- ggplot(epic_highEET_support_prop_long,
     title = str_wrap("Adoption of high-cost EETs by Country",50),
     x = "Country",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -353,23 +353,23 @@ epic_highEET_income_support_prop_long <- epic_highEET_income_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##adoption of middle-cost EET per Country, Income level and Government support in proportions
+##adoption of middle-cost EET per Country, Income Level and Government Support in proportions
 barchart_highEET_income_support_prop <- ggplot(epic_highEET_income_support_prop_long, aes(x = as.factor(Income), 
                                                                                     y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of high-cost EETs by Country and Income level",50),
-    x = "Income level",
+    title = str_wrap("Adoption of high-cost EETs by Country and Income Level",50),
+    x = "Income Level",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -408,10 +408,10 @@ epic_Window_support_prop_long <- epic_Window_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##Adoption of Windows per Country and Government support in proportions
+##Adoption of Windows per Country and Government Support in proportions
 barchart_Windows_support_prop <- ggplot(epic_Window_support_prop_long, 
                                      aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
@@ -420,11 +420,11 @@ barchart_Windows_support_prop <- ggplot(epic_Window_support_prop_long,
     title = str_wrap("Adoption of Energy-Efficient Windows by Country",50),
     x = "Country",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -458,23 +458,23 @@ epic_Window_income_support_prop_long <- epic_Window_income_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##adoption of Windows per Country, Income level and Government support in proportions
+##adoption of Windows per Country, Income Level and Government Support in proportions
 barchart_Windows_income_support_prop <- ggplot(epic_Window_income_support_prop_long, aes(x = as.factor(Income), 
                                                                                     y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of Energy-Efficient Windows by Country and Income level",50),
-    x = "Income level",
+    title = str_wrap("Adoption of Energy-Efficient Windows by Country and Income Level",50),
+    x = "Income Level",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -513,10 +513,10 @@ epic_Thermal_support_prop_long <- epic_Thermal_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##Adoption of Thermal insulation per Country and Government support in proportions
+##Adoption of Thermal insulation per Country and Government Support in proportions
 barchart_Thermal_support_prop <- ggplot(epic_Thermal_support_prop_long, 
                                      aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
@@ -525,11 +525,11 @@ barchart_Thermal_support_prop <- ggplot(epic_Thermal_support_prop_long,
     title = str_wrap("Adoption of Thermal Insulation of Walls/Roof/Floor by Country",50),
     x = "Country",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -563,23 +563,23 @@ epic_Thermal_income_support_prop_long <- epic_Thermal_income_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##adoption of Thermal insulation per Country, Income level and Government support in proportions
+##adoption of Thermal insulation per Country, Income Level and Government Support in proportions
 barchart_Thermal_income_support_prop <- ggplot(epic_Thermal_income_support_prop_long, aes(x = as.factor(Income), 
                                                                                          y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of Thermal Insulation of Walls/Roof/Floor by Country and Income level",50),
-    x = "Income level",
+    title = str_wrap("Adoption of Thermal Insulation of Walls/Roof/Floor by Country and Income Level",50),
+    x = "Income Level",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -618,10 +618,10 @@ epic_Solare_support_prop_long <- epic_Solare_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##Adoption of Solar panels for electricity per Country and Government support in proportions
+##Adoption of Solar panels for electricity per Country and Government Support in proportions
 barchart_Solare_support_prop <- ggplot(epic_Solare_support_prop_long, 
                                         aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                             y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
@@ -630,11 +630,11 @@ barchart_Solare_support_prop <- ggplot(epic_Solare_support_prop_long,
     title = str_wrap("Adoption of Solar Panels for Electricity by Country",50),
     x = "Country",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -668,23 +668,23 @@ epic_Solare_income_support_prop_long <- epic_Solare_income_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##adoption of Solar panels for electricity per Country, Income level and Government support in proportions
+##adoption of Solar panels for electricity per Country, Income Level and Government Support in proportions
 barchart_Solare_income_support_prop <- ggplot(epic_Solare_income_support_prop_long, aes(x = as.factor(Income), 
                                                                                           y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of Solar Panels for Electricity by Country and Income level",50),
-    x = "Income level",
+    title = str_wrap("Adoption of Solar Panels for Electricity by Country and Income Level",50),
+    x = "Income Level",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -723,10 +723,10 @@ epic_Solarw_support_prop_long <- epic_Solarw_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##Adoption of Solar water heating per Country and Government support in proportions
+##Adoption of Solar water heating per Country and Government Support in proportions
 barchart_Solarw_support_prop <- ggplot(epic_Solarw_support_prop_long, 
                                        aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                            y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
@@ -735,11 +735,11 @@ barchart_Solarw_support_prop <- ggplot(epic_Solarw_support_prop_long,
     title = str_wrap("Adoption of Solar Water Heating by Country",50),
     x = "Country",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -773,23 +773,23 @@ epic_Solarw_income_support_prop_long <- epic_Solarw_income_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##adoption of Solar water heating per Country, Income level and Government support in proportions
+##adoption of Solar water heating per Country, Income Level and Government Support in proportions
 barchart_Solarw_income_support_prop <- ggplot(epic_Solarw_income_support_prop_long, aes(x = as.factor(Income), 
                                                                                         y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of Solar Water Heating by Country and Income level",50),
-    x = "Income level",
+    title = str_wrap("Adoption of Solar Water Heating by Country and Income Level",50),
+    x = "Income Level",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -828,10 +828,10 @@ epic_Battery_support_prop_long <- epic_Battery_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##Adoption of Battery storage per Country and Government support in proportions
+##Adoption of Battery storage per Country and Government Support in proportions
 barchart_Battery_support_prop <- ggplot(epic_Battery_support_prop_long, 
                                        aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                            y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
@@ -840,11 +840,11 @@ barchart_Battery_support_prop <- ggplot(epic_Battery_support_prop_long,
     title = str_wrap("Adoption of Battery Storage by Country",50),
     x = "Country",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -878,23 +878,23 @@ epic_Battery_income_support_prop_long <- epic_Battery_income_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##adoption of Battery storage per Country, Income level and Government support in proportions
+##adoption of Battery storage per Country, Income Level and Government Support in proportions
 barchart_Battery_income_support_prop <- ggplot(epic_Battery_income_support_prop_long, aes(x = as.factor(Income), 
                                                                                         y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of Battery Storage by Country and Income level",50),
-    x = "Income level",
+    title = str_wrap("Adoption of Battery Storage by Country and Income Level",50),
+    x = "Income Level",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -934,10 +934,10 @@ epic_Pump_support_prop_long <- epic_Pump_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##Adoption of Heat pumps per Country and Government support in proportions
+##Adoption of Heat pumps per Country and Government Support in proportions
 barchart_Pump_support_prop <- ggplot(epic_Pump_support_prop_long, 
                                         aes(x = reorder(Country_name, -proportion_adopters * Proportion_Support), 
                                             y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
@@ -946,11 +946,11 @@ barchart_Pump_support_prop <- ggplot(epic_Pump_support_prop_long,
     title = str_wrap("Adoption of Heat Pumps by Country",50),
     x = "Country",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
@@ -984,23 +984,23 @@ epic_Pump_income_support_prop_long <- epic_Pump_income_support_prop %>%
                       names_to = "Support_Status", 
                       values_to = "Proportion_Support") %>%
   mutate(Support_Status = recode(Support_Status, 
-                                 "proportion_support_received" = "support",
-                                 "proportion_support_not_received" = "no support"))
+                                 "proportion_support_received" = "Support",
+                                 "proportion_support_not_received" = "No Support"))
 
-##adoption of Heat pumps per Country, Income level and Government support in proportions
+##adoption of Heat pumps per Country, Income Level and Government Support in proportions
 barchart_Pump_income_support_prop <- ggplot(epic_Pump_income_support_prop_long, aes(x = as.factor(Income), 
                                                                                           y = proportion_adopters * Proportion_Support, fill = Support_Status)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ Country_name) +
   labs(
-    title = str_wrap("Adoption of Heat Pumps by Country and Income level",50),
-    x = "Income level",
+    title = str_wrap("Adoption of Heat Pumps by Country and Income Level",50),
+    x = "Income Level",
     y = "Proportions of Adopters",
-    fill = "Government support"
+    fill = "Government Support"
   ) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) +  # y-axis from 0 to 1 in 0.25 steps
   theme_minimal() +
-  scale_fill_manual(values = c("no support" = "#8da0cb", "support" = "#fc8d62")) +
+  scale_fill_manual(values = c("No Support" = "#8da0cb", "Support" = "#fc8d62")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
