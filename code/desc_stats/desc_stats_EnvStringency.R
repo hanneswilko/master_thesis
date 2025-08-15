@@ -61,7 +61,7 @@ EPS_boxplot <- ggplot(EPS_data_sub, aes(x = REF_AREA, y = OBS_VALUE)) +
   geom_boxplot(fill = "#8da0cb", outlier.colour = "black", outlier.size = 2) +  # Consistent blue fill
   labs(
     title = str_wrap("OECD Environmental Policy Stringency Index (2010-2020)",50), 
-    y = "EPS index", 
+    y = "EPS Index", 
     x = "Country"
   ) +
   theme_minimal() +
@@ -87,7 +87,7 @@ EPS_hist <- ggplot(EPS_sub_avg, aes(x = REF_AREA, y = avg_EPS)) +
   labs(
     title = str_wrap("OECD Environmental Policy Stringency Index (2010-2020)",50),
     x = "Country",
-    y = "Average EPS index"
+    y = "Average EPS Index"
   ) +
   theme_minimal() +
   theme(
@@ -141,9 +141,9 @@ View(C02rate_data_sub_PPPavg)
 C02rate_hist <- ggplot(C02rate_data_sub_PPPavg, aes(x = REF_AREA, y = comparative_tax_usd_avg)) +
   geom_bar(stat = "identity", fill = "#8da0cb") +  # Updated fill color
   labs(
-    title = str_wrap("OECD carbon tax burden (2018, 2021, 2023)",50),
+    title = str_wrap("OECD Carbon Tax Burden (2018, 2021, 2023)",50),
     x = "Country",
-    y = "Average carbon tax rate" # (PPP-adjusted in 2023 USD/tCO2)
+    y = "Average Carbon Tax Rate" # (PPP-adjusted in 2023 USD/tCO2)
   ) +
   theme_minimal() +
   theme(
@@ -174,8 +174,8 @@ glimpse(wC02price_data)
 wC02rate_boxplot <- ggplot(wC02price_data_sub, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2)) +
   geom_boxplot(fill = "#8da0cb", outlier.colour = "black", outlier.size = 2) +
   labs(
-    title = str_wrap("Emissions-weighted carbon price (2010-2020)",50), 
-    y = "Weighted carbon price", 
+    title = str_wrap("Emissions-weighted Carbon Price (2010-2020)",50), 
+    y = "Weighted Carbon Price", 
     x = "Country"
   ) +
   theme_minimal() +
@@ -199,9 +199,9 @@ View(wC02price_data_sub_avg)
 
 wC02rate_hist <- ggplot(wC02price_data_sub_avg, aes(x = Code, y = price_with_tax_weighted_by_share_of_co2_avg)) +
   geom_bar(stat = "identity", fill = "#8da0cb") +  # Matching color scheme
-  labs(title = str_wrap("Emissions-weighted carbon price (2010-2020)",50),
+  labs(title = str_wrap("Emissions-weighted Carbon Price (2010-2020)",50),
        x = "Country",
-       y = "Average weighted carbon price") + 
+       y = "Average Weighted Carbon Price") + 
   theme_minimal() +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
@@ -219,13 +219,13 @@ wC02rate_hist <- ggplot(wC02price_data_sub_avg, aes(x = Code, y = price_with_tax
   )
 
 #--------------------------- Saving Graphs -------------------------------------
-ggsave("./output/EPS_boxplot.pdf", plot = EPS_boxplot, dpi = 300, scale = 1.2)
-ggsave("./output/EPS_hist.pdf", plot = EPS_hist, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/EPS_boxplot.pdf", plot = EPS_boxplot, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/EPS_hist.pdf", plot = EPS_hist, dpi = 300, scale = 1.2)
 
-ggsave("./output/C02rate_hist.pdf", plot = C02rate_hist, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/C02rate_hist.pdf", plot = C02rate_hist, dpi = 300, scale = 1.2)
 
-ggsave("./output/wC02rate_boxplot.pdf", plot = wC02rate_boxplot, dpi = 300, scale = 1.2)
-ggsave("./output/wC02rate_hist.pdf", plot = wC02rate_hist, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/wC02rate_boxplot.pdf", plot = wC02rate_boxplot, dpi = 300, scale = 1.2)
+ggsave("./output/output_desc_stats/wC02rate_hist.pdf", plot = wC02rate_hist, dpi = 300, scale = 1.2)
 
 
 
