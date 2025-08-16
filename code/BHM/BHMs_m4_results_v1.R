@@ -545,7 +545,7 @@ plot_fixed_effects <- function(tech_name) {
       plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
       axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
       axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
-      axis.text.x = element_text(angle = 65, hjust = 1, size = 10),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
       axis.text.y = element_text(size = 10)
     )
 }

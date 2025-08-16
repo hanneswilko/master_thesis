@@ -252,7 +252,7 @@ Adoption <- appliances$Adoption
 Adoption_rep <- posterior_predict(m4,draws=1000)
 m4_ppc <- ppc_stat(Adoption, Adoption_rep, stat = "mean") +
   ggtitle("Posterior Predictive Check for Appliances (m4)") + 
-  labs(x = "Adoption rate") +
+  labs(x = "Adoption Rate") +
   theme(
     axis.title = element_text(size = 12, face = "bold"),
     plot.title = element_text(size = 14, face = "bold", hjust = 0.5)   
