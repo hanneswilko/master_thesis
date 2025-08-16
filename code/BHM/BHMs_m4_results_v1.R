@@ -246,8 +246,8 @@ cintervals <- build_long_wide("ci", c("Parameters"))
 #Fixed Effects
 fixed_effects_labels <- c("(Intercept)" = "Intercept", "Age_cat25-34" = "Age: 25-34", "Age_cat35-44" = "Age: 35-44", "Age_cat45-54" = "Age: 45-54",
                           "Age_cat55+"   = "Age: 55+", "Female" = "Female", "Higher_edu" = "Higher education", "Home_ownership" = "Homeowner",
-                          "Dwelling_house" = "D-Type: House", "Dwelling_size151–200 m²" = "D-size: 151–200 m²", "Dwelling_size26–50 m²" = "D-Size: 26–50 m²",
-                          "Dwelling_size51–75 m²" = "D-Size: 51–75 m²", "Dwelling_size76–100 m²" = "D-Size: 76–100 m²", "Dwelling_sizeDon't know" = "D-Size: Don't know",
+                          "Dwelling_house" = "D-Type: House", "Dwelling_size151–200 m²" = "D-size: 151-200 m²", "Dwelling_size26–50 m²" = "D-Size: 26-50 m²",
+                          "Dwelling_size51–75 m²" = "D-Size: 51-75 m²", "Dwelling_size76–100 m²" = "D-Size: 76-100 m²", "Dwelling_sizeDon't know" = "D-Size: Don't know",
                           "Dwelling_sizeLess than 25 m²" = "D-Size: <25 m²", "Dwelling_sizeMore than 200 m²" = "D-Size: >200 m²", "Rural" = "D-Location: Rural",
                           "Env_concern" = "Environmental concern", "Gov_support" = "Government support",
                           "EPS" = "EPS index", "Incomequintile 2" = "Income q2", "Incomequintile 3" = "Income q3", "Incomequintile 4" = "Income q4",
@@ -545,7 +545,7 @@ plot_fixed_effects <- function(tech_name) {
       plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
       axis.title.x = element_text(size = 12, face = "bold", margin = margin(t = 15)),
       axis.title.y = element_text(size = 12, face = "bold", margin = margin(r = 15)),
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.x = element_text(angle = 65, hjust = 1, size = 10),
       axis.text.y = element_text(size = 10)
     )
 }
@@ -644,8 +644,9 @@ ggsave("./output/output_m4/EPS_slope_insulation_plot.pdf", plot = EPS_slope_insu
 ggsave("./output/output_m4/EPS_slope_solare_plot.pdf", plot = EPS_slope_solare_plot, width = 10, height = 6)
 ggsave("./output/output_m4/EPS_slope_heatpumps_plot.pdf", plot = EPS_slope_heatpumps_plot, width = 10, height = 6)
 
-ggsave("./output/output_m4/Fixed_effects_windows_plot.pdf", plot = Fixed_effects_windows_plot, width = 9, height = 6)
-ggsave("./output/output_m4/Fixed_effects_appliances_plot.pdf", plot = Fixed_effects_appliances_plot, width = 9, height = 6)
-ggsave("./output/output_m4/Fixed_effects_insulation_plot.pdf", plot = Fixed_effects_insulation_plot, width = 9, height = 6)
-ggsave("./output/output_m4/Fixed_effects_solare_plot.pdf", plot = Fixed_effects_solare_plot, width = 9, height = 6)
-ggsave("./output/output_m4/Fixed_effects_heatpumps_plot.pdf", plot = Fixed_effects_heatpumps_plot, width = 9, height = 6)
+ggsave("./output/output_m4/Fixed_effects_windows_plot.pdf", plot = Fixed_effects_windows_plot, width = 10, height = 6)
+ggsave("./output/output_m4/Fixed_effects_appliances_plot.pdf", plot = Fixed_effects_appliances_plot, width = 10, height = 6)
+ggsave("./output/output_m4/Fixed_effects_insulation_plot.pdf", plot = Fixed_effects_insulation_plot, width = 10, height = 6)
+ggsave("./output/output_m4/Fixed_effects_solare_plot.pdf", plot = Fixed_effects_solare_plot, width = 10, height = 6)
+ggsave("./output/output_m4/Fixed_effects_heatpumps_plot.pdf", plot = Fixed_effects_heatpumps_plot, width = 10, height = 6)
+
